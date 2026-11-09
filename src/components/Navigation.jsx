@@ -78,9 +78,9 @@ export default function Navigation({ onExploreClick, onResumeClick, currentView 
       </nav>
 
       {/* RIGHT ACTION CLUSTER: 3D World Toggle, Audio Toggle, Terminal, Resume CTA */}
-      <div className="flex items-center space-x-2.5">
+      <div className="flex items-center space-x-2 sm:space-x-2.5">
         
-        {/* 3D World Mode Switcher Button */}
+        {/* 3D World Mode Switcher Button (Min 44px touch target) */}
         {onToggleView && (
           <button
             onClick={() => {
@@ -88,21 +88,21 @@ export default function Navigation({ onExploreClick, onResumeClick, currentView 
               onToggleView(currentView === 'hero' ? '3d_world' : 'hero');
             }}
             onMouseEnter={() => audioEngine.playHover()}
-            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full border border-[#B17B53]/50 bg-[#F4EBDD] text-[#292B27] hover:bg-[#292B27] hover:text-[#F4EBDD] transition-all text-xs font-mono shadow-2xs cursor-pointer"
+            className="flex items-center space-x-1.5 px-3.5 py-2 min-h-[44px] rounded-full border border-[#B17B53]/50 bg-[#F4EBDD] text-[#292B27] hover:bg-[#292B27] hover:text-[#F4EBDD] transition-all text-xs font-mono shadow-2xs cursor-pointer active:scale-95"
             title="Toggle between Hero Overview & 3D Circuit World"
           >
-            <Compass className="w-3.5 h-3.5 text-[#B17B53]" />
-            <span className="text-[10px] font-bold tracking-wider uppercase">
+            <Compass className="w-4 h-4 text-[#B17B53]" />
+            <span className="text-[11px] font-bold tracking-wider uppercase">
               {currentView === 'hero' ? '3D World' : 'Hero View'}
             </span>
           </button>
         )}
 
-        {/* Soft Music & Sound Effects Pill Button */}
+        {/* Soft Music & Sound Effects Pill Button (Min 44px touch target) */}
         <button
           onClick={toggleAudio}
           onMouseEnter={() => audioEngine.playHover()}
-          className={`group flex items-center space-x-2 px-3 py-1.5 rounded-full border transition-all duration-300 text-xs font-mono cursor-pointer shadow-2xs ${
+          className={`group flex items-center space-x-2 px-3.5 py-2 min-h-[44px] rounded-full border transition-all duration-300 text-xs font-mono cursor-pointer shadow-2xs active:scale-95 ${
             isAudioActive
               ? 'bg-[#292B27] border-[#292B27] text-[#F4EBDD]'
               : 'bg-[#F4EBDD]/80 border-[#292B27]/25 text-[#292B27] hover:bg-[#F4EBDD]'
@@ -111,17 +111,17 @@ export default function Navigation({ onExploreClick, onResumeClick, currentView 
         >
           {isAudioActive ? (
             <>
-              <div className="flex items-end space-x-0.5 h-3 w-3">
+              <div className="flex items-end space-x-0.5 h-3.5 w-3.5">
                 <span className="w-0.5 bg-[#B17B53] h-full animate-pulse rounded-full" />
                 <span className="w-0.5 bg-emerald-400 h-2/3 animate-ping rounded-full" />
                 <span className="w-0.5 bg-amber-400 h-4/5 animate-pulse rounded-full" />
               </div>
-              <span className="text-[10px] font-semibold tracking-wider text-amber-300">AUDIO ON</span>
+              <span className="text-[10.5px] font-semibold tracking-wider text-amber-300">AUDIO ON</span>
             </>
           ) : (
             <>
-              <Music className="w-3 h-3 text-[#89634C] group-hover:text-[#292B27]" />
-              <span className="text-[10px] font-medium tracking-wider text-[#626B50]">SOUND OFF</span>
+              <Music className="w-3.5 h-3.5 text-[#89634C] group-hover:text-[#292B27]" />
+              <span className="text-[10.5px] font-medium tracking-wider text-[#626B50]">SOUND OFF</span>
             </>
           )}
         </button>
@@ -131,39 +131,40 @@ export default function Navigation({ onExploreClick, onResumeClick, currentView 
           onMouseEnter={() => audioEngine.playHover()}
           onClick={() => audioEngine.playRadarPing()}
           title="Telemetry Terminal Mode"
-          className="hidden sm:flex items-center justify-center w-8 h-8 rounded-md border border-[#292B27]/25 bg-[#F4EBDD]/80 text-[#292B27] hover:bg-[#292B27] hover:text-[#F4EBDD] transition-colors duration-200 font-mono text-xs shadow-xs cursor-pointer"
+          className="hidden sm:flex items-center justify-center min-w-[44px] min-h-[44px] w-11 h-11 rounded-md border border-[#292B27]/25 bg-[#F4EBDD]/80 text-[#292B27] hover:bg-[#292B27] hover:text-[#F4EBDD] transition-colors duration-200 font-mono text-xs shadow-xs cursor-pointer"
         >
-          <span className="font-mono font-bold text-[11px]">&gt;_</span>
+          <span className="font-mono font-bold text-xs">&gt;_</span>
         </button>
 
-        {/* Resume Download Button */}
+        {/* Resume Download Button (Min 44px touch target) */}
         <button
           onMouseEnter={() => audioEngine.playHover()}
           onClick={() => {
             audioEngine.playClick();
             onResumeClick();
           }}
-          className="group relative flex items-center space-x-2 px-3.5 py-1.5 rounded-md border border-[#292B27] bg-[#F4EBDD] text-[#292B27] hover:bg-[#292B27] hover:text-[#F4EBDD] transition-all duration-200 shadow-sm active:translate-y-0.5 cursor-pointer"
+          className="hidden sm:flex group relative items-center space-x-2 px-4 py-2 min-h-[44px] rounded-md border border-[#292B27] bg-[#F4EBDD] text-[#292B27] hover:bg-[#292B27] hover:text-[#F4EBDD] transition-all duration-200 shadow-sm active:translate-y-0.5 cursor-pointer"
         >
           <span className="font-mono text-xs font-semibold tracking-wider uppercase">Resume</span>
           <Download className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-y-0.5" />
         </button>
 
-        {/* Mobile menu hamburger */}
+        {/* Mobile menu hamburger (Min 44px touch target) */}
         <button
           onClick={() => {
             audioEngine.playClick();
             setMobileMenuOpen(!mobileMenuOpen);
           }}
-          className="md:hidden flex items-center justify-center w-8 h-8 rounded border border-[#292B27]/30 text-[#292B27]"
+          className="md:hidden flex items-center justify-center min-w-[44px] min-h-[44px] w-11 h-11 rounded border border-[#292B27]/30 text-[#292B27] cursor-pointer"
+          aria-label="Toggle Mobile Navigation Menu"
         >
-          {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+          {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
       </div>
 
-      {/* Mobile Drawer */}
+      {/* Mobile Drawer with 44px+ Tap Targets */}
       {mobileMenuOpen && (
-        <div className="md:hidden absolute top-full left-0 w-full bg-[#F4EBDD] border-b border-[#292B27]/20 p-4 shadow-lg flex flex-col space-y-2 z-50">
+        <div className="md:hidden absolute top-full left-0 w-full bg-[#F4EBDD] border-b-2 border-[#292B27]/30 p-4 shadow-xl flex flex-col space-y-2 z-50 animate-fadeIn">
           {navLinks.map((item) => (
             <button
               key={item.label}
@@ -176,7 +177,7 @@ export default function Navigation({ onExploreClick, onResumeClick, currentView 
                   onExploreClick();
                 }
               }}
-              className={`text-left px-4 py-2 rounded text-xs font-mono ${
+              className={`text-left px-4 py-3 min-h-[44px] flex items-center rounded text-sm font-mono cursor-pointer ${
                 activeTab === item.label
                   ? 'bg-[#292B27] text-white font-bold'
                   : 'text-[#292B27] hover:bg-[#E9DDC7]'
@@ -185,6 +186,19 @@ export default function Navigation({ onExploreClick, onResumeClick, currentView 
               {item.label}
             </button>
           ))}
+
+          {/* Mobile Resume CTA */}
+          <button
+            onClick={() => {
+              audioEngine.playClick();
+              setMobileMenuOpen(false);
+              onResumeClick();
+            }}
+            className="w-full flex items-center justify-center space-x-2 px-4 py-3 min-h-[44px] rounded bg-[#292B27] text-[#F4EBDD] font-mono text-xs font-bold uppercase tracking-wider cursor-pointer mt-2"
+          >
+            <span>Download Engineering Resume</span>
+            <Download className="w-4 h-4" />
+          </button>
         </div>
       )}
     </header>

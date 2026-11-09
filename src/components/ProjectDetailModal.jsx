@@ -107,7 +107,7 @@ export default function ProjectDetailModal({ project, onClose }) {
                   <span className="text-[10px] text-[#89634C] uppercase tracking-wider">
                     {item.label}
                   </span>
-                  <span className="font-semibold text-[#292B27] mt-0.5">{item.val}</span>
+                  <span className="font-semibold text-[#292B27] mt-0.5">{item.val || item.value}</span>
                 </div>
               ))}
             </div>

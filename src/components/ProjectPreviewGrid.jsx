@@ -62,7 +62,7 @@ export default function ProjectPreviewGrid({ onSelectProject }) {
   };
 
   return (
-    <div className="relative w-full h-full min-h-[580px] p-2 sm:p-4 select-none flex flex-col justify-between overflow-hidden">
+    <div className="relative w-full h-full min-h-[520px] sm:min-h-[580px] p-2 sm:p-4 select-none flex flex-col justify-between overflow-hidden touch-manipulation">
       {/* Background blueprint diagonal lines */}
       <div className="absolute inset-0 pointer-events-none opacity-20">
         <svg className="w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 100">

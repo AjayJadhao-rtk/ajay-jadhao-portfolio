@@ -33,7 +33,8 @@ export default function CircuitWorldCanvas({
   const progressRef = useRef(0.0);
   const targetProgressRef = useRef(0.0);
   const isDraggingRef = useRef(false);
-  const lastMouseXRef = useRef(0);
+  const lastPointerXRef = useRef(0);
+  const lastPointerYRef = useRef(0);
   const activeStationIdRef = useRef(null);
 
   // Autopilot cruising state
@@ -84,9 +85,12 @@ export default function CircuitWorldCanvas({
     scene.fog = new THREE.Fog(0xE9DDC7, 45, 185);
     sceneRef.current = scene;
 
-    // 2. Perspective Camera (starts at high-altitude editorial overview)
+    // 2. Mobile-Adaptive Dynamic Camera Framing
+    const isMobileInitial = typeof window !== 'undefined' && window.innerWidth < 768;
+    const initialFov = isMobileInitial ? 56 : 45;
+
     const camera = new THREE.PerspectiveCamera(
-      45,
+      initialFov,
       container.clientWidth / container.clientHeight,
       0.5,
       300
@@ -95,12 +99,20 @@ export default function CircuitWorldCanvas({
     camera.position.set(0, 90, 48);
     cameraRef.current = camera;
 
-    // 3. WebGL Renderer
-    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+    // 3. High-Performance WebGL Renderer with Mobile DPR Clamp (Prevents GPU throttling)
+    const maxDpr = isMobileInitial ? 1.5 : 2.0;
+    const initialDpr = Math.min(typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1, maxDpr);
+
+    const renderer = new THREE.WebGLRenderer({
+      antialias: !isMobileInitial || initialDpr < 2,
+      powerPreference: 'high-performance',
+      stencil: false,
+      depth: true,
+    });
     renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setPixelRatio(initialDpr);
     renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFShadowMap;
+    renderer.shadowMap.type = isMobileInitial ? THREE.BasicShadowMap : THREE.PCFShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.05;
 
@@ -117,8 +129,8 @@ export default function CircuitWorldCanvas({
     const sunLight = new THREE.DirectionalLight(0xFDE68A, 1.45);
     sunLight.position.set(45, 65, 35);
     sunLight.castShadow = true;
-    sunLight.shadow.mapSize.width = 2048;
-    sunLight.shadow.mapSize.height = 2048;
+    sunLight.shadow.mapSize.width = isMobileInitial ? 1024 : 2048;
+    sunLight.shadow.mapSize.height = isMobileInitial ? 1024 : 2048;
     sunLight.shadow.camera.near = 10;
     sunLight.shadow.camera.far = 180;
     sunLight.shadow.camera.left = -60;
@@ -154,8 +166,8 @@ export default function CircuitWorldCanvas({
     const startRoverPos = rover.mesh.position;
 
     // 6. GSAP Camera Entrance Transition (Editorial Overview -> Smooth Chase-Cam Alignment)
-    const FOLLOW_DISTANCE = 14.0;
-    const CAMERA_HEIGHT = 10.0;
+    const FOLLOW_DISTANCE = isMobileInitial ? 18.0 : 14.0;
+    const CAMERA_HEIGHT = isMobileInitial ? 13.0 : 10.0;
 
     const startTangent = curve.getTangentAt(0).normalize();
     const startTangentXZ = new THREE.Vector3(startTangent.x, 0, startTangent.z);
@@ -202,55 +214,77 @@ export default function CircuitWorldCanvas({
       });
     }
 
-    // 7. Interaction Event Listeners (Scroll & Drag)
+    // 7. Touch & Pointer Interaction Event Listeners (Passive & Non-Blocking)
     const handleWheel = (e) => {
       e.preventDefault();
       if (isTransitioningRef.current) return;
       const delta = e.deltaY * 0.00035;
-      targetProgressRef.current = (targetProgressRef.current + delta + 10) % 1;
+      targetProgressRef.current = (targetProgressRef.current + delta + 10.0) % 1.0;
     };
 
     const handlePointerDown = (e) => {
       if (isTransitioningRef.current) return;
       isDraggingRef.current = true;
-      lastMouseXRef.current = e.clientX;
+      lastPointerXRef.current = e.clientX;
+      lastPointerYRef.current = e.clientY;
+      if (e.target && e.target.setPointerCapture) {
+        try {
+          e.target.setPointerCapture(e.pointerId);
+        } catch (_) {}
+      }
     };
 
     const handlePointerMove = (e) => {
       if (!isDraggingRef.current || isTransitioningRef.current) return;
-      const dx = e.clientX - lastMouseXRef.current;
-      lastMouseXRef.current = e.clientX;
-      targetProgressRef.current = (targetProgressRef.current - dx * 0.001 + 10) % 1;
+      const dx = e.clientX - lastPointerXRef.current;
+      const dy = e.clientY - lastPointerYRef.current;
+      lastPointerXRef.current = e.clientX;
+      lastPointerYRef.current = e.clientY;
+
+      // Mobile touch-friendly: horizontal drag OR vertical thumb flick
+      const dominantDelta = Math.abs(dx) >= Math.abs(dy) ? -dx : dy;
+      targetProgressRef.current = (targetProgressRef.current + dominantDelta * 0.0012 + 10.0) % 1.0;
     };
 
-    const handlePointerUp = () => {
+    const handlePointerUp = (e) => {
       isDraggingRef.current = false;
+      if (e.target && e.target.releasePointerCapture) {
+        try {
+          e.target.releasePointerCapture(e.pointerId);
+        } catch (_) {}
+      }
     };
 
     const handleKeyDown = (e) => {
       if (isTransitioningRef.current) return;
       if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
-        targetProgressRef.current = (targetProgressRef.current + 0.015 + 10) % 1;
+        targetProgressRef.current = (targetProgressRef.current + 0.015 + 10.0) % 1.0;
       } else if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
-        targetProgressRef.current = (targetProgressRef.current - 0.015 + 10) % 1;
+        targetProgressRef.current = (targetProgressRef.current - 0.015 + 10.0) % 1.0;
       }
     };
 
     const dom = renderer.domElement;
     dom.addEventListener('wheel', handleWheel, { passive: false });
-    dom.addEventListener('pointerdown', handlePointerDown);
-    window.addEventListener('pointermove', handlePointerMove);
-    window.addEventListener('pointerup', handlePointerUp);
+    dom.addEventListener('pointerdown', handlePointerDown, { passive: true });
+    window.addEventListener('pointermove', handlePointerMove, { passive: true });
+    window.addEventListener('pointerup', handlePointerUp, { passive: true });
+    window.addEventListener('pointercancel', handlePointerUp, { passive: true });
     window.addEventListener('keydown', handleKeyDown);
 
-    // 8. Responsive Resizing with Locked FOV
+    // 8. Responsive Resizing with Dynamic Mobile FOV & DPR Lock
     const handleResize = () => {
       if (!container || !renderer || !camera) return;
+      const isMobileNow = window.innerWidth < 768;
       camera.aspect = container.clientWidth / container.clientHeight;
-      camera.fov = 45;
+      camera.fov = isMobileNow ? 56 : 45;
       camera.updateProjectionMatrix();
+
+      const newDpr = Math.min(window.devicePixelRatio || 1, isMobileNow ? 1.5 : 2.0);
+      renderer.setPixelRatio(newDpr);
       renderer.setSize(container.clientWidth, container.clientHeight);
     };
+    window.addEventListener('resize', handleResize);
     window.addEventListener('resize', handleResize);
 
     // 9. High-Precision Render Loop
@@ -349,6 +383,7 @@ export default function CircuitWorldCanvas({
       dom.removeEventListener('pointerdown', handlePointerDown);
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerup', handlePointerUp);
+      window.removeEventListener('pointercancel', handlePointerUp);
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('resize', handleResize);
 
@@ -360,33 +395,37 @@ export default function CircuitWorldCanvas({
   }, []);
 
   return (
-    <div className="relative w-full h-full select-none overflow-hidden">
-      {/* Three.js Canvas Container */}
-      <div ref={containerRef} className="w-full h-full cursor-grab active:cursor-grabbing" />
+    <div className="relative w-full h-full select-none overflow-hidden touch-none">
+      {/* Three.js Canvas Container with touch-action: none */}
+      <div 
+        ref={containerRef} 
+        className="w-full h-full cursor-grab active:cursor-grabbing touch-none select-none" 
+        style={{ touchAction: 'none' }}
+      />
 
-      {/* Floating Travel Controls Bar */}
-      <div className="absolute top-4 left-4 z-20 flex items-center space-x-2 bg-[#292B27]/85 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-[#B17B53]/40 shadow-lg text-xs font-mono text-[#F4EBDD]">
-        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-        <span className="font-semibold tracking-wider text-[10px]">3D CIRCUIT WORLD</span>
-        <span className="text-white/30">|</span>
+      {/* Floating Travel Controls Bar (Touch-optimized 44px+ tap target) */}
+      <div className="absolute top-3.5 right-3.5 sm:right-auto sm:left-4 z-20 flex items-center space-x-2 bg-[#292B27]/90 backdrop-blur-md px-3.5 py-1.5 min-h-[44px] rounded-full border border-[#B17B53]/50 shadow-xl text-xs font-mono text-[#F4EBDD]">
+        <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
+        <span className="font-semibold tracking-wider text-[10px] hidden xs:inline">3D CIRCUIT WORLD</span>
+        <span className="text-white/30 hidden xs:inline">|</span>
         <button
           onClick={() => setIsCruising(!isCruising)}
-          className={`px-2 py-0.5 rounded text-[9.5px] uppercase font-bold transition-colors cursor-pointer ${
-            isCruising ? 'bg-[#B17B53] text-[#292B27]' : 'hover:text-[#B17B53] text-white/70'
+          className={`px-3 py-2 min-h-[44px] flex items-center rounded-full text-[10px] uppercase font-bold tracking-wider transition-colors cursor-pointer active:scale-95 ${
+            isCruising ? 'bg-[#B17B53] text-[#292B27]' : 'hover:text-[#B17B53] text-white/80 bg-white/10'
           }`}
         >
           {isCruising ? '■ PAUSE CRUISE' : '► AUTOPILOT'}
         </button>
       </div>
 
-      {/* Interactive Track Station Quick-Jump Pills (Scalable from PROJECTS_DATA) */}
-      <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-20 flex items-center space-x-1.5 bg-[#F4EBDD]/90 backdrop-blur-md px-3 py-1.5 rounded-full border border-[#292B27]/30 shadow-lg text-[10px] font-mono text-[#292B27] max-w-[90vw] overflow-x-auto">
-        <span className="text-[9px] text-[#89634C] font-bold mr-1 uppercase shrink-0">WAYPOINTS:</span>
+      {/* Interactive Track Station Quick-Jump Pills (Touch-optimized scroll container & 44px targets) */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center space-x-2 bg-[#F4EBDD]/95 backdrop-blur-md px-3.5 py-2 rounded-full border-2 border-[#292B27]/30 shadow-2xl text-xs font-mono text-[#292B27] max-w-[95vw] overflow-x-auto scrollbar-none touch-pan-x">
+        <span className="text-[10px] text-[#89634C] font-bold mr-1 uppercase shrink-0">WAYPOINTS:</span>
         {PROJECTS_DATA.map((p, idx) => (
           <button
             key={p.id}
             onClick={() => jumpToWaypoint(idx)}
-            className={`px-2.5 py-1 rounded-full transition-all cursor-pointer font-semibold shrink-0 ${
+            className={`px-3.5 py-2 min-h-[44px] flex items-center justify-center rounded-full transition-all cursor-pointer font-semibold shrink-0 text-xs active:scale-95 ${
               currentWaypointId === p.id
                 ? 'bg-[#292B27] text-[#F4EBDD] shadow-sm scale-105'
                 : 'hover:bg-[#292B27]/10 text-[#292B27]/80'
@@ -399,7 +438,7 @@ export default function CircuitWorldCanvas({
 
       {/* Navigation Hint */}
       <div className="absolute bottom-5 right-5 z-20 hidden md:flex items-center space-x-2 bg-[#292B27]/75 backdrop-blur-xs px-3 py-1 rounded-md text-[9px] font-mono text-[#E9DDC7] border border-[#292B27]/40 pointer-events-none">
-        <span>SCROLL / DRAG / ARROW KEYS TO NAVIGATE ROVER</span>
+        <span>SWIPE / DRAG / SCROLL TO NAVIGATE ROVER</span>
       </div>
     </div>
   );

@@ -110,7 +110,7 @@ export default function WorldExplorationView({ onReturnToHero }) {
         <button
           onClick={handleReturn}
           disabled={isExiting}
-          className="group flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-[#292B27] text-[#F4EBDD] hover:bg-[#1E201D] transition-all shadow-md active:translate-y-0.5 font-mono text-xs font-semibold cursor-pointer disabled:opacity-50"
+          className="group flex items-center space-x-2 px-4 py-2.5 min-h-[44px] rounded-full bg-[#292B27] text-[#F4EBDD] hover:bg-[#1E201D] transition-all shadow-md active:translate-y-0.5 font-mono text-xs font-semibold cursor-pointer disabled:opacity-50"
         >
           <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-1" />
           <span>{isExiting ? 'Ascending...' : 'Return to Editorial Hero'}</span>

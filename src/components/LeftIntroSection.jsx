@@ -53,7 +53,7 @@ export default function LeftIntroSection({ onExploreClick, onResumeClick }) {
           <p className="block text-[#89634C]">Embedded Technology.</p>
         </div>
 
-        {/* HIERARCHY LEVEL 5: Action Triggers (Solid Charcoal vs Outline Ivory) */}
+        {/* HIERARCHY LEVEL 5: Action Triggers (Solid Charcoal vs Outline Ivory, min 44px touch targets) */}
         <div className="pt-2.5 flex flex-wrap items-center gap-3">
           {/* Primary CTA: Solid Charcoal */}
           <button
@@ -62,7 +62,7 @@ export default function LeftIntroSection({ onExploreClick, onResumeClick }) {
               audioEngine.playClick();
               onExploreClick();
             }}
-            className="group relative flex items-center space-x-2.5 px-5 py-2.5 rounded-md bg-[#292B27] text-[#F4EBDD] hover:bg-[#1E201D] hover:shadow-lg hover:shadow-[#292B27]/25 transition-all duration-200 active:translate-y-0.5 cursor-pointer shadow-sm"
+            className="group relative flex items-center space-x-2.5 px-5 py-3 min-h-[44px] rounded-md bg-[#292B27] text-[#F4EBDD] hover:bg-[#1E201D] hover:shadow-lg hover:shadow-[#292B27]/25 transition-all duration-200 active:translate-y-0.5 cursor-pointer shadow-sm"
           >
             <div className="w-4 h-4 rounded-full bg-[#B17B53] flex items-center justify-center text-[#292B27] group-hover:bg-amber-400 transition-colors">
               <Play className="w-2.5 h-2.5 fill-current ml-0.5" />
@@ -79,7 +79,7 @@ export default function LeftIntroSection({ onExploreClick, onResumeClick }) {
               audioEngine.playClick();
               onResumeClick();
             }}
-            className="group flex items-center space-x-2 px-4 py-2.5 rounded-md border border-[#292B27] bg-[#F4EBDD]/90 text-[#292B27] hover:bg-[#292B27] hover:text-[#F4EBDD] transition-all duration-200 active:translate-y-0.5 cursor-pointer shadow-2xs"
+            className="group flex items-center space-x-2 px-4 py-3 min-h-[44px] rounded-md border border-[#292B27] bg-[#F4EBDD]/90 text-[#292B27] hover:bg-[#292B27] hover:text-[#F4EBDD] transition-all duration-200 active:translate-y-0.5 cursor-pointer shadow-2xs"
           >
             <Download className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-y-0.5" />
             <span className="font-mono text-xs font-semibold tracking-wider uppercase">
@@ -88,7 +88,7 @@ export default function LeftIntroSection({ onExploreClick, onResumeClick }) {
           </button>
         </div>
 
-        {/* HIERARCHY LEVEL 6: Social Identity Badges & Geolocation Stamp */}
+        {/* HIERARCHY LEVEL 6: Social Identity Badges & Geolocation Stamp (Min 44px tap targets) */}
         <div className="pt-2 flex items-center space-x-2.5">
           <a
             href="https://github.com"
@@ -97,7 +97,7 @@ export default function LeftIntroSection({ onExploreClick, onResumeClick }) {
             aria-label="GitHub Profile"
             onMouseEnter={() => audioEngine.playHover()}
             onClick={() => audioEngine.playClick()}
-            className="flex items-center justify-center w-8 h-8 rounded border border-[#292B27]/30 bg-[#F4EBDD]/80 text-[#292B27] hover:bg-[#292B27] hover:text-[#F4EBDD] hover:border-[#292B27] transition-all duration-200 shadow-2xs"
+            className="flex items-center justify-center min-w-[44px] min-h-[44px] w-11 h-11 rounded border border-[#292B27]/30 bg-[#F4EBDD]/80 text-[#292B27] hover:bg-[#292B27] hover:text-[#F4EBDD] hover:border-[#292B27] transition-all duration-200 shadow-2xs"
           >
             <Github className="w-4 h-4" />
           </a>
@@ -108,7 +108,7 @@ export default function LeftIntroSection({ onExploreClick, onResumeClick }) {
             aria-label="LinkedIn Profile"
             onMouseEnter={() => audioEngine.playHover()}
             onClick={() => audioEngine.playClick()}
-            className="flex items-center justify-center w-8 h-8 rounded border border-[#292B27]/30 bg-[#F4EBDD]/80 text-[#292B27] hover:bg-[#292B27] hover:text-[#F4EBDD] hover:border-[#292B27] transition-all duration-200 shadow-2xs"
+            className="flex items-center justify-center min-w-[44px] min-h-[44px] w-11 h-11 rounded border border-[#292B27]/30 bg-[#F4EBDD]/80 text-[#292B27] hover:bg-[#292B27] hover:text-[#F4EBDD] hover:border-[#292B27] transition-all duration-200 shadow-2xs"
           >
             <Linkedin className="w-4 h-4" />
           </a>
@@ -117,7 +117,7 @@ export default function LeftIntroSection({ onExploreClick, onResumeClick }) {
             aria-label="Send Email"
             onMouseEnter={() => audioEngine.playHover()}
             onClick={() => audioEngine.playClick()}
-            className="flex items-center justify-center w-8 h-8 rounded border border-[#292B27]/30 bg-[#F4EBDD]/80 text-[#292B27] hover:bg-[#292B27] hover:text-[#F4EBDD] hover:border-[#292B27] transition-all duration-200 shadow-2xs"
+            className="flex items-center justify-center min-w-[44px] min-h-[44px] w-11 h-11 rounded border border-[#292B27]/30 bg-[#F4EBDD]/80 text-[#292B27] hover:bg-[#292B27] hover:text-[#F4EBDD] hover:border-[#292B27] transition-all duration-200 shadow-2xs"
           >
             <Mail className="w-4 h-4" />
           </a>

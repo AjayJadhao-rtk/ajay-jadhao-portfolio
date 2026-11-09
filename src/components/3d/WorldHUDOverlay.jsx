@@ -12,16 +12,16 @@ export default function WorldHUDOverlay({ waypoint, onClose, onOpenBlueprint }) 
   return (
     <aside 
       aria-label="Waypoint Station Telemetry"
-      className="absolute top-20 right-4 sm:right-8 z-30 w-full max-w-sm sm:max-w-md animate-fadeIn select-none pointer-events-auto"
+      className="absolute top-14 sm:top-20 right-2 sm:right-8 left-2 sm:left-auto z-30 w-auto sm:w-full max-w-sm sm:max-w-md animate-fadeIn select-none pointer-events-auto max-h-[85vh] overflow-y-auto"
     >
       <div
-        className="relative bg-[#F4EBDD]/95 backdrop-blur-md border-2 border-[#292B27] rounded-lg shadow-2xl p-5 text-[#292B27] flex flex-col space-y-4"
+        className="relative bg-[#F4EBDD]/95 backdrop-blur-md border-2 border-[#292B27] rounded-lg shadow-2xl p-4 sm:p-5 text-[#292B27] flex flex-col space-y-3.5"
         style={{
           boxShadow: '0 20px 40px rgba(41, 43, 39, 0.35), inset 0 0 30px rgba(233, 221, 199, 0.4)',
         }}
       >
         {/* Top Header Bar */}
-        <div className="flex items-center justify-between pb-3 border-b border-[#292B27]/15">
+        <div className="flex items-center justify-between pb-2.5 border-b border-[#292B27]/15">
           <div className="flex items-center space-x-2">
             <span
               className="w-2.5 h-2.5 rounded-full animate-ping"
@@ -41,7 +41,7 @@ export default function WorldHUDOverlay({ waypoint, onClose, onOpenBlueprint }) 
                 audioEngine.playClick();
                 onClose();
               }}
-              className="p-1 rounded hover:bg-[#292B27] hover:text-[#F4EBDD] transition-colors cursor-pointer"
+              className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded hover:bg-[#292B27] hover:text-[#F4EBDD] transition-colors cursor-pointer"
               aria-label="Dismiss HUD"
             >
               <X className="w-4 h-4" />
@@ -91,13 +91,13 @@ export default function WorldHUDOverlay({ waypoint, onClose, onOpenBlueprint }) 
           ))}
         </div>
 
-        {/* Action Trigger: Launch Blueprint Modal */}
+        {/* Action Trigger: Launch Blueprint Modal (min 44px+ tap target) */}
         <button
           onClick={() => {
             audioEngine.playModalOpen();
             onOpenBlueprint(waypoint);
           }}
-          className="group w-full flex items-center justify-center space-x-2 py-2.5 rounded bg-[#292B27] text-[#F4EBDD] hover:bg-[#1E201D] transition-all shadow-md active:translate-y-0.5 font-mono text-xs font-semibold uppercase tracking-wider cursor-pointer"
+          className="group w-full flex items-center justify-center space-x-2 py-3 min-h-[48px] rounded bg-[#292B27] text-[#F4EBDD] hover:bg-[#1E201D] transition-all shadow-md active:translate-y-0.5 font-mono text-xs font-semibold uppercase tracking-wider cursor-pointer"
         >
           <span>Examine Lab Schematic</span>
           <ArrowRight className="w-3.5 h-3.5 text-[#B17B53] transition-transform group-hover:translate-x-1" />
