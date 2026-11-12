@@ -517,7 +517,7 @@ export default function CircuitWorldCanvas({
       />
 
       {/* Floating Travel Controls Bar (Touch-optimized 44px+ tap target) */}
-      <div className={`absolute top-3.5 right-3.5 sm:right-auto sm:left-4 z-20 flex items-center space-x-2 backdrop-blur-md px-3.5 py-1.5 min-h-[44px] rounded-full border shadow-xl text-xs font-mono transition-colors duration-500 ${
+      <div className={`absolute top-3.5 right-3.5 sm:top-4 sm:left-1/2 sm:-translate-x-1/2 sm:right-auto z-35 pointer-events-auto flex items-center space-x-2 backdrop-blur-md px-3.5 py-1.5 min-h-[44px] rounded-full border shadow-xl text-xs font-mono transition-colors duration-500 ${
         isNightMode
           ? 'bg-[#0E1626]/90 border-blue-400/40 text-[#F1F5F9]'
           : 'bg-[#292B27]/90 border-[#B17B53]/50 text-[#F4EBDD]'

@@ -117,7 +117,7 @@ export default function WorldExplorationView({ onReturnToHero }) {
           <span className="min-[420px]:hidden">{isExiting ? 'Ascending...' : 'Hero View'}</span>
         </button>
 
-        <div className="hidden sm:flex items-center space-x-1 text-[10px] font-mono text-[#626B50] bg-[#F4EBDD]/80 backdrop-blur-xs px-2.5 py-1 rounded-full border border-[#292B27]/15">
+        <div className="hidden xl:flex items-center space-x-1 text-[10px] font-mono text-[#626B50] bg-[#F4EBDD]/80 backdrop-blur-xs px-2.5 py-1 rounded-full border border-[#292B27]/15">
           <Compass className="w-3 h-3 text-[#B17B53]" />
           <span>ISOMETRIC 3D CIRCUIT PROVING GROUND</span>
         </div>
