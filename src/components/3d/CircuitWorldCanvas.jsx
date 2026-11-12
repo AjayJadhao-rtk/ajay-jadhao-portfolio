@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as THREE from 'three';
 import gsap from 'gsap';
+import { Camera } from 'lucide-react';
 import { createCircuitCurve, buildCircuitTrackMesh } from './CircuitTrack';
 import { RoverVehicle } from './RoverVehicle';
 import { spawnWaypointStations } from './WaypointStation';
@@ -59,6 +60,24 @@ export default function CircuitWorldCanvas({
   const [isNightMode, setIsNightMode] = useState(false);
   const isNightModeRef = useRef(false);
   const nightTransitionRef = useRef({ t: 0.0 }); // 0 = Day, 1 = Night
+
+  // Point of View (POV) Mode: 'chase' (3rd person) | 'cockpit' (front bumper) | 'aerial' (orbit)
+  const [povMode, setPovMode] = useState('chase');
+  const povModeRef = useRef('chase');
+  const camLookAtRef = useRef(new THREE.Vector3(0, 1.2, 0));
+
+  useEffect(() => {
+    povModeRef.current = povMode;
+  }, [povMode]);
+
+  const cyclePOV = () => {
+    audioEngine.playClick();
+    setPovMode((prev) => {
+      if (prev === 'chase') return 'cockpit';
+      if (prev === 'cockpit') return 'aerial';
+      return 'chase';
+    });
+  };
 
   const onWaypointChangeRef = useRef(onWaypointChange);
   const onRegisterExitHandlerRef = useRef(onRegisterExitHandler);
@@ -421,24 +440,52 @@ export default function CircuitWorldCanvas({
       // 2. Update Rover on Track (Motion logic preserved)
       rover.update(curve, progressRef.current, delta, currentSpeed);
 
-      // 3. Uniform Chase-Cam Controller: Strict uniform offset behind rover along CatmullRom path
+      // 3. Dynamic Camera POV Controller (Chase / Cockpit / Aerial)
       const roverPos = rover.mesh.position;
       const tangent = curve.getTangentAt(progressRef.current).normalize();
       const tangentXZ = new THREE.Vector3(tangent.x, 0, tangent.z);
       if (tangentXZ.lengthSq() > 0.0001) tangentXZ.normalize();
       else tangentXZ.set(0, 0, -1);
 
-      if (!isTransitioningRef.current) {
-        const camTargetPos = new THREE.Vector3(
+      const camTargetPos = new THREE.Vector3();
+      const targetLookAt = new THREE.Vector3();
+
+      if (povModeRef.current === 'cockpit') {
+        // Cockpit / Bumper POV: Mounted right on rover's front deck looking ahead
+        camTargetPos.set(
+          roverPos.x + tangentXZ.x * 0.95,
+          roverPos.y + 1.35,
+          roverPos.z + tangentXZ.z * 0.95
+        );
+        targetLookAt.set(
+          roverPos.x + tangentXZ.x * 16.0,
+          roverPos.y + 1.1,
+          roverPos.z + tangentXZ.z * 16.0
+        );
+      } else if (povModeRef.current === 'aerial') {
+        // Aerial / Drone Orbit POV: Elevated diorama angle
+        camTargetPos.set(
+          roverPos.x - 22.0,
+          roverPos.y + 25.0,
+          roverPos.z + 24.0
+        );
+        targetLookAt.set(roverPos.x, roverPos.y + 0.8, roverPos.z);
+      } else {
+        // Uniform Chase-Cam POV (Default)
+        camTargetPos.set(
           roverPos.x - tangentXZ.x * FOLLOW_DISTANCE,
           roverPos.y + CAMERA_HEIGHT,
           roverPos.z - tangentXZ.z * FOLLOW_DISTANCE
         );
-        camera.position.lerp(camTargetPos, 0.08);
+        targetLookAt.set(roverPos.x, roverPos.y + 1.2, roverPos.z);
       }
 
-      // Force camera.lookAt(roverPos) every single frame so camera never tilts or shifts POV
-      camera.lookAt(roverPos.x, roverPos.y + 1.2, roverPos.z);
+      if (!isTransitioningRef.current) {
+        const lerpSpeed = povModeRef.current === 'cockpit' ? 0.35 : 0.08;
+        camera.position.lerp(camTargetPos, lerpSpeed);
+        camLookAtRef.current.lerp(targetLookAt, lerpSpeed);
+        camera.lookAt(camLookAtRef.current);
+      }
 
       // 4. Update Realistic Landscape Animations (Wind Turbines & Fireflies)
       if (landscapeRef.current?.userData?.update) {
@@ -539,6 +586,29 @@ export default function CircuitWorldCanvas({
           title={isNightMode ? 'Switch to Warm Golden Day Mode' : 'Switch to Starlit Midnight Mode'}
         >
           <span>{isNightMode ? '🌙 NIGHT' : '☀️ DAY'}</span>
+        </button>
+
+        <span className="text-white/30">|</span>
+
+        {/* Small POV (Point of View) Switcher Button */}
+        <button
+          onClick={cyclePOV}
+          className={`px-3 py-2 min-h-[44px] flex items-center space-x-1.5 rounded-full text-[10px] uppercase font-bold tracking-wider transition-all cursor-pointer active:scale-95 ${
+            povMode === 'cockpit'
+              ? (isNightMode ? 'bg-rose-900/60 text-rose-300 border border-rose-400/50 shadow-[0_0_10px_rgba(244,63,94,0.3)]' : 'bg-rose-900/80 text-rose-200 border border-rose-500/50')
+              : povMode === 'aerial'
+              ? (isNightMode ? 'bg-purple-900/60 text-purple-300 border border-purple-400/50 shadow-[0_0_10px_rgba(168,85,247,0.3)]' : 'bg-purple-900/80 text-purple-200 border border-purple-500/50')
+              : (isNightMode ? 'bg-white/10 text-slate-200 border border-white/20 hover:bg-white/20' : 'bg-[#292B27]/40 text-[#F4EBDD] border border-white/20 hover:bg-[#292B27]/60')
+          }`}
+          title="Change Point of View: Chase (3rd Person) -> Cockpit (1st Person Bumper) -> Aerial (High Orbit)"
+        >
+          <Camera className="w-3.5 h-3.5" />
+          <span className="hidden min-[480px]:inline">
+            {povMode === 'chase' ? 'POV: CHASE' : povMode === 'cockpit' ? 'POV: COCKPIT' : 'POV: AERIAL'}
+          </span>
+          <span className="min-[480px]:hidden">
+            {povMode === 'chase' ? 'CHASE' : povMode === 'cockpit' ? 'HOOD' : 'ORBIT'}
+          </span>
         </button>
 
         <span className="text-white/30">|</span>
