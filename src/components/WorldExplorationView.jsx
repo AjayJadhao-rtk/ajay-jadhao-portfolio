@@ -106,27 +106,20 @@ export default function WorldExplorationView({ onReturnToHero }) {
       </WorldErrorBoundary>
 
       {/* Top Left Navigation Back to Hero Section with GSAP Ascent */}
-      <div className="absolute top-4 left-4 z-30 flex items-center space-x-3 pointer-events-auto">
+      <div className="absolute top-4 left-4 z-30 flex items-center space-x-3">
         <button
           onClick={handleReturn}
           disabled={isExiting}
-          onMouseEnter={() => audioEngine.playHover()}
-          className="group flex items-center space-x-2.5 px-4 sm:px-5 py-2.5 min-h-[44px] rounded-full bg-[#0A0D14]/90 backdrop-blur-2xl text-white/90 hover:text-white border border-white/[0.12] hover:border-white/30 shadow-[0_15px_35px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.15)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.7),inset_0_1px_1px_rgba(255,255,255,0.25)] transition-all duration-300 active:scale-95 font-mono text-xs font-semibold cursor-pointer disabled:opacity-50"
+          className="group flex items-center space-x-2 px-4 py-2.5 min-h-[44px] rounded-full bg-[#292B27] text-[#F4EBDD] hover:bg-[#1E201D] transition-all shadow-md active:translate-y-0.5 font-mono text-xs font-semibold cursor-pointer disabled:opacity-50"
         >
-          <div className="w-5 h-5 rounded-full bg-white/10 group-hover:bg-white/20 flex items-center justify-center transition-colors">
-            <ArrowLeft className="w-3 h-3 text-[#B17B53] group-hover:text-amber-300 transition-all group-hover:-translate-x-0.5" />
-          </div>
-          <span className="hidden min-[440px]:inline tracking-wider uppercase text-[11px]">
-            {isExiting ? 'Ascending...' : 'OVERVIEW // EXIT PROVING GROUND'}
-          </span>
-          <span className="min-[440px]:hidden tracking-wider uppercase text-[11px]">
-            {isExiting ? 'Ascending...' : 'OVERVIEW'}
-          </span>
+          <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-1" />
+          <span className="hidden min-[420px]:inline">{isExiting ? 'Ascending...' : 'Return to Editorial Hero'}</span>
+          <span className="min-[420px]:hidden">{isExiting ? 'Ascending...' : 'Hero View'}</span>
         </button>
 
-        <div className="hidden xl:flex items-center space-x-2 text-[10px] font-mono tracking-widest text-white/70 bg-[#0A0D14]/70 backdrop-blur-xl px-3 py-2 rounded-full border border-white/[0.08] shadow-lg">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          <span>PROVING GROUND // TELEMETRY LINKED</span>
+        <div className="hidden xl:flex items-center space-x-1 text-[10px] font-mono text-[#626B50] bg-[#F4EBDD]/80 backdrop-blur-xs px-2.5 py-1 rounded-full border border-[#292B27]/15">
+          <Compass className="w-3 h-3 text-[#B17B53]" />
+          <span>ISOMETRIC 3D CIRCUIT PROVING GROUND</span>
         </div>
       </div>
 

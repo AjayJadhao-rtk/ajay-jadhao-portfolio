@@ -563,145 +563,100 @@ export default function CircuitWorldCanvas({
         style={{ touchAction: 'none' }}
       />
 
-      {/* Awwwards-Level Floating Island Control Capsule */}
-      <div className="absolute top-3.5 right-3.5 sm:top-4 sm:left-1/2 sm:-translate-x-1/2 sm:right-auto z-35 pointer-events-auto flex items-center gap-1 sm:gap-1.5 bg-[#0A0D14]/90 backdrop-blur-2xl p-1.5 rounded-full border border-white/[0.12] shadow-[0_25px_60px_rgba(0,0,0,0.7),inset_0_1px_1px_rgba(255,255,255,0.15)] text-xs font-mono transition-all duration-500">
+      {/* Floating Travel Controls Bar (Touch-optimized 44px+ tap target) */}
+      <div className={`absolute top-3.5 right-3.5 sm:top-4 sm:left-1/2 sm:-translate-x-1/2 sm:right-auto z-35 pointer-events-auto flex items-center space-x-2 backdrop-blur-md px-3.5 py-1.5 min-h-[44px] rounded-full border shadow-xl text-xs font-mono transition-colors duration-500 ${
+        isNightMode
+          ? 'bg-[#0E1626]/90 border-blue-400/40 text-[#F1F5F9]'
+          : 'bg-[#292B27]/90 border-[#B17B53]/50 text-[#F4EBDD]'
+      }`}>
+        <span className={`w-2.5 h-2.5 rounded-full animate-ping ${isNightMode ? 'bg-cyan-400' : 'bg-emerald-400'}`} />
+        <span className="font-semibold tracking-wider text-[10px] hidden xs:inline">
+          {isNightMode ? 'NIGHT PROVING GROUND' : '3D CIRCUIT WORLD'}
+        </span>
+        <span className="text-white/30 hidden xs:inline">|</span>
         
-        {/* Flagship Brand / Telemetry LED Pill */}
-        <div className="hidden sm:flex items-center space-x-2 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06]">
-          <span className={`w-2 h-2 rounded-full animate-ping ${isNightMode ? 'bg-cyan-400' : 'bg-emerald-400'}`} />
-          <span className="font-semibold tracking-[0.16em] text-[10px] text-white/90 uppercase">
-            {isNightMode ? 'LUNAR SIM' : 'SOLAR SIM'}
-          </span>
-        </div>
-
-        <div className="w-[1px] h-4 bg-white/10 hidden sm:block" />
-
-        {/* 1. Environment Lighting Button (Day / Night) */}
+        {/* Day / Night Mode Switcher Button */}
         <button
           onClick={toggleNightMode}
-          onMouseEnter={() => audioEngine.playHover()}
-          className={`group relative px-3 sm:px-3.5 py-2 min-h-[42px] flex items-center space-x-2 rounded-full text-[10.5px] uppercase font-bold tracking-wider transition-all duration-300 cursor-pointer active:scale-95 ${
+          className={`px-3 py-2 min-h-[44px] flex items-center space-x-1.5 rounded-full text-[10px] uppercase font-bold tracking-wider transition-all cursor-pointer active:scale-95 ${
             isNightMode
-              ? 'bg-gradient-to-r from-blue-950/80 to-indigo-950/80 text-cyan-300 border border-cyan-400/50 shadow-[0_0_15px_rgba(56,189,248,0.35),inset_0_1px_1px_rgba(255,255,255,0.1)] hover:border-cyan-300'
-              : 'bg-gradient-to-r from-amber-950/40 to-yellow-950/30 text-amber-200 border border-amber-400/40 shadow-[0_0_15px_rgba(251,191,36,0.25),inset_0_1px_1px_rgba(255,255,255,0.1)] hover:border-amber-300'
+              ? 'bg-blue-900/60 text-cyan-300 border border-cyan-400/50 hover:bg-blue-800/80 shadow-[0_0_12px_rgba(56,189,248,0.3)]'
+              : 'bg-amber-400/20 text-amber-200 border border-amber-400/40 hover:bg-amber-400/30'
           }`}
-          title={isNightMode ? 'Switch to Solar Dawn (Day Lighting)' : 'Switch to Lunar Obsidian (Night Lighting)'}
+          title={isNightMode ? 'Switch to Warm Golden Day Mode' : 'Switch to Starlit Midnight Mode'}
         >
-          <span className="text-xs transition-transform group-hover:scale-110">
-            {isNightMode ? '🌙' : '☀️'}
-          </span>
-          <span className="hidden min-[480px]:inline font-mono">
-            {isNightMode ? 'LUNAR 6500K' : 'SOLAR 2400K'}
-          </span>
-          <span className="min-[480px]:hidden font-mono">
-            {isNightMode ? 'NIGHT' : 'DAY'}
-          </span>
+          <span>{isNightMode ? '🌙 NIGHT' : '☀️ DAY'}</span>
         </button>
 
-        {/* 2. Camera Optics POV Switcher Button */}
+        <span className="text-white/30">|</span>
+
+        {/* Small POV (Point of View) Switcher Button */}
         <button
           onClick={cyclePOV}
-          onMouseEnter={() => audioEngine.playHover()}
-          className={`group relative px-3 sm:px-3.5 py-2 min-h-[42px] flex items-center space-x-2 rounded-full text-[10.5px] uppercase font-bold tracking-wider transition-all duration-300 cursor-pointer active:scale-95 ${
+          className={`px-3 py-2 min-h-[44px] flex items-center space-x-1.5 rounded-full text-[10px] uppercase font-bold tracking-wider transition-all cursor-pointer active:scale-95 ${
             povMode === 'cockpit'
-              ? 'bg-gradient-to-r from-rose-950/80 to-red-950/80 text-rose-200 border border-rose-500/50 shadow-[0_0_15px_rgba(244,63,94,0.35)]'
+              ? (isNightMode ? 'bg-rose-900/60 text-rose-300 border border-rose-400/50 shadow-[0_0_10px_rgba(244,63,94,0.3)]' : 'bg-rose-900/80 text-rose-200 border border-rose-500/50')
               : povMode === 'aerial'
-              ? 'bg-gradient-to-r from-purple-950/80 to-indigo-950/80 text-purple-200 border border-purple-500/50 shadow-[0_0_15px_rgba(168,85,247,0.35)]'
-              : 'bg-white/[0.06] hover:bg-white/[0.12] text-white/90 border border-white/[0.1] hover:border-white/20'
+              ? (isNightMode ? 'bg-purple-900/60 text-purple-300 border border-purple-400/50 shadow-[0_0_10px_rgba(168,85,247,0.3)]' : 'bg-purple-900/80 text-purple-200 border border-purple-500/50')
+              : (isNightMode ? 'bg-white/10 text-slate-200 border border-white/20 hover:bg-white/20' : 'bg-[#292B27]/40 text-[#F4EBDD] border border-white/20 hover:bg-[#292B27]/60')
           }`}
-          title="Cycle Camera Optics (Chase Trajectory -> Cockpit Bumper -> Satellite Orbit)"
+          title="Change Point of View: Chase (3rd Person) -> Cockpit (1st Person Bumper) -> Aerial (High Orbit)"
         >
-          <Camera className="w-3.5 h-3.5 transition-transform group-hover:scale-110" />
-          <span className="hidden min-[520px]:inline font-mono">
-            {povMode === 'chase' ? 'OPTICS // CHASE' : povMode === 'cockpit' ? 'OPTICS // COCKPIT' : 'OPTICS // ORBIT'}
+          <Camera className="w-3.5 h-3.5" />
+          <span className="hidden min-[480px]:inline">
+            {povMode === 'chase' ? 'POV: CHASE' : povMode === 'cockpit' ? 'POV: COCKPIT' : 'POV: AERIAL'}
           </span>
-          <span className="min-[520px]:hidden font-mono">
-            {povMode === 'chase' ? 'CHASE' : povMode === 'cockpit' ? 'BUMPER' : 'ORBIT'}
+          <span className="min-[480px]:hidden">
+            {povMode === 'chase' ? 'CHASE' : povMode === 'cockpit' ? 'HOOD' : 'ORBIT'}
           </span>
         </button>
 
-        {/* 3. Autonomous Cruise Propulsion Button */}
+        <span className="text-white/30">|</span>
+
+        {/* Autopilot Cruise Button */}
         <button
-          onClick={() => {
-            audioEngine.playClick();
-            setIsCruising(!isCruising);
-          }}
-          onMouseEnter={() => audioEngine.playHover()}
-          className={`group px-3.5 sm:px-4 py-2 min-h-[42px] flex items-center space-x-2 rounded-full text-[10.5px] uppercase font-bold tracking-wider transition-all duration-300 cursor-pointer active:scale-95 ${
-            isCruising
-              ? (isNightMode 
-                  ? 'bg-cyan-400 text-slate-950 shadow-[0_0_20px_rgba(56,189,248,0.5)] border border-cyan-300' 
-                  : 'bg-[#B17B53] text-[#F4EBDD] shadow-[0_0_20px_rgba(177,123,83,0.4)] border border-amber-300/40')
-              : 'bg-white/[0.06] hover:bg-white/[0.12] text-white/90 border border-white/[0.1] hover:border-white/20'
+          onClick={() => setIsCruising(!isCruising)}
+          className={`px-3 py-2 min-h-[44px] flex items-center rounded-full text-[10px] uppercase font-bold tracking-wider transition-colors cursor-pointer active:scale-95 ${
+            isCruising 
+              ? (isNightMode ? 'bg-cyan-400 text-slate-900' : 'bg-[#B17B53] text-[#292B27]')
+              : 'hover:text-[#B17B53] text-white/80 bg-white/10'
           }`}
-          title={isCruising ? 'Pause Autonomous Cruising' : 'Engage Autonomous Autopilot Cruise'}
         >
-          <span className={`w-1.5 h-1.5 rounded-full ${isCruising ? (isNightMode ? 'bg-slate-950 animate-ping' : 'bg-white animate-ping') : 'bg-emerald-400'}`} />
-          <span>{isCruising ? 'CRUISE // ACTIVE' : 'AUTOPILOT // OFF'}</span>
+          {isCruising ? '■ PAUSE' : '► AUTOPILOT'}
         </button>
       </div>
 
-      {/* Apple-Style Flagship Glass Dock: Waypoint Station Selector */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 sm:gap-2 bg-[#0A0D14]/90 backdrop-blur-2xl p-2 rounded-2xl border border-white/[0.12] shadow-[0_25px_60px_rgba(0,0,0,0.7),inset_0_1px_1px_rgba(255,255,255,0.15)] text-xs font-mono max-w-[95vw] overflow-x-auto scrollbar-none touch-pan-x transition-all duration-500">
-        
-        {/* Terminal Header Tag */}
-        <div className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-xl bg-white/[0.04] text-[9.5px] font-mono tracking-widest text-white/60 shrink-0">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-          <span className="hidden sm:inline">NODES:</span>
-          <span className="text-white font-bold">05</span>
-        </div>
-
-        <div className="w-[1px] h-4 bg-white/10 shrink-0" />
-
-        {/* 5 Flagship Waypoint Stations */}
-        {PROJECTS_DATA.map((p, idx) => {
-          const isActive = currentWaypointId === p.id;
-          return (
-            <button
-              key={p.id}
-              onClick={() => jumpToWaypoint(idx)}
-              onMouseEnter={() => audioEngine.playHover()}
-              className={`group relative px-3.5 py-2 min-h-[44px] flex items-center space-x-2 rounded-xl transition-all duration-300 cursor-pointer font-mono shrink-0 active:scale-95 ${
-                isActive
-                  ? 'bg-gradient-to-r from-white/[0.15] to-white/[0.08] text-white border border-white/30 shadow-[0_0_20px_rgba(255,255,255,0.15),inset_0_1px_1px_rgba(255,255,255,0.2)] scale-[1.03] font-bold'
-                  : 'bg-white/[0.03] hover:bg-white/[0.08] text-white/70 hover:text-white border border-transparent hover:border-white/10'
-              }`}
-            >
-              {/* Laser-etched Node Index */}
-              <span
-                className="w-2 h-2 rounded-full shrink-0 transition-transform group-hover:scale-125"
-                style={{
-                  backgroundColor: p.color || '#B17B53',
-                  boxShadow: isActive ? `0 0 10px ${p.color || '#B17B53'}` : 'none',
-                }}
-              />
-              <span className="text-[10px] text-white/50 group-hover:text-white/80 font-semibold">
-                {p.number}
-              </span>
-              <span className="text-[11px] tracking-wide whitespace-nowrap">
-                {p.title}
-              </span>
-
-              {/* Active Indicator Underline */}
-              {isActive && (
-                <span
-                  className="absolute bottom-0 left-3 right-3 h-[2px] rounded-full"
-                  style={{
-                    backgroundColor: p.color || '#B17B53',
-                    boxShadow: `0 0 8px ${p.color || '#B17B53'}`,
-                  }}
-                />
-              )}
-            </button>
-          );
-        })}
+      {/* Interactive Track Station Quick-Jump Pills (Touch-optimized scroll container & 44px targets) */}
+      <div className={`absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center space-x-2 backdrop-blur-md px-3.5 py-2 rounded-full border-2 shadow-2xl text-xs font-mono max-w-[95vw] overflow-x-auto scrollbar-none touch-pan-x transition-colors duration-500 ${
+        isNightMode
+          ? 'bg-[#0E1626]/95 border-cyan-500/30 text-[#F1F5F9]'
+          : 'bg-[#F4EBDD]/95 border-[#292B27]/30 text-[#292B27]'
+      }`}>
+        <span className={`text-[10px] font-bold mr-1 uppercase shrink-0 ${isNightMode ? 'text-cyan-400' : 'text-[#89634C]'}`}>
+          WAYPOINTS:
+        </span>
+        {PROJECTS_DATA.map((p, idx) => (
+          <button
+            key={p.id}
+            onClick={() => jumpToWaypoint(idx)}
+            className={`px-3.5 py-2 min-h-[44px] flex items-center justify-center rounded-full transition-all cursor-pointer font-semibold shrink-0 text-xs active:scale-95 ${
+              currentWaypointId === p.id
+                ? (isNightMode ? 'bg-cyan-400 text-slate-950 shadow-md scale-105 font-bold' : 'bg-[#292B27] text-[#F4EBDD] shadow-sm scale-105')
+                : (isNightMode ? 'hover:bg-cyan-400/10 text-slate-300' : 'hover:bg-[#292B27]/10 text-[#292B27]/80')
+            }`}
+          >
+            {p.number}. {p.title}
+          </button>
+        ))}
       </div>
 
-      {/* Navigation Telemetry Hint */}
-      <div className="absolute bottom-5 right-5 z-20 hidden md:flex items-center space-x-2.5 bg-[#0A0D14]/85 backdrop-blur-xl px-4 py-2 rounded-full border border-white/[0.1] shadow-xl text-[9.5px] font-mono tracking-widest text-white/70 pointer-events-none">
-        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-        <span className="text-white/40">NAV:</span>
-        <span>DRAG · WHEEL · ARROWS</span>
+      {/* Navigation Hint */}
+      <div className={`absolute bottom-5 right-5 z-20 hidden md:flex items-center space-x-2 backdrop-blur-xs px-3 py-1 rounded-md text-[9px] font-mono border pointer-events-none transition-colors duration-500 ${
+        isNightMode
+          ? 'bg-[#0E1626]/80 text-cyan-300 border-cyan-500/30'
+          : 'bg-[#292B27]/75 text-[#E9DDC7] border-[#292B27]/40'
+      }`}>
+        <span>SWIPE / DRAG / SCROLL TO NAVIGATE ROVER</span>
       </div>
     </div>
   );
