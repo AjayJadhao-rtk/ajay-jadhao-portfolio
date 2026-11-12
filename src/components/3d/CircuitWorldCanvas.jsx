@@ -9,8 +9,13 @@ import { PROJECTS_DATA } from '../../data/projectsData';
 import { audioEngine } from '../../utils/audioSystem';
 
 /**
- * CircuitWorldCanvas manages the Three.js WebGL scene, smooth GSAP camera transitions,
- * extended linear fog with morning horizon gradient, and scalable waypoint integration.
+ * CircuitWorldCanvas manages the realistic 3D WebGL circuit world:
+ * - Hand-calibrated low-poly terrain with rich vertex elevation & slope coloring
+ * - Seamless Day (Golden Hour Anime) & Night (Cosmic Starlit Midnight) modes
+ * - Real dynamic SpotLight headlights on the rover and illuminated track
+ * - Dual parallel glowing circuit traces (warm bronze in Day -> electric cyan in Night)
+ * - Rotating engineering wind turbines and floating fireflies / data motes
+ * - STRICTLY PRESERVES rover movement, CatmullRom spline path, and uniform chase-cam tracking!
  */
 export default function CircuitWorldCanvas({
   onWaypointChange,
@@ -26,6 +31,15 @@ export default function CircuitWorldCanvas({
   const curveRef = useRef(null);
   const waypointsRef = useRef([]);
 
+  // Lighting & Scene Refs for Day/Night interpolation
+  const ambientLightRef = useRef(null);
+  const hemiLightRef = useRef(null);
+  const sunLightRef = useRef(null);
+  const moonLightRef = useRef(null);
+  const landscapeRef = useRef(null);
+  const trackMeshRef = useRef(null);
+  const stationsGroupRef = useRef(null);
+
   // Transition state
   const isTransitioningRef = useRef(true);
 
@@ -40,12 +54,22 @@ export default function CircuitWorldCanvas({
   // Autopilot cruising state
   const [isCruising, setIsCruising] = useState(false);
   const isCruisingRef = useRef(false);
+
+  // Day / Night Mode State
+  const [isNightMode, setIsNightMode] = useState(false);
+  const isNightModeRef = useRef(false);
+  const nightTransitionRef = useRef({ t: 0.0 }); // 0 = Day, 1 = Night
+
   const onWaypointChangeRef = useRef(onWaypointChange);
   const onRegisterExitHandlerRef = useRef(onRegisterExitHandler);
 
   useEffect(() => {
     isCruisingRef.current = isCruising;
   }, [isCruising]);
+
+  useEffect(() => {
+    isNightModeRef.current = isNightMode;
+  }, [isNightMode]);
 
   useEffect(() => {
     onWaypointChangeRef.current = onWaypointChange;
@@ -72,6 +96,76 @@ export default function CircuitWorldCanvas({
     };
   }, [jumpToWaypoint]);
 
+  // Day / Night Mode Smooth Interpolator
+  const applyNightTransition = useCallback((t) => {
+    if (!sceneRef.current) return;
+
+    // Background & Fog Color Interpolation
+    const dayBg = new THREE.Color(0xE9DDC7);
+    const nightBg = new THREE.Color(0x0C101B);
+
+    sceneRef.current.background.lerpColors(dayBg, nightBg, t);
+
+    if (sceneRef.current.fog) {
+      sceneRef.current.fog.color.lerpColors(dayBg, nightBg, t);
+      sceneRef.current.fog.near = THREE.MathUtils.lerp(45, 38, t);
+      sceneRef.current.fog.far = THREE.MathUtils.lerp(185, 175, t);
+    }
+
+    // Ambient Lighting
+    if (ambientLightRef.current) {
+      const dayAmb = new THREE.Color(0xF4EBDD);
+      const nightAmb = new THREE.Color(0x1E293B);
+      ambientLightRef.current.color.lerpColors(dayAmb, nightAmb, t);
+      ambientLightRef.current.intensity = THREE.MathUtils.lerp(0.9, 0.35, t);
+    }
+
+    // Hemisphere Lighting
+    if (hemiLightRef.current) {
+      hemiLightRef.current.intensity = THREE.MathUtils.lerp(0.55, 0.32, t);
+    }
+
+    // Sun & Moon Directional Lighting
+    if (sunLightRef.current) {
+      sunLightRef.current.intensity = THREE.MathUtils.lerp(1.45, 0.15, t);
+    }
+    if (moonLightRef.current) {
+      moonLightRef.current.intensity = THREE.MathUtils.lerp(0.0, 0.85, t);
+    }
+
+    // Sub-modules Day/Night handlers
+    if (landscapeRef.current?.userData?.setNightTransition) {
+      landscapeRef.current.userData.setNightTransition(t);
+    }
+    if (trackMeshRef.current?.userData?.setNightTransition) {
+      trackMeshRef.current.userData.setNightTransition(t);
+    }
+    if (roverRef.current?.setNightTransition) {
+      roverRef.current.setNightTransition(t);
+    }
+    if (stationsGroupRef.current?.userData?.setNightTransition) {
+      stationsGroupRef.current.userData.setNightTransition(t);
+    }
+  }, []);
+
+  // Smoothly Tween Day/Night Mode when State Changes
+  useEffect(() => {
+    const targetT = isNightMode ? 1.0 : 0.0;
+    gsap.to(nightTransitionRef.current, {
+      t: targetT,
+      duration: 1.2,
+      ease: 'power2.inOut',
+      onUpdate: () => {
+        applyNightTransition(nightTransitionRef.current.t);
+      },
+    });
+  }, [isNightMode, applyNightTransition]);
+
+  const toggleNightMode = () => {
+    audioEngine.playClick();
+    setIsNightMode((prev) => !prev);
+  };
+
   // Main Scene Lifecycle (Runs ONCE on mount)
   useEffect(() => {
     const container = containerRef.current;
@@ -93,7 +187,7 @@ export default function CircuitWorldCanvas({
       initialFov,
       container.clientWidth / container.clientHeight,
       0.5,
-      300
+      320
     );
     // Initial high-altitude aerial position
     camera.position.set(0, 90, 48);
@@ -112,32 +206,45 @@ export default function CircuitWorldCanvas({
     renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.setPixelRatio(initialDpr);
     renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = isMobileInitial ? THREE.BasicShadowMap : THREE.PCFShadowMap;
+    renderer.shadowMap.type = isMobileInitial ? THREE.BasicShadowMap : THREE.PCFSoftShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.05;
 
     container.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
-    // 4. Atmospheric Lighting (Warm Morning Golden Sunlight)
+    // 4. Atmospheric Lighting Setup
+    // A. Ambient Light
     const ambientLight = new THREE.AmbientLight(0xF4EBDD, 0.9);
     scene.add(ambientLight);
+    ambientLightRef.current = ambientLight;
 
+    // B. Hemisphere Light (Sky & Ground bounce)
     const hemiLight = new THREE.HemisphereLight(0xF4EBDD, 0x626B50, 0.55);
     scene.add(hemiLight);
+    hemiLightRef.current = hemiLight;
 
+    // C. Sun Directional Light (Warm Golden Sunlight)
     const sunLight = new THREE.DirectionalLight(0xFDE68A, 1.45);
     sunLight.position.set(45, 65, 35);
     sunLight.castShadow = true;
     sunLight.shadow.mapSize.width = isMobileInitial ? 1024 : 2048;
     sunLight.shadow.mapSize.height = isMobileInitial ? 1024 : 2048;
     sunLight.shadow.camera.near = 10;
-    sunLight.shadow.camera.far = 180;
-    sunLight.shadow.camera.left = -60;
-    sunLight.shadow.camera.right = 60;
-    sunLight.shadow.camera.top = 60;
-    sunLight.shadow.camera.bottom = -60;
+    sunLight.shadow.camera.far = 185;
+    sunLight.shadow.camera.left = -62;
+    sunLight.shadow.camera.right = 62;
+    sunLight.shadow.camera.top = 62;
+    sunLight.shadow.camera.bottom = -62;
+    sunLight.shadow.bias = -0.0005;
     scene.add(sunLight);
+    sunLightRef.current = sunLight;
+
+    // D. Moon Directional Light (Cool Midnight Moonlight for Night Mode)
+    const moonLight = new THREE.DirectionalLight(0x93C5FD, 0.0);
+    moonLight.position.set(-45, 60, -35);
+    scene.add(moonLight);
+    moonLightRef.current = moonLight;
 
     // 5. Construct Procedural Circuit World
     const curve = createCircuitCurve(PROJECTS_DATA.length);
@@ -146,17 +253,20 @@ export default function CircuitWorldCanvas({
     // A. Extruded Circuit Track
     const trackMesh = buildCircuitTrackMesh(curve);
     scene.add(trackMesh);
+    trackMeshRef.current = trackMesh;
 
-    // B. Low-Poly Terrain Island with Distant Industrial Towers & Morning Horizon Gradient
+    // B. Realistic Low-Poly Terrain Island with Rich Vertex Colors, Lake, Turbines & Starfield
     const landscape = buildLowPolyLandscape();
     scene.add(landscape);
+    landscapeRef.current = landscape;
 
     // C. Scalable Waypoint Stations generated dynamically from PROJECTS_DATA
     const { stationsGroup, waypoints } = spawnWaypointStations(curve, PROJECTS_DATA);
     scene.add(stationsGroup);
+    stationsGroupRef.current = stationsGroup;
     waypointsRef.current = waypoints;
 
-    // D. Autonomous Explorer Rover
+    // D. Autonomous Explorer Rover with Real Dynamic Spotlights
     const rover = new RoverVehicle();
     scene.add(rover.mesh);
     roverRef.current = rover;
@@ -285,7 +395,6 @@ export default function CircuitWorldCanvas({
       renderer.setSize(container.clientWidth, container.clientHeight);
     };
     window.addEventListener('resize', handleResize);
-    window.addEventListener('resize', handleResize);
 
     // 9. High-Precision Render Loop
     let animationFrameId;
@@ -296,7 +405,7 @@ export default function CircuitWorldCanvas({
       const delta = Math.min((now - lastTime) / 1000, 0.1);
       lastTime = now;
 
-      // 1. Uninterrupted continuous cruise along track
+      // 1. Uninterrupted continuous cruise along track (STRICTLY PRESERVED MOTION)
       if (isCruisingRef.current && !isTransitioningRef.current) {
         targetProgressRef.current = (targetProgressRef.current + delta * 0.025) % 1.0;
       }
@@ -309,7 +418,7 @@ export default function CircuitWorldCanvas({
 
       const currentSpeed = Math.abs(diff);
 
-      // 2. Update Rover on Track
+      // 2. Update Rover on Track (Motion logic preserved)
       rover.update(curve, progressRef.current, delta, currentSpeed);
 
       // 3. Uniform Chase-Cam Controller: Strict uniform offset behind rover along CatmullRom path
@@ -328,10 +437,15 @@ export default function CircuitWorldCanvas({
         camera.position.lerp(camTargetPos, 0.08);
       }
 
-      // CRITICAL: Force camera.lookAt(roverPos) every single frame so camera never tilts or shifts POV
+      // Force camera.lookAt(roverPos) every single frame so camera never tilts or shifts POV
       camera.lookAt(roverPos.x, roverPos.y + 1.2, roverPos.z);
 
-      // 4. Rotate holographic waypoints
+      // 4. Update Realistic Landscape Animations (Wind Turbines & Fireflies)
+      if (landscapeRef.current?.userData?.update) {
+        landscapeRef.current.userData.update(delta);
+      }
+
+      // 5. Rotate holographic waypoints
       waypoints.forEach((wp) => {
         if (wp.hologram) {
           wp.hologram.rotation.y += delta * 1.5;
@@ -339,13 +453,12 @@ export default function CircuitWorldCanvas({
         }
       });
 
-      // 5. Waypoint Proximity Detection with Hysteresis Dead-Band
+      // 6. Waypoint Proximity Detection with Hysteresis Dead-Band
       let matchedStation = null;
       for (let wp of waypoints) {
         let distProgress = Math.abs(progressRef.current - wp.progress);
         if (distProgress > 0.5) distProgress = 1.0 - distProgress;
 
-        // Enter threshold = 0.045, Exit threshold = 0.080
         const threshold = (activeStationIdRef.current === wp.id) ? 0.080 : 0.045;
         if (distProgress < threshold) {
           matchedStation = wp;
@@ -404,31 +517,62 @@ export default function CircuitWorldCanvas({
       />
 
       {/* Floating Travel Controls Bar (Touch-optimized 44px+ tap target) */}
-      <div className="absolute top-3.5 right-3.5 sm:right-auto sm:left-4 z-20 flex items-center space-x-2 bg-[#292B27]/90 backdrop-blur-md px-3.5 py-1.5 min-h-[44px] rounded-full border border-[#B17B53]/50 shadow-xl text-xs font-mono text-[#F4EBDD]">
-        <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
-        <span className="font-semibold tracking-wider text-[10px] hidden xs:inline">3D CIRCUIT WORLD</span>
+      <div className={`absolute top-3.5 right-3.5 sm:right-auto sm:left-4 z-20 flex items-center space-x-2 backdrop-blur-md px-3.5 py-1.5 min-h-[44px] rounded-full border shadow-xl text-xs font-mono transition-colors duration-500 ${
+        isNightMode
+          ? 'bg-[#0E1626]/90 border-blue-400/40 text-[#F1F5F9]'
+          : 'bg-[#292B27]/90 border-[#B17B53]/50 text-[#F4EBDD]'
+      }`}>
+        <span className={`w-2.5 h-2.5 rounded-full animate-ping ${isNightMode ? 'bg-cyan-400' : 'bg-emerald-400'}`} />
+        <span className="font-semibold tracking-wider text-[10px] hidden xs:inline">
+          {isNightMode ? 'NIGHT PROVING GROUND' : '3D CIRCUIT WORLD'}
+        </span>
         <span className="text-white/30 hidden xs:inline">|</span>
+        
+        {/* Day / Night Mode Switcher Button */}
+        <button
+          onClick={toggleNightMode}
+          className={`px-3 py-2 min-h-[44px] flex items-center space-x-1.5 rounded-full text-[10px] uppercase font-bold tracking-wider transition-all cursor-pointer active:scale-95 ${
+            isNightMode
+              ? 'bg-blue-900/60 text-cyan-300 border border-cyan-400/50 hover:bg-blue-800/80 shadow-[0_0_12px_rgba(56,189,248,0.3)]'
+              : 'bg-amber-400/20 text-amber-200 border border-amber-400/40 hover:bg-amber-400/30'
+          }`}
+          title={isNightMode ? 'Switch to Warm Golden Day Mode' : 'Switch to Starlit Midnight Mode'}
+        >
+          <span>{isNightMode ? '🌙 NIGHT' : '☀️ DAY'}</span>
+        </button>
+
+        <span className="text-white/30">|</span>
+
+        {/* Autopilot Cruise Button */}
         <button
           onClick={() => setIsCruising(!isCruising)}
           className={`px-3 py-2 min-h-[44px] flex items-center rounded-full text-[10px] uppercase font-bold tracking-wider transition-colors cursor-pointer active:scale-95 ${
-            isCruising ? 'bg-[#B17B53] text-[#292B27]' : 'hover:text-[#B17B53] text-white/80 bg-white/10'
+            isCruising 
+              ? (isNightMode ? 'bg-cyan-400 text-slate-900' : 'bg-[#B17B53] text-[#292B27]')
+              : 'hover:text-[#B17B53] text-white/80 bg-white/10'
           }`}
         >
-          {isCruising ? '■ PAUSE CRUISE' : '► AUTOPILOT'}
+          {isCruising ? '■ PAUSE' : '► AUTOPILOT'}
         </button>
       </div>
 
       {/* Interactive Track Station Quick-Jump Pills (Touch-optimized scroll container & 44px targets) */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center space-x-2 bg-[#F4EBDD]/95 backdrop-blur-md px-3.5 py-2 rounded-full border-2 border-[#292B27]/30 shadow-2xl text-xs font-mono text-[#292B27] max-w-[95vw] overflow-x-auto scrollbar-none touch-pan-x">
-        <span className="text-[10px] text-[#89634C] font-bold mr-1 uppercase shrink-0">WAYPOINTS:</span>
+      <div className={`absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center space-x-2 backdrop-blur-md px-3.5 py-2 rounded-full border-2 shadow-2xl text-xs font-mono max-w-[95vw] overflow-x-auto scrollbar-none touch-pan-x transition-colors duration-500 ${
+        isNightMode
+          ? 'bg-[#0E1626]/95 border-cyan-500/30 text-[#F1F5F9]'
+          : 'bg-[#F4EBDD]/95 border-[#292B27]/30 text-[#292B27]'
+      }`}>
+        <span className={`text-[10px] font-bold mr-1 uppercase shrink-0 ${isNightMode ? 'text-cyan-400' : 'text-[#89634C]'}`}>
+          WAYPOINTS:
+        </span>
         {PROJECTS_DATA.map((p, idx) => (
           <button
             key={p.id}
             onClick={() => jumpToWaypoint(idx)}
             className={`px-3.5 py-2 min-h-[44px] flex items-center justify-center rounded-full transition-all cursor-pointer font-semibold shrink-0 text-xs active:scale-95 ${
               currentWaypointId === p.id
-                ? 'bg-[#292B27] text-[#F4EBDD] shadow-sm scale-105'
-                : 'hover:bg-[#292B27]/10 text-[#292B27]/80'
+                ? (isNightMode ? 'bg-cyan-400 text-slate-950 shadow-md scale-105 font-bold' : 'bg-[#292B27] text-[#F4EBDD] shadow-sm scale-105')
+                : (isNightMode ? 'hover:bg-cyan-400/10 text-slate-300' : 'hover:bg-[#292B27]/10 text-[#292B27]/80')
             }`}
           >
             {p.number}. {p.title}
@@ -437,7 +581,11 @@ export default function CircuitWorldCanvas({
       </div>
 
       {/* Navigation Hint */}
-      <div className="absolute bottom-5 right-5 z-20 hidden md:flex items-center space-x-2 bg-[#292B27]/75 backdrop-blur-xs px-3 py-1 rounded-md text-[9px] font-mono text-[#E9DDC7] border border-[#292B27]/40 pointer-events-none">
+      <div className={`absolute bottom-5 right-5 z-20 hidden md:flex items-center space-x-2 backdrop-blur-xs px-3 py-1 rounded-md text-[9px] font-mono border pointer-events-none transition-colors duration-500 ${
+        isNightMode
+          ? 'bg-[#0E1626]/80 text-cyan-300 border-cyan-500/30'
+          : 'bg-[#292B27]/75 text-[#E9DDC7] border-[#292B27]/40'
+      }`}>
         <span>SWIPE / DRAG / SCROLL TO NAVIGATE ROVER</span>
       </div>
     </div>

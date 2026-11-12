@@ -25,9 +25,9 @@ export function createCircuitCurve(waypointCount = 5) {
 
 /**
  * Builds the visual 3D mesh representation of the circuit track:
- * 1. Base dark charcoal road ribbon
- * 2. Glowing copper/gold dual circuit traces running parallel
- * 3. Steampunk track ties / sleeper nodes
+ * 1. Base dark charcoal road ribbon with curb bevels
+ * 2. Dual Parallel Circuit Traces (Warm bronze in Day -> Luminous Cyan in Night)
+ * 3. Proving Ground Reflectors along track curves
  */
 export function buildCircuitTrackMesh(curve) {
   const trackGroup = new THREE.Group();
@@ -35,8 +35,7 @@ export function buildCircuitTrackMesh(curve) {
 
   // 1. Base Track Extrusion
   const segments = 400;
-  const trackWidth = 3.2;
-  const trackThickness = 0.25;
+  const trackWidth = 3.4;
 
   const points = curve.getSpacedPoints(segments);
   const trackGeom = new THREE.BufferGeometry();
@@ -77,37 +76,84 @@ export function buildCircuitTrackMesh(curve) {
 
   // Dark charcoal asphalt/circuit board substrate
   const trackMat = new THREE.MeshStandardMaterial({
-    color: 0x222421,
-    roughness: 0.7,
-    metalness: 0.3,
+    color: 0x1E201D,
+    roughness: 0.65,
+    metalness: 0.25,
   });
 
   const baseMesh = new THREE.Mesh(trackGeom, trackMat);
   baseMesh.receiveShadow = true;
   trackGroup.add(baseMesh);
 
-  // 2. Dual Glowing Copper Circuit Traces
-  const traceMat = new THREE.MeshBasicMaterial({
-    color: 0xB17B53,
+  // 2. Dual Glowing Circuit Traces (Responsive to Day / Night)
+  const traceMat = new THREE.MeshStandardMaterial({
+    color: 0xB17B53, // Warm bronze
+    emissive: 0xB17B53,
+    emissiveIntensity: 0.4,
+    roughness: 0.3,
+    metalness: 0.8,
   });
 
   const traceLeftCurve = new THREE.TubeGeometry(
-    new OffsetCurve(curve, 0.9, 0.08),
+    new OffsetCurve(curve, 1.0, 0.08),
     300,
-    0.05,
+    0.055,
     6,
     true
   );
   const traceRightCurve = new THREE.TubeGeometry(
-    new OffsetCurve(curve, -0.9, 0.08),
+    new OffsetCurve(curve, -1.0, 0.08),
     300,
-    0.05,
+    0.055,
     6,
     true
   );
 
-  trackGroup.add(new THREE.Mesh(traceLeftCurve, traceMat));
-  trackGroup.add(new THREE.Mesh(traceRightCurve, traceMat));
+  const leftTraceMesh = new THREE.Mesh(traceLeftCurve, traceMat);
+  const rightTraceMesh = new THREE.Mesh(traceRightCurve, traceMat);
+
+  trackGroup.add(leftTraceMesh);
+  trackGroup.add(rightTraceMesh);
+
+  // 3. Track Edge Retroreflectors at regular intervals
+  const reflectorCount = 36;
+  const reflectorGeom = new THREE.CylinderGeometry(0.08, 0.08, 0.4, 6);
+  const reflectorMat = new THREE.MeshStandardMaterial({
+    color: 0xD97706, // Amber reflector
+    emissive: 0xD97706,
+    emissiveIntensity: 0.3,
+    roughness: 0.2,
+  });
+
+  for (let r = 0; r < reflectorCount; r++) {
+    const t = r / reflectorCount;
+    const pt = curve.getPointAt(t);
+    const tangent = curve.getTangentAt(t).normalize();
+    const normal = new THREE.Vector3().crossVectors(tangent, up).normalize();
+
+    // Alternate left and right edge
+    const side = r % 2 === 0 ? 1 : -1;
+    const pos = pt.clone().add(normal.clone().multiplyScalar(side * (trackWidth / 2 + 0.15)));
+
+    const post = new THREE.Mesh(reflectorGeom, reflectorMat);
+    post.position.set(pos.x, pos.y + 0.2, pos.z);
+    trackGroup.add(post);
+  }
+
+  // Time of Day transition handler
+  trackGroup.userData = {
+    setNightTransition: (nightT) => {
+      // Shift trace material from warm bronze to electric cyan glow in Night Mode
+      const dayColor = new THREE.Color(0xB17B53);
+      const nightColor = new THREE.Color(0x38BDF8); // Electric cyan
+
+      traceMat.color.lerpColors(dayColor, nightColor, nightT);
+      traceMat.emissive.lerpColors(dayColor, nightColor, nightT);
+      traceMat.emissiveIntensity = 0.4 + nightT * 1.4;
+
+      reflectorMat.emissiveIntensity = 0.3 + nightT * 0.9;
+    },
+  };
 
   return trackGroup;
 }
