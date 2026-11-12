@@ -42,9 +42,10 @@ export function buildLowPolyLandscape() {
   const colorCliffHigh = new THREE.Color(0x353A32);  // Dark basalt peak
   const colorParchmentRidge = new THREE.Color(0xDFD2BC); // Warm chalk crest
 
-  // Lake center coordinates for basin hollow
-  const lakeX = -16;
-  const lakeZ = 14;
+  // Lake center coordinates for basin hollow near NEX-SHIELD station
+  const lakeX = -18;
+  const lakeZ = 15;
+  const pondRadius = 13.5;
 
   for (let i = 0; i < vertexCount; i++) {
     const x = posAttr.getX(i);
@@ -58,8 +59,8 @@ export function buildLowPolyLandscape() {
 
     // Carve a natural bowl for the mountain lake
     const distToLake = Math.sqrt((x - lakeX) ** 2 + (z - lakeZ) ** 2);
-    if (distToLake < 22) {
-      const lakeDepression = Math.cos((distToLake / 22) * (Math.PI / 2)) * 2.2;
+    if (distToLake < 19) {
+      const lakeDepression = Math.cos((distToLake / 19) * (Math.PI / 2)) * 1.9;
       y -= lakeDepression;
     }
 
@@ -77,10 +78,18 @@ export function buildLowPolyLandscape() {
   // Assign vertex colors based on height and surface normal slope
   const tempColor = new THREE.Color();
   for (let i = 0; i < vertexCount; i++) {
+    const x = posAttr.getX(i);
+    const z = posAttr.getZ(i);
     const y = posAttr.getY(i);
     const ny = normalAttr.getY(i); // Vertical component of normal (1 = flat ground, 0 = vertical cliff)
 
-    if (y < 0.2) {
+    const distToLake = Math.sqrt((x - lakeX) ** 2 + (z - lakeZ) ** 2);
+
+    if (distToLake < 16) {
+      // Golden sunlit sand and turquoise shallows underneath blue water
+      const shoreT = distToLake / 16;
+      tempColor.lerpColors(new THREE.Color(0x93C5FD), new THREE.Color(0xE8D7B8), shoreT);
+    } else if (y < 0.2) {
       // Near or under water level
       tempColor.copy(colorWaterBank);
     } else if (ny < 0.65) {
@@ -124,20 +133,133 @@ export function buildLowPolyLandscape() {
   terrainMesh.receiveShadow = true;
   envGroup.add(terrainMesh);
 
-  // 2. Reflective Mountain Lake
-  const lakeGeom = new THREE.CircleGeometry(16, 28);
-  lakeGeom.rotateX(-Math.PI / 2);
-  const lakeMat = new THREE.MeshStandardMaterial({
-    color: 0x224D52, // Serene alpine teal
-    roughness: 0.15,
-    metalness: 0.85,
+  // 2. Realistic Crystal-Blue Water Pond (Concentric Segmented Disk with Wave Ripples)
+  const pondGeom = new THREE.RingGeometry(0.001, pondRadius, 44, 12);
+  pondGeom.rotateX(-Math.PI / 2);
+
+  const waterMat = new THREE.MeshStandardMaterial({
+    color: 0x38BDF8, // Vibrant crystal sky blue (replaces dark/black pond)
+    emissive: 0x0284C7, // Luminous depth cyan (prevents it from ever appearing black)
+    emissiveIntensity: 0.28,
+    roughness: 0.1, // Smooth, glistening water surface
+    metalness: 0.04, // Low metalness ensures rich blue daylight reflection
     transparent: true,
-    opacity: 0.84,
+    opacity: 0.88,
+    side: THREE.DoubleSide,
   });
-  waterMesh = new THREE.Mesh(lakeGeom, lakeMat);
-  waterMesh.position.set(lakeX, -0.05, lakeZ);
+
+  waterMesh = new THREE.Mesh(pondGeom, waterMat);
+  waterMesh.position.set(lakeX, 0.08, lakeZ);
   waterMesh.receiveShadow = true;
   envGroup.add(waterMesh);
+
+  // Sandy Shoreline Beach Ring
+  const sandRingGeom = new THREE.RingGeometry(pondRadius - 0.4, pondRadius + 2.2, 44, 2);
+  sandRingGeom.rotateX(-Math.PI / 2);
+  const sandRingMat = new THREE.MeshStandardMaterial({
+    color: 0xE8D7B8, // Warm golden anime beach sand
+    roughness: 0.9,
+    flatShading: true,
+  });
+  const sandRing = new THREE.Mesh(sandRingGeom, sandRingMat);
+  sandRing.position.set(lakeX, 0.05, lakeZ);
+  sandRing.receiveShadow = true;
+  envGroup.add(sandRing);
+
+  // Translucent Frothy Water Foam Edge
+  const foamGeom = new THREE.RingGeometry(pondRadius - 0.6, pondRadius + 0.1, 44, 1);
+  foamGeom.rotateX(-Math.PI / 2);
+  const foamMat = new THREE.MeshBasicMaterial({
+    color: 0xE0F2FE, // Pure light water foam
+    transparent: true,
+    opacity: 0.65,
+    side: THREE.DoubleSide,
+    depthWrite: false,
+  });
+  const foamMesh = new THREE.Mesh(foamGeom, foamMat);
+  foamMesh.position.set(lakeX, 0.11, lakeZ);
+  envGroup.add(foamMesh);
+
+  // Floating Water Lilies & Lotus Blossoms on the Pond
+  const pondDecorGroup = new THREE.Group();
+  pondDecorGroup.position.set(lakeX, 0.12, lakeZ);
+
+  const lilyPadGeom = new THREE.CylinderGeometry(0.75, 0.75, 0.02, 8);
+  const lilyPadMat = new THREE.MeshStandardMaterial({
+    color: 0x22C55E, // Vibrant lotus green
+    roughness: 0.6,
+  });
+
+  const lotusPetalGeom = new THREE.ConeGeometry(0.18, 0.32, 5);
+  const lotusPetalMat = new THREE.MeshBasicMaterial({ color: 0xF472B6 }); // Sakura pink
+  const lotusCoreMat = new THREE.MeshBasicMaterial({ color: 0xFBBF24 }); // Golden stamen
+
+  const lilyOffsets = [
+    { x: -3.5, z: 2.5, r: 0.8 },
+    { x: -4.2, z: 3.8, r: 0.65 },
+    { x: 3.0, z: -2.8, r: 0.9, hasFlower: true },
+    { x: 4.2, z: -1.6, r: 0.7 },
+    { x: -1.8, z: -4.5, r: 0.85, hasFlower: true },
+    { x: 1.5, z: 4.8, r: 0.75, hasFlower: true },
+  ];
+
+  lilyOffsets.forEach((lp) => {
+    const pad = new THREE.Mesh(lilyPadGeom, lilyPadMat);
+    pad.position.set(lp.x, 0, lp.z);
+    pad.scale.set(lp.r, 1, lp.r);
+    pondDecorGroup.add(pad);
+
+    if (lp.hasFlower) {
+      const flower = new THREE.Group();
+      flower.position.set(lp.x, 0.12, lp.z);
+
+      const core = new THREE.Mesh(new THREE.SphereGeometry(0.11, 6, 6), lotusCoreMat);
+      flower.add(core);
+
+      for (let p = 0; p < 6; p++) {
+        const petal = new THREE.Mesh(lotusPetalGeom, lotusPetalMat);
+        const angle = (p * Math.PI * 2) / 6;
+        petal.position.set(Math.cos(angle) * 0.15, 0.08, Math.sin(angle) * 0.15);
+        petal.rotation.x = 0.3;
+        petal.rotation.y = angle;
+        flower.add(petal);
+      }
+      pondDecorGroup.add(flower);
+    }
+  });
+
+  // Clustered shoreline reeds & cattails along water perimeter
+  const reedStemGeom = new THREE.CylinderGeometry(0.04, 0.06, 1.8, 4);
+  const reedStemMat = new THREE.MeshStandardMaterial({ color: 0x65A30D, roughness: 0.8 });
+  const reedHeadGeom = new THREE.CylinderGeometry(0.09, 0.09, 0.45, 5);
+  const reedHeadMat = new THREE.MeshStandardMaterial({ color: 0x78350F, roughness: 0.9 });
+
+  const reedClusters = [
+    { angle: 0.3, dist: pondRadius + 0.5 },
+    { angle: 0.42, dist: pondRadius + 0.9 },
+    { angle: 0.52, dist: pondRadius + 0.6 },
+    { angle: 2.1, dist: pondRadius + 0.4 },
+    { angle: 2.22, dist: pondRadius + 0.8 },
+    { angle: 4.25, dist: pondRadius + 0.5 },
+    { angle: 4.38, dist: pondRadius + 0.9 },
+  ];
+
+  reedClusters.forEach((rc) => {
+    const rx = Math.cos(rc.angle) * rc.dist;
+    const rz = Math.sin(rc.angle) * rc.dist;
+
+    const stem = new THREE.Mesh(reedStemGeom, reedStemMat);
+    stem.position.set(rx, 0.8, rz);
+    stem.rotation.z = (Math.random() - 0.5) * 0.2;
+    stem.rotation.x = (Math.random() - 0.5) * 0.2;
+    pondDecorGroup.add(stem);
+
+    const head = new THREE.Mesh(reedHeadGeom, reedHeadMat);
+    head.position.set(rx, 1.45, rz);
+    pondDecorGroup.add(head);
+  });
+
+  envGroup.add(pondDecorGroup);
 
   // 3. Day Skydome (Warm Golden Anime Morning Sunrise)
   const domeGeom = new THREE.SphereGeometry(155, 32, 20, 0, Math.PI * 2, 0, Math.PI * 0.5);
@@ -498,6 +620,25 @@ export function buildLowPolyLandscape() {
         rotor.rotation.z += 1.4 * delta;
       });
 
+      // Animate real physical water wave ripples on the blue pond
+      if (waterMesh) {
+        const time = performance.now() * 0.0022;
+        const pos = waterMesh.geometry.attributes.position;
+        for (let i = 0; i < pos.count; i++) {
+          const px = pos.getX(i);
+          const pz = pos.getZ(i);
+          const r = Math.sqrt(px * px + pz * pz);
+          if (r < pondRadius - 0.2) {
+            const wave = Math.sin(r * 0.75 - time * 2.6) * 0.07
+                       + Math.cos(px * 0.4 + time * 1.8) * 0.035
+                       + Math.sin(pz * 0.4 + time * 1.5) * 0.035;
+            pos.setY(i, wave);
+          }
+        }
+        pos.needsUpdate = true;
+        waterMesh.geometry.computeVertexNormals();
+      }
+
       // Gentle floating dance of fireflies
       if (firefliesMesh) {
         const pos = firefliesMesh.geometry.attributes.position;
@@ -528,12 +669,16 @@ export function buildLowPolyLandscape() {
         moonMesh.position.y = 50 + nightT * 18;
       }
       if (waterMesh) {
-        // Shift water from daytime alpine teal to deep night indigo
-        waterMesh.material.color.lerpColors(
-          new THREE.Color(0x224D52),
-          new THREE.Color(0x0C2028),
-          nightT
-        );
+        // Shift water from crystal sky blue to luminous moonlit sapphire blue (Never black!)
+        const dayWater = new THREE.Color(0x38BDF8); // Crystal sky blue
+        const nightWater = new THREE.Color(0x2563EB); // Deep sapphire blue
+
+        const dayEmissive = new THREE.Color(0x0284C7);
+        const nightEmissive = new THREE.Color(0x1D4ED8);
+
+        waterMesh.material.color.lerpColors(dayWater, nightWater, nightT);
+        waterMesh.material.emissive.lerpColors(dayEmissive, nightEmissive, nightT);
+        waterMesh.material.emissiveIntensity = 0.28 + nightT * 0.35;
       }
       if (firefliesMesh) {
         // Shift fireflies to electric cyan/lime at night
