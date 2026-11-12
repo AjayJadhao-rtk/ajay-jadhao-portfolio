@@ -113,7 +113,8 @@ export default function WorldExplorationView({ onReturnToHero }) {
           className="group flex items-center space-x-2 px-4 py-2.5 min-h-[44px] rounded-full bg-[#292B27] text-[#F4EBDD] hover:bg-[#1E201D] transition-all shadow-md active:translate-y-0.5 font-mono text-xs font-semibold cursor-pointer disabled:opacity-50"
         >
           <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-1" />
-          <span>{isExiting ? 'Ascending...' : 'Return to Editorial Hero'}</span>
+          <span className="hidden min-[420px]:inline">{isExiting ? 'Ascending...' : 'Return to Editorial Hero'}</span>
+          <span className="min-[420px]:hidden">{isExiting ? 'Ascending...' : 'Hero View'}</span>
         </button>
 
         <div className="hidden sm:flex items-center space-x-1 text-[10px] font-mono text-[#626B50] bg-[#F4EBDD]/80 backdrop-blur-xs px-2.5 py-1 rounded-full border border-[#292B27]/15">

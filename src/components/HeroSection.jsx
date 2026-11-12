@@ -55,14 +55,14 @@ export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onTog
         </section>
 
         {/* CENTER COLUMN: Sky Atmosphere, Rotating Gears, Divergence Coordinates (Stacked second on mobile) */}
-        <section className="relative w-full lg:w-[44%] xl:w-[45%] h-[380px] sm:h-[480px] lg:h-auto flex items-end justify-center z-15 order-2 lg:order-2 my-2 lg:my-0">
+        <section className="relative w-full lg:w-[44%] xl:w-[45%] h-[320px] sm:h-[440px] lg:h-auto flex items-end justify-center z-15 order-2 lg:order-2 my-2 lg:my-0">
           <CenterHeroArtwork />
         </section>
 
         {/* RIGHT COLUMN: Staggered Diagonal Project Preview Panels (Stacked third on mobile) */}
         <section
           id="project-grid-section"
-          className="w-full lg:w-[28%] xl:w-[28%] z-25 order-3 lg:order-3 flex flex-col justify-center pb-16 lg:pb-0"
+          className="w-full lg:w-[28%] xl:w-[28%] z-25 order-3 lg:order-3 flex flex-col justify-center pb-24 lg:pb-0"
         >
           <div className="relative w-full">
             {/* Corner Decorative Index */}
@@ -94,7 +94,7 @@ export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onTog
       </div>
 
       {/* 5. FOOTER BAR: Subtle Engineering Telemetry Timestamp */}
-      <footer className="relative z-25 w-full px-6 py-2 border-t border-[#292B27]/10 bg-[#E9DDC7]/70 backdrop-blur-xs flex flex-wrap items-center justify-between text-[9px] font-mono text-[#626B50]">
+      <footer className="relative z-25 w-full px-4 sm:px-6 py-2 border-t border-[#292B27]/10 bg-[#E9DDC7]/70 backdrop-blur-xs flex flex-wrap items-center justify-between gap-1 text-[9px] font-mono text-[#626B50]">
         <div className="flex items-center space-x-3">
           <span>LAT 18.5204° N · LON 73.8567° E</span>
           <span className="hidden sm:inline">|</span>

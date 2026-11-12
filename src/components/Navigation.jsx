@@ -44,7 +44,8 @@ export default function Navigation({ onExploreClick, onResumeClick, currentView 
             </span>
           </div>
           <p className="font-mono text-[9px] sm:text-[10px] tracking-wider text-[#626B50] font-medium flex items-center space-x-1 mt-0.5">
-            <span>Electronics & Telecommunication Engineer</span>
+            <span className="hidden min-[380px]:inline">Electronics & Telecommunication Engineer</span>
+            <span className="min-[380px]:hidden">E&TC Engineer</span>
             <span className="text-[#89634C] font-bold">]</span>
           </p>
         </div>
@@ -88,12 +89,15 @@ export default function Navigation({ onExploreClick, onResumeClick, currentView 
               onToggleView(currentView === 'hero' ? '3d_world' : 'hero');
             }}
             onMouseEnter={() => audioEngine.playHover()}
-            className="flex items-center space-x-1.5 px-3.5 py-2 min-h-[44px] rounded-full border border-[#B17B53]/50 bg-[#F4EBDD] text-[#292B27] hover:bg-[#292B27] hover:text-[#F4EBDD] transition-all text-xs font-mono shadow-2xs cursor-pointer active:scale-95"
+            className="flex items-center space-x-1.5 px-3 sm:px-3.5 py-2 min-h-[44px] rounded-full border border-[#B17B53]/50 bg-[#F4EBDD] text-[#292B27] hover:bg-[#292B27] hover:text-[#F4EBDD] transition-all text-xs font-mono shadow-2xs cursor-pointer active:scale-95"
             title="Toggle between Hero Overview & 3D Circuit World"
           >
             <Compass className="w-4 h-4 text-[#B17B53]" />
-            <span className="text-[11px] font-bold tracking-wider uppercase">
+            <span className="text-[11px] font-bold tracking-wider uppercase hidden min-[440px]:inline">
               {currentView === 'hero' ? '3D World' : 'Hero View'}
+            </span>
+            <span className="text-[11px] font-bold tracking-wider uppercase min-[440px]:hidden">
+              {currentView === 'hero' ? '3D' : 'Hero'}
             </span>
           </button>
         )}
@@ -102,7 +106,7 @@ export default function Navigation({ onExploreClick, onResumeClick, currentView 
         <button
           onClick={toggleAudio}
           onMouseEnter={() => audioEngine.playHover()}
-          className={`group flex items-center space-x-2 px-3.5 py-2 min-h-[44px] rounded-full border transition-all duration-300 text-xs font-mono cursor-pointer shadow-2xs active:scale-95 ${
+          className={`group flex items-center space-x-1.5 sm:space-x-2 px-3 sm:px-3.5 py-2 min-h-[44px] rounded-full border transition-all duration-300 text-xs font-mono cursor-pointer shadow-2xs active:scale-95 ${
             isAudioActive
               ? 'bg-[#292B27] border-[#292B27] text-[#F4EBDD]'
               : 'bg-[#F4EBDD]/80 border-[#292B27]/25 text-[#292B27] hover:bg-[#F4EBDD]'
@@ -116,12 +120,12 @@ export default function Navigation({ onExploreClick, onResumeClick, currentView 
                 <span className="w-0.5 bg-emerald-400 h-2/3 animate-ping rounded-full" />
                 <span className="w-0.5 bg-amber-400 h-4/5 animate-pulse rounded-full" />
               </div>
-              <span className="text-[10.5px] font-semibold tracking-wider text-amber-300">AUDIO ON</span>
+              <span className="text-[10.5px] font-semibold tracking-wider text-amber-300 hidden min-[400px]:inline">AUDIO ON</span>
             </>
           ) : (
             <>
               <Music className="w-3.5 h-3.5 text-[#89634C] group-hover:text-[#292B27]" />
-              <span className="text-[10.5px] font-medium tracking-wider text-[#626B50]">SOUND OFF</span>
+              <span className="text-[10.5px] font-medium tracking-wider text-[#626B50] hidden min-[400px]:inline">SOUND OFF</span>
             </>
           )}
         </button>

@@ -9,7 +9,7 @@ import { audioEngine } from '../utils/audioSystem';
 export default function SatelliteRadar() {
   return (
     <div
-      className="relative w-full max-w-[280px] sm:max-w-[340px] mt-4 pt-2 select-none group cursor-pointer"
+      className="relative w-full max-w-[280px] sm:max-w-[340px] mt-4 pt-2 select-none group cursor-pointer mx-auto lg:mx-0"
       onMouseEnter={() => audioEngine.playRadarPing()}
       onClick={() => audioEngine.playRadarPing()}
       title="Click to pulse radar transmission"

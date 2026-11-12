@@ -19,7 +19,7 @@ export default function LeftIntroSection({ onExploreClick, onResumeClick }) {
       <div className="space-y-4 pt-1 sm:pt-2">
         
         {/* HIERARCHY LEVEL 1: Japanese Calligraphy Subtitle (Journey of an Engineer) */}
-        <div className="inline-flex items-center space-x-2.5">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
           <span className="font-jp text-sm sm:text-base font-normal tracking-[0.28em] text-[#626B50] select-none">
             エンジニアの旅
           </span>
@@ -31,17 +31,17 @@ export default function LeftIntroSection({ onExploreClick, onResumeClick }) {
 
         {/* HIERARCHY LEVEL 2: High-Contrast Editorial Name Headline */}
         <div className="select-none tracking-[-0.03em] leading-[0.86]">
-          <h1 className="font-editorial text-6xl sm:text-7xl md:text-8xl lg:text-[6.2rem] font-bold text-[#292B27]">
+          <h1 className="font-editorial text-5xl sm:text-7xl md:text-8xl lg:text-[6.2rem] font-bold text-[#292B27]">
             Ajay
           </h1>
-          <h1 className="font-editorial text-6xl sm:text-7xl md:text-8xl lg:text-[6.2rem] font-bold text-[#292B27] flex items-baseline">
+          <h1 className="font-editorial text-5xl sm:text-7xl md:text-8xl lg:text-[6.2rem] font-bold text-[#292B27] flex items-baseline">
             <span className="text-[#B17B53] font-editorial italic font-medium pr-0.5">J</span>adhao
           </h1>
         </div>
 
         {/* HIERARCHY LEVEL 3: Technical Engineering Role Subtitle */}
         <div className="pt-1.5 pb-0.5">
-          <p className="font-mono text-xs sm:text-[13px] md:text-[14px] text-[#26352D] font-semibold tracking-wide flex items-center space-x-2">
+          <p className="font-mono text-xs sm:text-[13px] md:text-[14px] text-[#26352D] font-semibold tracking-wide flex flex-wrap items-center gap-2">
             <span>Electronics & Telecommunication Engineer</span>
           </p>
         </div>
@@ -54,7 +54,7 @@ export default function LeftIntroSection({ onExploreClick, onResumeClick }) {
         </div>
 
         {/* HIERARCHY LEVEL 5: Action Triggers (Solid Charcoal vs Outline Ivory, min 44px touch targets) */}
-        <div className="pt-2.5 flex flex-wrap items-center gap-3">
+        <div className="pt-2.5 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           {/* Primary CTA: Solid Charcoal */}
           <button
             onMouseEnter={() => audioEngine.playHover()}
@@ -62,7 +62,7 @@ export default function LeftIntroSection({ onExploreClick, onResumeClick }) {
               audioEngine.playClick();
               onExploreClick();
             }}
-            className="group relative flex items-center space-x-2.5 px-5 py-3 min-h-[44px] rounded-md bg-[#292B27] text-[#F4EBDD] hover:bg-[#1E201D] hover:shadow-lg hover:shadow-[#292B27]/25 transition-all duration-200 active:translate-y-0.5 cursor-pointer shadow-sm"
+            className="group relative flex items-center justify-center space-x-2.5 px-5 py-3 min-h-[44px] rounded-md bg-[#292B27] text-[#F4EBDD] hover:bg-[#1E201D] hover:shadow-lg hover:shadow-[#292B27]/25 transition-all duration-200 active:translate-y-0.5 cursor-pointer shadow-sm"
           >
             <div className="w-4 h-4 rounded-full bg-[#B17B53] flex items-center justify-center text-[#292B27] group-hover:bg-amber-400 transition-colors">
               <Play className="w-2.5 h-2.5 fill-current ml-0.5" />
@@ -79,7 +79,7 @@ export default function LeftIntroSection({ onExploreClick, onResumeClick }) {
               audioEngine.playClick();
               onResumeClick();
             }}
-            className="group flex items-center space-x-2 px-4 py-3 min-h-[44px] rounded-md border border-[#292B27] bg-[#F4EBDD]/90 text-[#292B27] hover:bg-[#292B27] hover:text-[#F4EBDD] transition-all duration-200 active:translate-y-0.5 cursor-pointer shadow-2xs"
+            className="group flex items-center justify-center space-x-2 px-4 py-3 min-h-[44px] rounded-md border border-[#292B27] bg-[#F4EBDD]/90 text-[#292B27] hover:bg-[#292B27] hover:text-[#F4EBDD] transition-all duration-200 active:translate-y-0.5 cursor-pointer shadow-2xs"
           >
             <Download className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-y-0.5" />
             <span className="font-mono text-xs font-semibold tracking-wider uppercase">
@@ -89,7 +89,7 @@ export default function LeftIntroSection({ onExploreClick, onResumeClick }) {
         </div>
 
         {/* HIERARCHY LEVEL 6: Social Identity Badges & Geolocation Stamp (Min 44px tap targets) */}
-        <div className="pt-2 flex items-center space-x-2.5">
+        <div className="pt-2 flex flex-wrap items-center gap-2.5">
           <a
             href="https://github.com"
             target="_blank"
@@ -122,7 +122,7 @@ export default function LeftIntroSection({ onExploreClick, onResumeClick }) {
             <Mail className="w-4 h-4" />
           </a>
 
-          <div className="h-4 w-[1px] bg-[#292B27]/25 mx-1" />
+          <div className="h-4 w-[1px] bg-[#292B27]/25 mx-1 hidden sm:block" />
 
           <span className="text-[9.5px] font-mono text-[#626B50] tracking-widest uppercase font-medium">
             18.52°N 73.85°E // PUNE, IN

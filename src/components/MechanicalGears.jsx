@@ -9,7 +9,7 @@ import React from 'react';
  */
 export default function MechanicalGears() {
   return (
-    <div className="pointer-events-none absolute top-1 sm:top-2 left-[2%] sm:left-[5%] md:left-[8%] w-56 sm:w-72 h-56 sm:h-72 z-5 opacity-20 sm:opacity-25 mix-blend-multiply select-none">
+    <div className="pointer-events-none absolute top-1 sm:top-2 left-2 sm:left-[5%] md:left-[8%] w-44 sm:w-72 h-44 sm:h-72 z-5 opacity-20 sm:opacity-25 mix-blend-multiply select-none">
       {/* Primary Large Gear (Clockwise) */}
       <svg
         viewBox="0 0 200 200"

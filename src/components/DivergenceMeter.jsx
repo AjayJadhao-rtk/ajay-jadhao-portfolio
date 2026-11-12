@@ -33,7 +33,7 @@ export default function DivergenceMeter() {
         triggerGlitch();
       }}
       onClick={triggerGlitch}
-      className="absolute top-12 left-[38%] md:left-[43%] z-15 flex flex-col items-center select-none cursor-pointer group pointer-events-auto"
+      className="absolute top-6 sm:top-12 left-1/2 -translate-x-1/2 lg:left-[43%] lg:translate-x-0 z-15 flex flex-col items-center select-none cursor-pointer group pointer-events-auto"
       title="Temporal Divergence Coordinate"
     >
       <div className="relative flex items-center px-3 py-1 rounded bg-[#292B27]/10 backdrop-blur-[2px] border border-[#B17B53]/30 shadow-[0_0_15px_rgba(212,155,85,0.25)] transition-all duration-300 group-hover:border-[#B17B53]/80 group-hover:bg-[#292B27]/20">

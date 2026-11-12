@@ -13,7 +13,7 @@ import DivergenceMeter from './DivergenceMeter';
  */
 export default function CenterHeroArtwork() {
   return (
-    <div className="relative w-full h-full min-h-[460px] sm:min-h-[540px] lg:min-h-[600px] flex flex-col items-center justify-between pointer-events-none select-none">
+    <div className="relative w-full h-full min-h-[300px] sm:min-h-[420px] lg:min-h-[600px] flex flex-col items-center justify-between pointer-events-none select-none">
       
       {/* Rotating Mechanical Clockwork Gears in Background */}
       <MechanicalGears />

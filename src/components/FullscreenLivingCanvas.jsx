@@ -242,7 +242,7 @@ export default function FullscreenLivingCanvas({ children, onFrameUpdate }) {
   return (
     <div
       ref={containerRef}
-      className="absolute inset-0 w-full h-full overflow-hidden select-none pointer-events-none z-0"
+      className="fixed inset-0 lg:absolute lg:inset-0 w-full h-full overflow-hidden select-none pointer-events-none z-0"
     >
       {/* High-Performance Living Canvas with 3D Parallax */}
       <canvas
