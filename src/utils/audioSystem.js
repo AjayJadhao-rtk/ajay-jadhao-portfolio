@@ -1,12 +1,16 @@
 /**
  * Professional Interactive Audio Engine for Ajay Jadhao's Portfolio
- * Powered by Web Audio API Physical Modeling & Acoustic Synthesis:
- * 1. Authentic Acoustic Grand Piano (hammer impulse + multi-harmonic partials + spruce soundboard resonance)
- * 2. Plucked Acoustic Guitar / Harp (dynamic plucked lowpass decay + wooden body resonance)
- * 3. Warm Bowed Cello / Double Bass (saw-tri blend + wooden formant filter + slow bowing attack + natural vibrato)
- * 4. Music Box / Celesta Chime (crystalline bell overtones + delicate sparkle)
- * 5. Tactile UI sound effects (surface bend tap, hover blip, click actuation, modal unfold, radar chirp)
- * 6. 100% compliant with browser autoplay policies (no AudioContext start warnings)
+ * Powered by Web Audio API Synthesizers & Step Sequencer:
+ * 1. Energetic, exciting, driving electronic-acoustic hybrid soundtrack (124 BPM)
+ *    - 4-on-the-floor punchy acoustic/electronic kick drum
+ *    - Snappy transient snare & rimshot
+ *    - 16th-note running groove hi-hats with offbeat accents
+ *    - Driving arpeggiated running bassline (D minor electro-groove)
+ *    - Energetic syncopated chord stabs (Dm9 -> Bbmaj7 -> Gm7 -> A7)
+ *    - High-octane shimmering arpeggio lead melody
+ * 2. Futuristic system boot & activation sound effects
+ * 3. Tactile UI sound effects (surface bend tap, hover blip, click actuation, modal unfold, radar chirp)
+ * 4. 100% compliant with browser autoplay policies (no AudioContext start warnings)
  */
 
 class PortfolioAudioEngine {
@@ -19,12 +23,14 @@ class PortfolioAudioEngine {
     this.sfxGain = null;
     this.musicGain = null;
 
-    // Music scheduler state
-    this.musicTimeoutId = null;
-    this.currentPatternIndex = 0;
+    // Music Step Sequencer state
+    this.stepIntervalId = null;
+    this.stepIndex = 0;
+    this.bpm = 124;
+    this.stepDuration = (60 / this.bpm) / 4; // 16th note = ~121ms
 
-    // Pre-create noise buffer for piano hammer impact
-    this.hammerNoiseBuffer = null;
+    // Pre-create white noise buffer for drums & transients
+    this.noiseBuffer = null;
 
     // Register first user gesture to cleanly unlock audio without browser warnings
     if (typeof window !== 'undefined') {
@@ -60,25 +66,23 @@ class PortfolioAudioEngine {
 
       // SFX Gain
       this.sfxGain = this.ctx.createGain();
-      this.sfxGain.gain.setValueAtTime(0.35, this.ctx.currentTime);
+      this.sfxGain.gain.setValueAtTime(0.4, this.ctx.currentTime);
       this.sfxGain.connect(this.masterGain);
 
       // Music Gain
       this.musicGain = this.ctx.createGain();
-      this.musicGain.gain.setValueAtTime(0.28, this.ctx.currentTime);
+      this.musicGain.gain.setValueAtTime(0.3, this.ctx.currentTime);
       this.musicGain.connect(this.masterGain);
 
-      // Generate 0.05s felt hammer noise buffer for realistic piano percussive transient
-      const bufferSize = Math.floor(this.ctx.sampleRate * 0.05);
-      this.hammerNoiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-      const data = this.hammerNoiseBuffer.getChannelData(0);
+      // Generate 1-second white noise buffer for drums & transients
+      const bufferSize = this.ctx.sampleRate;
+      this.noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const data = this.noiseBuffer.getChannelData(0);
       for (let i = 0; i < bufferSize; i++) {
-        // Decaying filtered white noise
-        const decay = Math.exp(-i / (this.ctx.sampleRate * 0.008));
-        data[i] = (Math.random() * 2 - 1) * decay;
+        data[i] = Math.random() * 2 - 1;
       }
     } catch (e) {
-      // AudioContext creation failure fallback
+      // AudioContext creation fallback
     }
   }
 
@@ -95,235 +99,208 @@ class PortfolioAudioEngine {
   }
 
   // =========================================================================
-  // ACOUSTIC PHYSICAL MODELING SYNTHESIZERS
+  // ENERGETIC PERCUSSION SYNTHESIZERS (Kick, Snare, Hi-Hats)
   // =========================================================================
 
   /**
-   * 1. ACOUSTIC GRAND PIANO NOTE
-   * Simulates hammer impact transient, 4 harmonic partials with progressive decay,
-   * and spruce wooden soundboard resonance filter.
+   * Punchy, driving kick drum with fast pitch drop
    */
-  playPianoNote(freq, startTime, duration = 3.5, velocity = 0.5) {
+  playKick(time, velocity = 0.8) {
     if (!this.ctx || this.isMuted) return;
-    const ctx = this.ctx;
-    const t = startTime || ctx.currentTime;
+    const t = time || this.ctx.currentTime;
 
-    // A. Wooden soundboard resonance bus
-    const soundboardFilter = ctx.createBiquadFilter();
-    soundboardFilter.type = 'peaking';
-    soundboardFilter.frequency.setValueAtTime(750, t);
-    soundboardFilter.Q.setValueAtTime(2.2, t);
-    soundboardFilter.gain.setValueAtTime(4, t);
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
 
-    const noteGain = ctx.createGain();
-    noteGain.gain.setValueAtTime(0.0001, t);
-    // Instant attack (hammer strike)
-    noteGain.gain.linearRampToValueAtTime(0.08 * velocity, t + 0.004);
-    // Natural exponential piano decay
-    noteGain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
+    osc.type = 'sine';
+    // Pitch sweep: 155 Hz -> 42 Hz
+    osc.frequency.setValueAtTime(160, t);
+    osc.frequency.exponentialRampToValueAtTime(42, t + 0.08);
 
-    soundboardFilter.connect(noteGain);
-    noteGain.connect(this.musicGain);
+    gain.gain.setValueAtTime(0.35 * velocity, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.26);
 
-    // B. Felt Hammer Percussive Attack Impulse
-    if (this.hammerNoiseBuffer) {
-      const noiseSource = ctx.createBufferSource();
-      noiseSource.buffer = this.hammerNoiseBuffer;
-      const noiseFilter = ctx.createBiquadFilter();
-      noiseFilter.type = 'bandpass';
-      noiseFilter.frequency.setValueAtTime(Math.min(freq * 2.5, 3000), t);
-      noiseFilter.Q.setValueAtTime(3.0, t);
+    osc.connect(gain);
+    gain.connect(this.musicGain);
 
-      const noiseGain = ctx.createGain();
-      noiseGain.gain.setValueAtTime(0.03 * velocity, t);
-      noiseGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.025);
+    osc.start(t);
+    osc.stop(t + 0.28);
+  }
 
-      noiseSource.connect(noiseFilter);
-      noiseFilter.connect(noiseGain);
-      noiseGain.connect(this.musicGain);
+  /**
+   * Snappy punchy snare & clap hybrid
+   */
+  playSnare(time, velocity = 0.6) {
+    if (!this.ctx || this.isMuted || !this.noiseBuffer) return;
+    const t = time || this.ctx.currentTime;
 
-      noiseSource.start(t);
-      noiseSource.stop(t + 0.03);
-    }
+    // 1. Tonal body
+    const osc = this.ctx.createOscillator();
+    const oscGain = this.ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(220, t);
+    osc.frequency.exponentialRampToValueAtTime(110, t + 0.08);
 
-    // C. Harmonic Partials (Fundamental + 2nd, 3rd, 4th harmonics)
-    const harmonics = [
-      { mult: 1, gainRatio: 1.0, decayMult: 1.0 },
-      { mult: 2, gainRatio: 0.52, decayMult: 0.7 },
-      { mult: 3, gainRatio: 0.22, decayMult: 0.45 },
-      { mult: 4, gainRatio: 0.09, decayMult: 0.28 },
-    ];
+    oscGain.gain.setValueAtTime(0.2 * velocity, t);
+    oscGain.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+    osc.connect(oscGain);
+    oscGain.connect(this.musicGain);
+    osc.start(t);
+    osc.stop(t + 0.13);
 
-    harmonics.forEach(({ mult, gainRatio, decayMult }) => {
-      const osc = ctx.createOscillator();
-      const partGain = ctx.createGain();
+    // 2. Noise snap
+    const noiseSource = this.ctx.createBufferSource();
+    noiseSource.buffer = this.noiseBuffer;
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = 'highpass';
+    filter.frequency.setValueAtTime(1200, t);
 
-      osc.type = 'sine';
-      // Slight acoustic string inharmonicity
-      const inharmonicity = 1 + 0.0004 * mult * mult;
-      osc.frequency.setValueAtTime(freq * mult * inharmonicity, t);
+    const noiseGain = this.ctx.createGain();
+    noiseGain.gain.setValueAtTime(0.18 * velocity, t);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, t + 0.16);
 
-      partGain.gain.setValueAtTime(gainRatio, t);
-      partGain.gain.exponentialRampToValueAtTime(0.0001, t + duration * decayMult);
+    noiseSource.connect(filter);
+    filter.connect(noiseGain);
+    noiseGain.connect(this.musicGain);
+    noiseSource.start(t);
+    noiseSource.stop(t + 0.18);
+  }
 
-      osc.connect(partGain);
-      partGain.connect(soundboardFilter);
+  /**
+   * Crisp 16th-note closed / open hi-hat
+   */
+  playHiHat(time, isOpen = false, velocity = 0.4) {
+    if (!this.ctx || this.isMuted || !this.noiseBuffer) return;
+    const t = time || this.ctx.currentTime;
+
+    const noiseSource = this.ctx.createBufferSource();
+    noiseSource.buffer = this.noiseBuffer;
+
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(9000, t);
+    filter.Q.setValueAtTime(3.5, t);
+
+    const gain = this.ctx.createGain();
+    const duration = isOpen ? 0.14 : 0.035;
+
+    gain.gain.setValueAtTime(0.12 * velocity, t);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
+
+    noiseSource.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.musicGain);
+
+    noiseSource.start(t);
+    noiseSource.stop(t + duration + 0.01);
+  }
+
+  // =========================================================================
+  // ENERGETIC BASSLINE, CHORDS & ARPEGGIO SYNTHESIZERS
+  // =========================================================================
+
+  /**
+   * Punchy, resonant driving synth bassline note
+   */
+  playBass(freq, time, duration = 0.15, velocity = 0.7) {
+    if (!this.ctx || this.isMuted) return;
+    const t = time || this.ctx.currentTime;
+
+    const oscSaw = this.ctx.createOscillator();
+    const oscSquare = this.ctx.createOscillator();
+    const filter = this.ctx.createBiquadFilter();
+    const gain = this.ctx.createGain();
+
+    oscSaw.type = 'sawtooth';
+    oscSaw.frequency.setValueAtTime(freq, t);
+
+    oscSquare.type = 'square';
+    oscSquare.frequency.setValueAtTime(freq, t);
+
+    // Resonant lowpass filter sweep
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(2400, t);
+    filter.frequency.exponentialRampToValueAtTime(260, t + duration * 0.85);
+    filter.Q.setValueAtTime(3.2, t);
+
+    gain.gain.setValueAtTime(0.18 * velocity, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+
+    oscSaw.connect(filter);
+    oscSquare.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.musicGain);
+
+    oscSaw.start(t);
+    oscSquare.start(t);
+    oscSaw.stop(t + duration + 0.02);
+    oscSquare.stop(t + duration + 0.02);
+  }
+
+  /**
+   * Uplifting syncopated chord stab
+   */
+  playChordStab(freqs, time, duration = 0.22, velocity = 0.45) {
+    if (!this.ctx || this.isMuted) return;
+    const t = time || this.ctx.currentTime;
+
+    freqs.forEach((freq) => {
+      const osc = this.ctx.createOscillator();
+      const filter = this.ctx.createBiquadFilter();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(freq, t);
+
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(3200, t);
+      filter.frequency.exponentialRampToValueAtTime(800, t + duration);
+      filter.Q.setValueAtTime(1.8, t);
+
+      gain.gain.setValueAtTime(0.045 * velocity, t);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(this.musicGain);
 
       osc.start(t);
-      osc.stop(t + duration * decayMult + 0.05);
+      osc.stop(t + duration + 0.02);
     });
   }
 
   /**
-   * 2. ACOUSTIC PLUCKED GUITAR / HARP
-   * Simulates plucked string with fast lowpass filter decay & wooden cavity resonance.
+   * Shimmering, energetic lead arpeggio note
    */
-  playAcousticGuitarPluck(freq, startTime, duration = 2.4, velocity = 0.45) {
+  playArpLead(freq, time, duration = 0.12, velocity = 0.35) {
     if (!this.ctx || this.isMuted) return;
-    const ctx = this.ctx;
-    const t = startTime || ctx.currentTime;
+    const t = time || this.ctx.currentTime;
 
-    const osc = ctx.createOscillator();
-    const oscBody = ctx.createOscillator();
-    const pluckFilter = ctx.createBiquadFilter();
-    const bodyFilter = ctx.createBiquadFilter();
-    const pluckGain = ctx.createGain();
+    const osc = this.ctx.createOscillator();
+    const filter = this.ctx.createBiquadFilter();
+    const gain = this.ctx.createGain();
 
-    // String pluck waveform
-    osc.type = 'sawtooth';
+    osc.type = 'triangle';
     osc.frequency.setValueAtTime(freq, t);
 
-    // Warm body harmonic
-    oscBody.type = 'triangle';
-    oscBody.frequency.setValueAtTime(freq * 0.5, t);
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(freq * 1.5, t);
+    filter.Q.setValueAtTime(2.0, t);
 
-    // Dynamic lowpass filter: bright attack snap dampening down immediately
-    pluckFilter.type = 'lowpass';
-    pluckFilter.frequency.setValueAtTime(2800, t);
-    pluckFilter.frequency.exponentialRampToValueAtTime(320, t + 0.12);
-    pluckFilter.frequency.exponentialRampToValueAtTime(140, t + duration);
-    pluckFilter.Q.setValueAtTime(2.0, t);
+    gain.gain.setValueAtTime(0.001, t);
+    gain.gain.linearRampToValueAtTime(0.05 * velocity, t + 0.005);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
 
-    // Wooden guitar body formant resonance (around 220Hz)
-    bodyFilter.type = 'bandpass';
-    bodyFilter.frequency.setValueAtTime(220, t);
-    bodyFilter.Q.setValueAtTime(1.8, t);
-
-    // Envelope
-    pluckGain.gain.setValueAtTime(0.0001, t);
-    pluckGain.gain.linearRampToValueAtTime(0.06 * velocity, t + 0.003);
-    pluckGain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
-
-    osc.connect(pluckFilter);
-    oscBody.connect(bodyFilter);
-    bodyFilter.connect(pluckFilter);
-    pluckFilter.connect(pluckGain);
-    pluckGain.connect(this.musicGain);
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.musicGain);
 
     osc.start(t);
-    oscBody.start(t);
-    osc.stop(t + duration + 0.05);
-    oscBody.stop(t + duration + 0.05);
-  }
-
-  /**
-   * 3. WARM BOWED CELLO / DOUBLE BASS
-   * Slow bowing attack, warm wooden body formants, expressive gentle vibrato.
-   */
-  playCelloBass(freq, startTime, duration = 4.2, velocity = 0.5) {
-    if (!this.ctx || this.isMuted) return;
-    const ctx = this.ctx;
-    const t = startTime || ctx.currentTime;
-
-    const oscMain = ctx.createOscillator();
-    const oscSub = ctx.createOscillator();
-    const bodyFilter = ctx.createBiquadFilter();
-    const celloGain = ctx.createGain();
-
-    // Dual bowed string texture
-    oscMain.type = 'sawtooth';
-    oscMain.frequency.setValueAtTime(freq, t);
-
-    oscSub.type = 'triangle';
-    oscSub.frequency.setValueAtTime(freq, t);
-
-    // Expressive vibrato LFO
-    const vibrato = ctx.createOscillator();
-    const vibratoGain = ctx.createGain();
-    vibrato.frequency.setValueAtTime(4.6, t); // 4.6 Hz natural human vibrato
-    vibratoGain.gain.setValueAtTime(0.001, t);
-    // Vibrato swells in gently after the bow catches the string
-    vibratoGain.gain.linearRampToValueAtTime(freq * 0.012, t + 0.8);
-    vibrato.connect(vibratoGain);
-    vibratoGain.connect(oscMain.frequency);
-    vibrato.start(t);
-
-    // Cello wooden body resonance filter (warm 300Hz peak)
-    bodyFilter.type = 'lowpass';
-    bodyFilter.frequency.setValueAtTime(380, t);
-    bodyFilter.Q.setValueAtTime(1.5, t);
-
-    // Slow bowing envelope (70ms bow stroke attack)
-    celloGain.gain.setValueAtTime(0.0001, t);
-    celloGain.gain.linearRampToValueAtTime(0.075 * velocity, t + 0.12);
-    celloGain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
-
-    oscMain.connect(bodyFilter);
-    oscSub.connect(bodyFilter);
-    bodyFilter.connect(celloGain);
-    celloGain.connect(this.musicGain);
-
-    oscMain.start(t);
-    oscSub.start(t);
-    oscMain.stop(t + duration + 0.1);
-    oscSub.stop(t + duration + 0.1);
-    vibrato.stop(t + duration + 0.1);
-  }
-
-  /**
-   * 4. MUSIC BOX / CELESTA CHIME
-   * Crystalline bell chime with inharmonic chime partials for nostalgic sparkle.
-   */
-  playCelestaChime(freq, startTime, duration = 3.0, velocity = 0.4) {
-    if (!this.ctx || this.isMuted) return;
-    const ctx = this.ctx;
-    const t = startTime || ctx.currentTime;
-
-    const osc1 = ctx.createOscillator();
-    const osc2 = ctx.createOscillator();
-    const gain1 = ctx.createGain();
-    const gain2 = ctx.createGain();
-
-    // Fundamental bell tone
-    osc1.type = 'sine';
-    osc1.frequency.setValueAtTime(freq, t);
-
-    // Non-harmonic metallic tine chime
-    osc2.type = 'sine';
-    osc2.frequency.setValueAtTime(freq * 2.756, t);
-
-    // Envelopes
-    gain1.gain.setValueAtTime(0.0001, t);
-    gain1.gain.linearRampToValueAtTime(0.035 * velocity, t + 0.002);
-    gain1.gain.exponentialRampToValueAtTime(0.0001, t + duration);
-
-    gain2.gain.setValueAtTime(0.0001, t);
-    gain2.gain.linearRampToValueAtTime(0.012 * velocity, t + 0.002);
-    gain2.gain.exponentialRampToValueAtTime(0.0001, t + duration * 0.4);
-
-    osc1.connect(gain1);
-    osc2.connect(gain2);
-    gain1.connect(this.musicGain);
-    gain2.connect(this.musicGain);
-
-    osc1.start(t);
-    osc2.start(t);
-    osc1.stop(t + duration + 0.05);
-    osc2.stop(t + duration + 0.05);
+    osc.stop(t + duration + 0.02);
   }
 
   // =========================================================================
-  // GENERATIVE ACOUSTIC INSTRUMENTAL ENSEMBLE
+  // EXCITING 124-BPM STEP SEQUENCER
   // =========================================================================
 
   startMusic() {
@@ -331,92 +308,172 @@ class PortfolioAudioEngine {
     this.ensureContext();
     if (!this.ctx || this.isMusicPlaying) return;
     this.isMusicPlaying = true;
+    this.stepIndex = 0;
 
     /**
-     * Nostalgic Ghibli / Joe Hisaishi inspired acoustic chord progression:
-     * 1. Eb maj9 (Eb, G, Bb, D, F)
-     * 2. Cm9 (C, Eb, G, Bb, D)
-     * 3. Ab maj7 (Ab, C, Eb, G)
-     * 4. Bb9sus4 -> Bb7 (Bb, F, Ab, C -> D)
+     * Energetic 4-bar progression in D Minor:
+     * Bar 1: Dm (D2 / Dm9)
+     * Bar 2: Bb (Bb1 / Bbmaj7)
+     * Bar 3: Gm (G1 / Gm7)
+     * Bar 4: A (A1 / A7)
      */
-    const patterns = [
-      // Pattern 1: Eb maj9
-      {
-        cello: 77.78, // Eb2
-        pianoChord: [155.56, 196.0, 233.08, 293.66], // Eb3, G3, Bb3, D4
-        guitarArp: [196.0, 233.08, 293.66, 349.23, 392.0], // G3, Bb3, D4, F4, G4
-        celesta: 587.33, // D5
-      },
-      // Pattern 2: Cm9
-      {
-        cello: 65.41, // C2
-        pianoChord: [130.81, 155.56, 196.0, 233.08], // C3, Eb3, G3, Bb3
-        guitarArp: [155.56, 196.0, 233.08, 293.66, 392.0], // Eb3, G3, Bb3, D4, G4
-        celesta: 783.99, // G5
-      },
-      // Pattern 3: Ab maj7
-      {
-        cello: 51.91, // Ab1
-        pianoChord: [103.83, 130.81, 155.56, 196.0], // Ab2, C3, Eb3, G3
-        guitarArp: [130.81, 155.56, 196.0, 261.63, 311.13], // C3, Eb3, G3, C4, Eb4
-        celesta: 622.25, // Eb5
-      },
-      // Pattern 4: Bb9sus4
-      {
-        cello: 58.27, // Bb1
-        pianoChord: [116.54, 146.83, 174.61, 233.08, 261.63], // Bb2, D3, F3, Bb3, C4
-        guitarArp: [174.61, 233.08, 261.63, 293.66, 349.23], // F3, Bb3, C4, D4, F4
-        celesta: 698.46, // F5
-      },
+    // 64 16th-notes running bassline frequencies (Hz)
+    const bassRiff = [
+      // Bar 1: Dm
+      73.42, 73.42, 87.31, 73.42, 98.0, 73.42, 110.0, 87.31,
+      73.42, 73.42, 87.31, 73.42, 98.0, 110.0, 130.81, 146.83,
+      // Bar 2: Bb
+      58.27, 58.27, 73.42, 58.27, 87.31, 58.27, 98.0, 87.31,
+      58.27, 58.27, 73.42, 58.27, 87.31, 98.0, 110.0, 130.81,
+      // Bar 3: Gm
+      49.0, 49.0, 58.27, 49.0, 73.42, 49.0, 87.31, 73.42,
+      49.0, 49.0, 58.27, 49.0, 73.42, 87.31, 98.0, 110.0,
+      // Bar 4: A
+      55.0, 55.0, 73.42, 55.0, 82.41, 55.0, 98.0, 82.41,
+      55.0, 73.42, 82.41, 98.0, 110.0, 130.81, 146.83, 164.81,
     ];
 
-    const scheduleMeasure = () => {
-      if (!this.isMusicPlaying || !this.ctx || this.ctx.state !== 'running') return;
-      const t = this.ctx.currentTime + 0.05;
-      const current = patterns[this.currentPatternIndex];
-      this.currentPatternIndex = (this.currentPatternIndex + 1) % patterns.length;
-
-      // 1. Warm bowed Cello Bassline (duration 4.2s)
-      this.playCelloBass(current.cello, t, 4.4, 0.55);
-
-      // 2. Acoustic Grand Piano Chord (soft gentle hammer strike)
-      current.pianoChord.forEach((freq, i) => {
-        // Humanized slight rolling strum of piano keys (15ms stagger)
-        this.playPianoNote(freq, t + i * 0.018, 4.0, 0.42);
-      });
-
-      // 3. Plucked Acoustic Guitar Arpeggio (staggered plucks throughout measure)
-      current.guitarArp.forEach((freq, idx) => {
-        const pluckTime = t + 0.4 + idx * 0.65;
-        this.playAcousticGuitarPluck(freq, pluckTime, 2.2, 0.38);
-      });
-
-      // 4. Music Box / Celesta Chime on the downbeat accent
-      this.playCelestaChime(current.celesta, t + 0.8, 3.2, 0.35);
-
-      // Schedule next measure in 4.0 seconds
-      this.musicTimeoutId = setTimeout(scheduleMeasure, 3950);
+    // Chords (Hz)
+    const chords = {
+      dm: [146.83, 174.61, 220.0, 261.63, 329.63], // D3, F3, A3, C4, E4
+      bb: [116.54, 146.83, 174.61, 220.0],         // Bb2, D3, F3, A3
+      gm: [98.0, 116.54, 146.83, 174.61],          // G2, Bb2, D3, F3
+      a:  [110.0, 138.59, 164.81, 220.0],          // A2, C#3, E3, A3
     };
 
-    scheduleMeasure();
+    // Shimmering Arpeggio notes (Hz)
+    const arpNotes = [
+      440.0, 523.25, 587.33, 659.25, 698.46, 587.33, 523.25, 440.0,
+      392.0, 440.0, 523.25, 587.33, 659.25, 587.33, 523.25, 392.0,
+      349.23, 392.0, 440.0, 523.25, 587.33, 523.25, 440.0, 349.23,
+      440.0, 554.37, 659.25, 783.99, 880.0, 783.99, 659.25, 554.37,
+    ];
+
+    const runStep = () => {
+      if (!this.isMusicPlaying || !this.ctx || this.ctx.state !== 'running') return;
+      const t = this.ctx.currentTime + 0.02;
+      const step = this.stepIndex % 64;
+      const beatInBar = Math.floor((step % 16) / 4); // 0, 1, 2, 3
+      const stepInBeat = step % 4; // 0, 1, 2, 3
+      const bar = Math.floor(step / 16); // 0, 1, 2, 3
+
+      // 1. KICK: 4-on-the-floor (every beat: stepInBeat === 0)
+      if (stepInBeat === 0) {
+        this.playKick(t, 0.85);
+      }
+
+      // 2. SNARE: Beats 2 and 4 (beatInBar === 1 or 3, stepInBeat === 0)
+      if ((beatInBar === 1 || beatInBar === 3) && stepInBeat === 0) {
+        this.playSnare(t, 0.7);
+      }
+
+      // 3. HI-HATS:
+      // Open hat on the offbeats (stepInBeat === 2)
+      if (stepInBeat === 2) {
+        this.playHiHat(t, true, 0.45);
+      } else {
+        // Closed hats on 16th notes
+        this.playHiHat(t, false, stepInBeat === 0 ? 0.35 : 0.2);
+      }
+
+      // 4. BASS: Driving 16th-note bassline
+      const bassFreq = bassRiff[step] || 73.42;
+      this.playBass(bassFreq, t, 0.12, 0.75);
+
+      // 5. CHORD STABS: Syncopated energetic stabs (on beats 1.5, 2.5, 3.5)
+      if (stepInBeat === 2 && (beatInBar === 0 || beatInBar === 2)) {
+        let currentChord = chords.dm;
+        if (bar === 1) currentChord = chords.bb;
+        if (bar === 2) currentChord = chords.gm;
+        if (bar === 3) currentChord = chords.a;
+        this.playChordStab(currentChord, t, 0.2, 0.5);
+      }
+
+      // 6. ARP LEAD: Shimmering high melody on 16th notes
+      const arpFreq = arpNotes[step % 32];
+      if (arpFreq) {
+        this.playArpLead(arpFreq, t, 0.1, 0.3);
+      }
+
+      this.stepIndex++;
+    };
+
+    // Run clock loop at 16th-note resolution
+    this.stepIntervalId = setInterval(runStep, this.stepDuration * 1000);
   }
 
   stopMusic() {
     this.isMusicPlaying = false;
-    if (this.musicTimeoutId) {
-      clearTimeout(this.musicTimeoutId);
-      this.musicTimeoutId = null;
+    if (this.stepIntervalId) {
+      clearInterval(this.stepIntervalId);
+      this.stepIntervalId = null;
     }
   }
 
   // =========================================================================
-  // TACTILE UI SOUND EFFECTS
+  // FUTURISTIC SYSTEM BOOT & WELCOME ACTUATION SOUNDS
   // =========================================================================
 
   /**
-   * TACTILE SURFACE BEND SOUND
-   * Warm acoustic tap & elastic flex resonance when the screen bends under finger/mouse.
+   * Exciting futuristic laboratory boot actuation sound when entering portfolio
    */
+  playSystemBoot() {
+    if (this.isMuted) return;
+    this.isUnlocked = true;
+    this.ensureContext();
+    if (!this.ctx || this.ctx.state !== 'running') return;
+
+    try {
+      const t = this.ctx.currentTime;
+
+      // 1. Rising holographic frequency sweep
+      const sweepOsc = this.ctx.createOscillator();
+      const sweepGain = this.ctx.createGain();
+      sweepOsc.type = 'sawtooth';
+      sweepOsc.frequency.setValueAtTime(140, t);
+      sweepOsc.frequency.exponentialRampToValueAtTime(1200, t + 0.45);
+
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(600, t);
+      filter.frequency.exponentialRampToValueAtTime(3600, t + 0.45);
+      filter.Q.setValueAtTime(3.0, t);
+
+      sweepGain.gain.setValueAtTime(0.01, t);
+      sweepGain.gain.linearRampToValueAtTime(0.12, t + 0.35);
+      sweepGain.gain.exponentialRampToValueAtTime(0.001, t + 0.55);
+
+      sweepOsc.connect(filter);
+      filter.connect(sweepGain);
+      sweepGain.connect(this.sfxGain);
+
+      sweepOsc.start(t);
+      sweepOsc.stop(t + 0.56);
+
+      // 2. Triumphant major chord actuation chime (D, F#, A, D)
+      const notes = [293.66, 369.99, 440.0, 587.33, 880.0];
+      notes.forEach((freq, idx) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        const delay = 0.35 + idx * 0.04;
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, t + delay);
+
+        gain.gain.setValueAtTime(0.001, t + delay);
+        gain.gain.linearRampToValueAtTime(0.08, t + delay + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + delay + 0.65);
+
+        osc.connect(gain);
+        gain.connect(this.sfxGain);
+
+        osc.start(t + delay);
+        osc.stop(t + delay + 0.7);
+      });
+    } catch (e) {}
+  }
+
+  // Tactile Surface Bend Tap Sound
   playSurfaceBend() {
     if (this.isMuted) return;
     this.isUnlocked = true;
@@ -425,19 +482,18 @@ class PortfolioAudioEngine {
 
     try {
       const t = this.ctx.currentTime;
-      // Soft acoustic soundboard knock
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
       const filter = this.ctx.createBiquadFilter();
 
       osc.type = 'triangle';
-      osc.frequency.setValueAtTime(160, t);
-      osc.frequency.exponentialRampToValueAtTime(70, t + 0.07);
+      osc.frequency.setValueAtTime(180, t);
+      osc.frequency.exponentialRampToValueAtTime(75, t + 0.07);
 
       filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(380, t);
+      filter.frequency.setValueAtTime(420, t);
 
-      gain.gain.setValueAtTime(0.08, t);
+      gain.gain.setValueAtTime(0.09, t);
       gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.07);
 
       osc.connect(filter);
@@ -548,7 +604,7 @@ class PortfolioAudioEngine {
       });
 
       if (this.musicGain) {
-        this.musicGain.gain.linearRampToValueAtTime(0.08, t + 0.2);
+        this.musicGain.gain.linearRampToValueAtTime(0.12, t + 0.2);
       }
     } catch (e) {}
   }
@@ -576,12 +632,12 @@ class PortfolioAudioEngine {
       osc.stop(t + 0.13);
 
       if (this.musicGain) {
-        this.musicGain.gain.linearRampToValueAtTime(0.28, t + 0.3);
+        this.musicGain.gain.linearRampToValueAtTime(0.3, t + 0.3);
       }
     } catch (e) {}
   }
 
-  // Radar / Divergence Chirp
+  // Radar / Divergence Ping
   playRadarPing() {
     if (this.isMuted) return;
     this.ensureContext();

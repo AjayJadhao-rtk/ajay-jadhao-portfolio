@@ -5,7 +5,12 @@ import { audioEngine } from '../utils/audioSystem';
 export default function Navigation({ onExploreClick, onResumeClick, currentView = 'hero', onToggleView }) {
   const [activeTab, setActiveTab] = useState('Home');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isAudioActive, setIsAudioActive] = useState(false);
+  const [isAudioActive, setIsAudioActive] = useState(() => audioEngine.isMusicPlaying);
+
+  // Sync with audio engine state
+  React.useEffect(() => {
+    setIsAudioActive(audioEngine.isMusicPlaying);
+  }, []);
 
   const navLinks = [
     { label: 'Home', id: 'home' },
