@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as THREE from 'three';
 import gsap from 'gsap';
-import { Camera } from 'lucide-react';
+import { Camera, Sun, Moon, Play, Pause, Home, MapPin, Compass } from 'lucide-react';
 import { createCircuitCurve, buildCircuitTrackMesh } from './CircuitTrack';
 import { RoverVehicle } from './RoverVehicle';
 import { spawnWaypointStations } from './WaypointStation';
@@ -23,6 +23,8 @@ export default function CircuitWorldCanvas({
   onSchematicOpen,
   currentWaypointId,
   onRegisterExitHandler,
+  onReturnHome,
+  isExiting = false,
 }) {
   const containerRef = useRef(null);
   const sceneRef = useRef(null);
@@ -563,91 +565,144 @@ export default function CircuitWorldCanvas({
         style={{ touchAction: 'none' }}
       />
 
-      {/* Floating Travel Controls Bar (Touch-optimized 44px+ tap target) */}
-      <div className={`absolute top-3.5 right-3.5 sm:top-4 sm:left-1/2 sm:-translate-x-1/2 sm:right-auto z-35 pointer-events-auto flex items-center space-x-2 backdrop-blur-md px-3.5 py-1.5 min-h-[44px] rounded-full border shadow-xl text-xs font-mono transition-colors duration-500 ${
-        isNightMode
-          ? 'bg-[#0E1626]/90 border-blue-400/40 text-[#F1F5F9]'
-          : 'bg-[#292B27]/90 border-[#B17B53]/50 text-[#F4EBDD]'
-      }`}>
-        <span className={`w-2.5 h-2.5 rounded-full animate-ping ${isNightMode ? 'bg-cyan-400' : 'bg-emerald-400'}`} />
-        <span className="font-semibold tracking-wider text-[10px] hidden xs:inline">
-          {isNightMode ? 'NIGHT PROVING GROUND' : '3D CIRCUIT WORLD'}
-        </span>
-        <span className="text-white/30 hidden xs:inline">|</span>
+      {/* UNIFIED TOP TELEMETRY & CONTROLS HEADER (Zero collision on all viewports) */}
+      <header className="absolute top-3 inset-x-3 sm:top-4 sm:inset-x-6 z-35 pointer-events-auto flex items-center justify-between gap-2 max-w-[1920px] mx-auto select-none">
         
-        {/* Day / Night Mode Switcher Button */}
-        <button
-          onClick={toggleNightMode}
-          className={`px-3 py-2 min-h-[44px] flex items-center space-x-1.5 rounded-full text-[10px] uppercase font-bold tracking-wider transition-all cursor-pointer active:scale-95 ${
-            isNightMode
-              ? 'bg-blue-900/60 text-cyan-300 border border-cyan-400/50 hover:bg-blue-800/80 shadow-[0_0_12px_rgba(56,189,248,0.3)]'
-              : 'bg-amber-400/20 text-amber-200 border border-amber-400/40 hover:bg-amber-400/30'
-          }`}
-          title={isNightMode ? 'Switch to Warm Golden Day Mode' : 'Switch to Starlit Midnight Mode'}
-        >
-          <span>{isNightMode ? '🌙 NIGHT' : '☀️ DAY'}</span>
-        </button>
+        {/* Left: Home Button (Replaces "Hero View" with clean "Home" + Home icon) */}
+        {onReturnHome && (
+          <button
+            onClick={onReturnHome}
+            disabled={isExiting}
+            className={`group flex items-center space-x-1.5 px-3 py-1.5 min-h-[38px] rounded-full backdrop-blur-md shadow-lg active:scale-95 transition-all font-mono text-xs font-bold cursor-pointer disabled:opacity-50 shrink-0 border ${
+              isNightMode
+                ? 'bg-[#0E1626]/90 border-cyan-500/40 text-cyan-200 hover:bg-[#15233D]'
+                : 'bg-[#292B27]/95 border-[#B17B53]/50 text-[#F4EBDD] hover:bg-[#1E201D]'
+            }`}
+            title="Return to Portfolio Home"
+          >
+            <Home className="w-3.5 h-3.5 text-[#B17B53] transition-transform group-hover:scale-110" />
+            <span className="tracking-wider uppercase">
+              {isExiting ? 'Ascending...' : 'Home'}
+            </span>
+          </button>
+        )}
 
-        <span className="text-white/30">|</span>
-
-        {/* Small POV (Point of View) Switcher Button */}
-        <button
-          onClick={cyclePOV}
-          className={`px-3 py-2 min-h-[44px] flex items-center space-x-1.5 rounded-full text-[10px] uppercase font-bold tracking-wider transition-all cursor-pointer active:scale-95 ${
-            povMode === 'cockpit'
-              ? (isNightMode ? 'bg-rose-900/60 text-rose-300 border border-rose-400/50 shadow-[0_0_10px_rgba(244,63,94,0.3)]' : 'bg-rose-900/80 text-rose-200 border border-rose-500/50')
-              : povMode === 'aerial'
-              ? (isNightMode ? 'bg-purple-900/60 text-purple-300 border border-purple-400/50 shadow-[0_0_10px_rgba(168,85,247,0.3)]' : 'bg-purple-900/80 text-purple-200 border border-purple-500/50')
-              : (isNightMode ? 'bg-white/10 text-slate-200 border border-white/20 hover:bg-white/20' : 'bg-[#292B27]/40 text-[#F4EBDD] border border-white/20 hover:bg-[#292B27]/60')
-          }`}
-          title="Change Point of View: Chase (3rd Person) -> Cockpit (1st Person Bumper) -> Aerial (High Orbit)"
-        >
-          <Camera className="w-3.5 h-3.5" />
-          <span className="hidden min-[480px]:inline">
-            {povMode === 'chase' ? 'POV: CHASE' : povMode === 'cockpit' ? 'POV: COCKPIT' : 'POV: AERIAL'}
+        {/* Center: System Status Badge (Hidden on mobile to keep bar spacious) */}
+        <div className={`hidden md:flex items-center space-x-2 backdrop-blur-md px-3 py-1.5 rounded-full border shadow-sm text-[10px] font-mono transition-colors ${
+          isNightMode
+            ? 'bg-[#0E1626]/85 border-cyan-500/30 text-cyan-200'
+            : 'bg-[#F4EBDD]/85 border-[#292B27]/15 text-[#292B27]'
+        }`}>
+          <Compass className="w-3 h-3 text-[#B17B53]" />
+          <span className="font-semibold tracking-wider">
+            {isNightMode ? 'NIGHT PROVING GROUND // ACTIVE' : '3D CIRCUIT WORLD // 240 MHz'}
           </span>
-          <span className="min-[480px]:hidden">
-            {povMode === 'chase' ? 'CHASE' : povMode === 'cockpit' ? 'HOOD' : 'ORBIT'}
-          </span>
-        </button>
+        </div>
 
-        <span className="text-white/30">|</span>
+        {/* Right: Sleek, Reduced-Width Controls Cluster with High-Quality Vector Icons */}
+        <div className={`flex items-center space-x-1.5 sm:space-x-2 backdrop-blur-md px-2 sm:px-2.5 py-1 min-h-[38px] rounded-full border shadow-lg text-xs font-mono transition-colors shrink-0 ${
+          isNightMode
+            ? 'bg-[#0E1626]/90 border-cyan-400/40 text-[#F1F5F9]'
+            : 'bg-[#292B27]/90 border-[#B17B53]/50 text-[#F4EBDD]'
+        }`}>
+          
+          {/* Day / Night Mode Switcher with High-Quality Sun / Moon Icons */}
+          <button
+            onClick={toggleNightMode}
+            className={`w-8 h-8 sm:w-8.5 sm:h-8.5 flex items-center justify-center rounded-full transition-all cursor-pointer active:scale-90 ${
+              isNightMode
+                ? 'bg-blue-950/80 text-cyan-300 border border-cyan-400/60 shadow-[0_0_8px_rgba(56,189,248,0.4)]'
+                : 'bg-amber-500/20 text-amber-300 border border-amber-400/50 hover:bg-amber-500/30'
+            }`}
+            title={isNightMode ? 'Switch to Warm Golden Day Mode' : 'Switch to Starlit Midnight Mode'}
+          >
+            {isNightMode ? (
+              <Moon className="w-3.5 h-3.5 fill-cyan-300/30" />
+            ) : (
+              <Sun className="w-3.5 h-3.5 fill-amber-400/30" />
+            )}
+          </button>
 
-        {/* Autopilot Cruise Button */}
-        <button
-          onClick={() => setIsCruising(!isCruising)}
-          className={`px-3 py-2 min-h-[44px] flex items-center rounded-full text-[10px] uppercase font-bold tracking-wider transition-colors cursor-pointer active:scale-95 ${
-            isCruising 
-              ? (isNightMode ? 'bg-cyan-400 text-slate-900' : 'bg-[#B17B53] text-[#292B27]')
-              : 'hover:text-[#B17B53] text-white/80 bg-white/10'
-          }`}
-        >
-          {isCruising ? '■ PAUSE' : '► AUTOPILOT'}
-        </button>
-      </div>
+          <span className="text-white/20 text-[10px]">|</span>
 
-      {/* Interactive Track Station Quick-Jump Pills (Touch-optimized scroll container & 44px targets) */}
-      <div className={`absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center space-x-2 backdrop-blur-md px-3.5 py-2 rounded-full border-2 shadow-2xl text-xs font-mono max-w-[95vw] overflow-x-auto scrollbar-none touch-pan-x transition-colors duration-500 ${
+          {/* POV Camera Mode Switcher (Reduced width, high quality Camera icon) */}
+          <button
+            onClick={cyclePOV}
+            className={`flex items-center space-x-1 px-2 sm:px-2.5 py-1.5 min-h-[32px] rounded-full text-[10px] uppercase font-bold tracking-wider transition-all cursor-pointer active:scale-90 ${
+              povMode === 'cockpit'
+                ? 'bg-rose-900/70 text-rose-200 border border-rose-400/60'
+                : povMode === 'aerial'
+                ? 'bg-purple-900/70 text-purple-200 border border-purple-400/60'
+                : 'bg-white/10 text-[#F4EBDD] border border-white/20 hover:bg-white/20'
+            }`}
+            title="Cycle Camera View: Chase -> Cockpit -> Aerial"
+          >
+            <Camera className="w-3.5 h-3.5 text-[#B17B53]" />
+            <span className="text-[9.5px]">
+              {povMode === 'chase' ? 'CHASE' : povMode === 'cockpit' ? 'HOOD' : 'ORBIT'}
+            </span>
+          </button>
+
+          <span className="text-white/20 text-[10px]">|</span>
+
+          {/* Autopilot Cruise Button (Reduced width, high quality Play / Pause icon) */}
+          <button
+            onClick={() => setIsCruising(!isCruising)}
+            className={`flex items-center space-x-1 px-2 sm:px-2.5 py-1.5 min-h-[32px] rounded-full text-[10px] uppercase font-bold tracking-wider transition-all cursor-pointer active:scale-90 ${
+              isCruising 
+                ? (isNightMode ? 'bg-cyan-400 text-slate-950 shadow-sm' : 'bg-[#B17B53] text-[#292B27] shadow-sm')
+                : 'text-white/80 bg-white/10 hover:text-white hover:bg-white/20'
+            }`}
+            title={isCruising ? 'Pause Autonomous Rover' : 'Start Autonomous Rover Cruise'}
+          >
+            {isCruising ? (
+              <Pause className="w-3 h-3 fill-current" />
+            ) : (
+              <Play className="w-3 h-3 fill-current ml-0.5" />
+            )}
+            <span className="text-[9.5px]">{isCruising ? 'PAUSE' : 'AUTO'}</span>
+          </button>
+        </div>
+      </header>
+
+      {/* COMPACT WAYPOINT QUICK-JUMP CAPSULE (Significantly reduced width, zero scrollbar) */}
+      <div className={`absolute bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center space-x-1 sm:space-x-1.5 backdrop-blur-md px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full border shadow-xl text-xs font-mono max-w-[92vw] sm:max-w-fit overflow-x-auto transition-colors duration-500 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ${
         isNightMode
           ? 'bg-[#0E1626]/95 border-cyan-500/30 text-[#F1F5F9]'
-          : 'bg-[#F4EBDD]/95 border-[#292B27]/30 text-[#292B27]'
+          : 'bg-[#F4EBDD]/95 border-[#292B27]/25 text-[#292B27]'
       }`}>
-        <span className={`text-[10px] font-bold mr-1 uppercase shrink-0 ${isNightMode ? 'text-cyan-400' : 'text-[#89634C]'}`}>
-          WAYPOINTS:
-        </span>
-        {PROJECTS_DATA.map((p, idx) => (
-          <button
-            key={p.id}
-            onClick={() => jumpToWaypoint(idx)}
-            className={`px-3.5 py-2 min-h-[44px] flex items-center justify-center rounded-full transition-all cursor-pointer font-semibold shrink-0 text-xs active:scale-95 ${
-              currentWaypointId === p.id
-                ? (isNightMode ? 'bg-cyan-400 text-slate-950 shadow-md scale-105 font-bold' : 'bg-[#292B27] text-[#F4EBDD] shadow-sm scale-105')
-                : (isNightMode ? 'hover:bg-cyan-400/10 text-slate-300' : 'hover:bg-[#292B27]/10 text-[#292B27]/80')
-            }`}
-          >
-            {p.number}. {p.title}
-          </button>
-        ))}
+        <div className="flex items-center space-x-1 px-1 shrink-0">
+          <MapPin className={`w-3 h-3 ${isNightMode ? 'text-cyan-400' : 'text-[#B17B53]'}`} />
+          <span className={`text-[9.5px] font-bold uppercase tracking-wider hidden xs:inline ${isNightMode ? 'text-cyan-400' : 'text-[#89634C]'}`}>
+            WAYPOINTS:
+          </span>
+        </div>
+
+        {PROJECTS_DATA.map((p, idx) => {
+          const isActive = currentWaypointId === p.id;
+          return (
+            <button
+              key={p.id}
+              onClick={() => jumpToWaypoint(idx)}
+              className={`px-2.5 py-1 min-h-[32px] sm:min-h-[34px] flex items-center justify-center rounded-full transition-all cursor-pointer font-bold shrink-0 text-[10px] sm:text-[11px] active:scale-95 ${
+                isActive
+                  ? (isNightMode ? 'bg-cyan-400 text-slate-950 shadow-sm font-extrabold' : 'bg-[#292B27] text-[#F4EBDD] shadow-sm font-extrabold')
+                  : (isNightMode ? 'hover:bg-cyan-400/10 text-slate-300 bg-white/5' : 'hover:bg-[#292B27]/10 text-[#292B27]/75 bg-[#292B27]/5')
+              }`}
+              title={p.title}
+            >
+              {isActive ? (
+                <span className="flex items-center space-x-1">
+                  <span>{p.number}.</span>
+                  <span className="hidden sm:inline">{p.title}</span>
+                  <span className="sm:hidden">{p.title.split(' ')[0]}</span>
+                </span>
+              ) : (
+                <span>{p.number}</span>
+              )}
+            </button>
+          );
+        })}
       </div>
 
       {/* Navigation Hint */}

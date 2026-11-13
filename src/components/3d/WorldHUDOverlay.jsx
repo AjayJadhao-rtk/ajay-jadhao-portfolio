@@ -12,7 +12,7 @@ export default function WorldHUDOverlay({ waypoint, onClose, onOpenBlueprint }) 
   return (
     <aside 
       aria-label="Waypoint Station Telemetry"
-      className="absolute top-18 sm:top-20 right-2 sm:right-8 left-2 sm:left-auto z-30 w-auto sm:w-full max-w-sm sm:max-w-md animate-fadeIn select-none pointer-events-auto max-h-[82vh] overflow-y-auto"
+      className="absolute top-16 sm:top-20 right-3 sm:right-8 left-3 sm:left-auto z-30 w-auto sm:w-full max-w-[350px] sm:max-w-md mx-auto sm:mx-0 animate-fadeIn select-none pointer-events-auto max-h-[80vh] overflow-y-auto"
     >
       <div
         className="relative bg-[#F4EBDD]/95 backdrop-blur-md border-2 border-[#292B27] rounded-lg shadow-2xl p-4 sm:p-5 text-[#292B27] flex flex-col space-y-3.5"

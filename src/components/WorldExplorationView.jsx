@@ -95,33 +95,17 @@ export default function WorldExplorationView({ onReturnToHero }) {
   return (
     <div className="relative w-full h-screen bg-[#E9DDC7] text-[#292B27] overflow-hidden select-none">
       
-      {/* 3D WebGL Circuit Canvas */}
+      {/* 3D WebGL Circuit Canvas with Integrated Top Controls Bar */}
       <WorldErrorBoundary onReturnToHero={onReturnToHero}>
         <CircuitWorldCanvas
           onWaypointChange={handleWaypointChange}
           onSchematicOpen={handleSchematicOpen}
           currentWaypointId={activeWaypoint?.id}
           onRegisterExitHandler={handleRegisterExitHandler}
+          onReturnHome={handleReturn}
+          isExiting={isExiting}
         />
       </WorldErrorBoundary>
-
-      {/* Top Left Navigation Back to Hero Section with GSAP Ascent */}
-      <div className="absolute top-4 left-4 z-30 flex items-center space-x-3">
-        <button
-          onClick={handleReturn}
-          disabled={isExiting}
-          className="group flex items-center space-x-2 px-4 py-2.5 min-h-[44px] rounded-full bg-[#292B27] text-[#F4EBDD] hover:bg-[#1E201D] transition-all shadow-md active:translate-y-0.5 font-mono text-xs font-semibold cursor-pointer disabled:opacity-50"
-        >
-          <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-1" />
-          <span className="hidden min-[420px]:inline">{isExiting ? 'Ascending...' : 'Return to Editorial Hero'}</span>
-          <span className="min-[420px]:hidden">{isExiting ? 'Ascending...' : 'Hero View'}</span>
-        </button>
-
-        <div className="hidden xl:flex items-center space-x-1 text-[10px] font-mono text-[#626B50] bg-[#F4EBDD]/80 backdrop-blur-xs px-2.5 py-1 rounded-full border border-[#292B27]/15">
-          <Compass className="w-3 h-3 text-[#B17B53]" />
-          <span>ISOMETRIC 3D CIRCUIT PROVING GROUND</span>
-        </div>
-      </div>
 
       {/* Waypoint Arrival HUD Card */}
       {activeWaypoint && !isExiting && (
