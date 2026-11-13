@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import Navigation from './Navigation';
 import AnimatedCloudStrips from './AnimatedCloudStrips';
 import AnimatedWheel from './AnimatedWheel';
+import BuildingGrassLayer from './BuildingGrassLayer';
 import SurfaceElasticBender from './SurfaceElasticBender';
 
 // ARCHIVED COMPONENTS PRESERVED SAFELY IN THE CODEBASE:
@@ -40,10 +41,15 @@ export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onTog
         <AnimatedWheel />
       </div>
 
-      {/* 4. TACTILE SURFACE ELASTIC BENDER (Depression ripple & flex on click/tap) */}
+      {/* 4. BUILDING & GRASS GROUND LAYER (Satellite Dish, City Skyline, Trees, Birds) */}
+      <div className="fixed inset-0 w-full h-full pointer-events-none select-none z-[25] overflow-hidden">
+        <BuildingGrassLayer />
+      </div>
+
+      {/* 5. TACTILE SURFACE ELASTIC BENDER (Depression ripple & flex on click/tap) */}
       <SurfaceElasticBender containerRef={mainContentRef} />
 
-      {/* 5. TOP NAVIGATION BAR */}
+      {/* 6. TOP NAVIGATION BAR */}
       <div className="relative z-40">
         <Navigation
           onExploreClick={onOpen3DWorld}
