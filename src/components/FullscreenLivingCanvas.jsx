@@ -100,9 +100,17 @@ export default function FullscreenLivingCanvas({ children, onFrameUpdate }) {
       // Screen is narrower (standard 16:9, laptop, tablet, mobile)
       drawH = ch;
       drawW = ch * imgRatio;
-      // Focus on character: character center is at ~45% of width (x=830)
-      const focalPercent = 0.45;
-      drawX = cw * 0.45 - drawW * focalPercent;
+
+      if (cw < 768) {
+        // Mobile viewport: place character on the right side of the screen
+        // so the left column text and dossier card never obscure the character's eye and face
+        const focalPercent = 0.52;
+        drawX = (cw * 0.72) - (drawW * focalPercent);
+      } else {
+        // Tablet / Desktop: center-right composition
+        const focalPercent = 0.45;
+        drawX = cw * 0.45 - drawW * focalPercent;
+      }
 
       // Clamp so we never show empty space
       if (drawX > 0) drawX = 0;

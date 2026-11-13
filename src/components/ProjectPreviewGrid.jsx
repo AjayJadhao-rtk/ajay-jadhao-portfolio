@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
 import { ArrowRight, Activity, Cpu } from 'lucide-react';
 import { PROJECTS_DATA } from '../data/projectsData';
 import { audioEngine } from '../utils/audioSystem';
@@ -74,8 +75,12 @@ export default function ProjectPreviewGrid({ onSelectProject }) {
       {/* ========================================================================= */}
       <div className="flex lg:hidden flex-col gap-4 w-full px-1 py-2 select-none">
         
-        {/* Mobile Telemetry Stream Header */}
-        <div
+        {/* Mobile Telemetry Stream Header with smooth scroll entrance */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
           onClick={() => audioEngine.playRadarPing()}
           className="w-full flex items-center justify-between p-2.5 rounded-lg bg-[#1C2822] border border-[#292B27]/40 shadow-inner cursor-pointer"
         >
@@ -93,13 +98,21 @@ export default function ProjectPreviewGrid({ onSelectProject }) {
           <div className="w-28 h-10 overflow-hidden rounded bg-[#131C18] border border-emerald-500/20">
             <canvas ref={canvasMobileRef} width="112" height="40" className="w-full h-full opacity-90" />
           </div>
-        </div>
+        </motion.div>
 
-        {/* 5 Project Panels Arranged for Mobile */}
+        {/* 5 Project Panels Arranged for Mobile with Staggered Scroll-Driven Motion */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
-          {PROJECTS_DATA.map((project) => (
-            <div
+          {PROJECTS_DATA.map((project, idx) => (
+            <motion.div
               key={project.id}
+              initial={{ opacity: 0, y: 32, scale: 0.98 }}
+              whileInView={{ opacity: 1, y: 0, scale: 1 }}
+              viewport={{ once: true, amount: 0.15 }}
+              transition={{
+                duration: 0.65,
+                ease: [0.22, 1, 0.36, 1],
+                delay: idx * 0.08,
+              }}
               onClick={() => handleCardClick(project)}
               onMouseEnter={() => handleCardHover(project.id)}
               className="group relative flex flex-col rounded-lg bg-[#F4EBDD] border border-[#292B27]/30 shadow-md hover:border-[#B17B53] hover:shadow-lg transition-all duration-200 overflow-hidden cursor-pointer active:scale-[0.99] touch-manipulation"
@@ -183,7 +196,7 @@ export default function ProjectPreviewGrid({ onSelectProject }) {
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>
