@@ -1,13 +1,22 @@
 import React, { useState } from 'react';
-import { Download, Terminal, Menu, X, Music, Compass } from 'lucide-react';
+import { Download, Menu, X, Music, Compass, ArrowRight } from 'lucide-react';
 import { audioEngine } from '../utils/audioSystem';
 
+/**
+ * Navigation Component
+ * 
+ * Redesigned to match the user's Figma template and Brand Guidelines:
+ * 1. Brand Logo: Clean editorial text "Ajay Jadhao" in Inter Bold (#0E1F21).
+ * 2. Center Nav Links: Clean unboxed text links. Active tab ("Home") uses the
+ *    signature #6A8E8B teal underline accent without any bulky background pills.
+ * 3. Right Action Cluster: Features the Figma-style primary pill button "Let's Connect →"
+ *    alongside minimal toggles for 3D World exploration and ambient Audio.
+ */
 export default function Navigation({ onExploreClick, onResumeClick, currentView = 'hero', onToggleView }) {
   const [activeTab, setActiveTab] = useState('Home');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isAudioActive, setIsAudioActive] = useState(() => audioEngine.isMusicPlaying);
 
-  // Sync with audio engine state
   React.useEffect(() => {
     setIsAudioActive(audioEngine.isMusicPlaying);
   }, []);
@@ -16,8 +25,7 @@ export default function Navigation({ onExploreClick, onResumeClick, currentView 
     { label: 'Home', id: 'home' },
     { label: 'About', id: 'about' },
     { label: 'Projects', id: 'projects' },
-    { label: 'Experience', id: 'experience' },
-    { label: 'Achievements', id: 'achievements' },
+    { label: 'Skills', id: 'skills' },
     { label: 'Contact', id: 'contact' },
   ];
 
@@ -32,33 +40,32 @@ export default function Navigation({ onExploreClick, onResumeClick, currentView 
     }
   };
 
+  const handleConnectClick = () => {
+    audioEngine.playClick();
+    const el = document.getElementById('contact');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      alert('Connecting with Ajay Jadhao — Email: ajay.jadhao@example.com');
+    }
+  };
+
   return (
-    <header className="relative z-30 w-full px-4 sm:px-8 py-3 flex items-center justify-between border-b border-[#292B27]/12 bg-[#E9DDC7]/80 backdrop-blur-sm transition-all duration-300">
+    <header className="relative z-40 w-full px-4 sm:px-8 lg:px-12 py-4 sm:py-5 flex items-center justify-between border-b border-[#D9E3E1]/70 bg-[#E9DDC7]/40 backdrop-blur-md transition-all duration-300">
       
-      {/* BRAND IDENTITY: Engineering Monogram & Lab Status Badge (Deduplicated, name lives in Hero) */}
+      {/* BRAND IDENTITY: Clean Modern Text Logo matching Figma "YourName" */}
       <div
-        className="flex items-center space-x-2.5 group cursor-pointer select-none"
+        className="flex items-center space-x-2 group cursor-pointer select-none"
         onMouseEnter={() => audioEngine.playHover()}
         onClick={() => audioEngine.playRadarPing()}
       >
-        <div className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-md bg-[#292B27] text-[#F4EBDD] font-display font-bold text-xs sm:text-sm tracking-wider shadow-sm group-hover:bg-[#B17B53] transition-colors border border-[#292B27]/40">
-          AJ
-        </div>
-        <div className="flex flex-col">
-          <div className="flex items-center space-x-1.5">
-            <span className="font-mono text-[10px] sm:text-[11px] font-bold tracking-wider text-[#292B27] uppercase">
-              ROBOTICS & EMBEDDED
-            </span>
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
-          </div>
-          <p className="font-mono text-[8px] sm:text-[9px] tracking-widest text-[#89634C] font-semibold uppercase">
-            SYSTEMS LAB // 2026
-          </p>
-        </div>
+        <span className="font-inter font-bold text-lg sm:text-xl md:text-2xl text-[#0E1F21] tracking-tight hover:opacity-85 transition-opacity">
+          Ajay Jadhao
+        </span>
       </div>
 
-      {/* CENTER NAVIGATION PILL */}
-      <nav className="hidden md:flex items-center space-x-1 bg-[#F4EBDD]/70 px-2 py-1 rounded-full border border-[#292B27]/12 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)]">
+      {/* CENTER NAVIGATION LINKS (Unboxed, Active underline in #6A8E8B) */}
+      <nav className="hidden md:flex items-center space-x-7 lg:space-x-10">
         {navLinks.map((item) => {
           const isActive = activeTab === item.label;
           return (
@@ -70,12 +77,15 @@ export default function Navigation({ onExploreClick, onResumeClick, currentView 
                 setActiveTab(item.label);
                 if (item.id === 'projects' && onExploreClick) {
                   onExploreClick();
+                } else {
+                  const el = document.getElementById(item.id);
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
                 }
               }}
-              className={`relative px-4 py-1.5 rounded-full text-xs font-mono transition-all duration-200 tracking-tight cursor-pointer ${
+              className={`relative py-1 font-inter text-sm sm:text-[15px] transition-colors duration-200 cursor-pointer ${
                 isActive
-                  ? 'bg-[#292B27] text-[#F4EBDD] font-semibold shadow-sm shadow-[#292B27]/30'
-                  : 'text-[#292B27]/75 hover:text-[#292B27] hover:bg-[#292B27]/5'
+                  ? 'font-semibold text-[#0E1F21] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-[#6A8E8B]'
+                  : 'font-normal text-[#1A2A2D]/75 hover:text-[#0E1F21]'
               }`}
             >
               {item.label}
@@ -84,10 +94,10 @@ export default function Navigation({ onExploreClick, onResumeClick, currentView 
         })}
       </nav>
 
-      {/* RIGHT ACTION CLUSTER: 3D World Toggle, Audio Toggle, Terminal, Resume CTA */}
-      <div className="flex items-center space-x-2 sm:space-x-2.5">
+      {/* RIGHT ACTION CLUSTER: Figma "Let's Connect →" Pill Button + 3D World & Audio Toggles */}
+      <div className="flex items-center space-x-2.5 sm:space-x-3.5">
         
-        {/* 3D World Mode Switcher Button (Min 44px touch target) */}
+        {/* 3D World Mode Switcher Button */}
         {onToggleView && (
           <button
             onClick={() => {
@@ -95,86 +105,67 @@ export default function Navigation({ onExploreClick, onResumeClick, currentView 
               onToggleView(currentView === 'hero' ? '3d_world' : 'hero');
             }}
             onMouseEnter={() => audioEngine.playHover()}
-            className="flex items-center space-x-1.5 px-3 sm:px-3.5 py-2 min-h-[44px] rounded-full border border-[#B17B53]/50 bg-[#F4EBDD] text-[#292B27] hover:bg-[#292B27] hover:text-[#F4EBDD] transition-all text-xs font-mono shadow-2xs cursor-pointer active:scale-95"
+            className="flex items-center space-x-1.5 px-3 sm:px-3.5 py-1.5 min-h-[38px] rounded-full border border-[#6A8E8B]/40 bg-[#FFFFFF]/70 text-[#1A2A2D] hover:bg-[#0E1F21] hover:text-white transition-all text-xs font-inter cursor-pointer active:scale-95 shadow-2xs"
             title="Toggle between Hero Overview & 3D Circuit World"
           >
-            <Compass className="w-4 h-4 text-[#B17B53]" />
-            <span className="text-[11px] font-bold tracking-wider uppercase hidden min-[440px]:inline">
+            <Compass className="w-3.5 h-3.5 text-[#6A8E8B]" />
+            <span className="font-medium tracking-wide hidden min-[440px]:inline">
               {currentView === 'hero' ? '3D World' : 'Hero View'}
-            </span>
-            <span className="text-[11px] font-bold tracking-wider uppercase min-[440px]:hidden">
-              {currentView === 'hero' ? '3D' : 'Hero'}
             </span>
           </button>
         )}
 
-        {/* Soft Music & Sound Effects Pill Button (Min 44px touch target) */}
+        {/* Soft Music & Sound Toggle Pill */}
         <button
           onClick={toggleAudio}
           onMouseEnter={() => audioEngine.playHover()}
-          className={`group flex items-center space-x-1.5 sm:space-x-2 px-3 sm:px-3.5 py-2 min-h-[44px] rounded-full border transition-all duration-300 text-xs font-mono cursor-pointer shadow-2xs active:scale-95 ${
+          className={`flex items-center space-x-1.5 px-3 py-1.5 min-h-[38px] rounded-full border transition-all text-xs font-inter cursor-pointer shadow-2xs active:scale-95 ${
             isAudioActive
-              ? 'bg-[#292B27] border-[#292B27] text-[#F4EBDD]'
-              : 'bg-[#F4EBDD]/80 border-[#292B27]/25 text-[#292B27] hover:bg-[#F4EBDD]'
+              ? 'bg-[#0E1F21] border-[#0E1F21] text-white'
+              : 'bg-[#FFFFFF]/70 border-[#D9E3E1] text-[#1A2A2D] hover:bg-[#FFFFFF]'
           }`}
-          title={isAudioActive ? 'Mute / Pause Ambient Music' : 'Play Soft Vintage-Anime Ambient Music'}
+          title={isAudioActive ? 'Mute Music' : 'Play Ambient Music'}
         >
           {isAudioActive ? (
-            <>
-              <div className="flex items-end space-x-0.5 h-3.5 w-3.5">
-                <span className="w-0.5 bg-[#B17B53] h-full animate-pulse rounded-full" />
-                <span className="w-0.5 bg-emerald-400 h-2/3 animate-ping rounded-full" />
-                <span className="w-0.5 bg-amber-400 h-4/5 animate-pulse rounded-full" />
-              </div>
-              <span className="text-[10.5px] font-semibold tracking-wider text-amber-300 hidden min-[400px]:inline">AUDIO ON</span>
-            </>
+            <div className="flex items-end space-x-0.5 h-3 w-3">
+              <span className="w-0.5 bg-[#6A8E8B] h-full animate-pulse rounded-full" />
+              <span className="w-0.5 bg-teal-300 h-2/3 animate-ping rounded-full" />
+              <span className="w-0.5 bg-[#D9E3E1] h-4/5 animate-pulse rounded-full" />
+            </div>
           ) : (
-            <>
-              <Music className="w-3.5 h-3.5 text-[#89634C] group-hover:text-[#292B27]" />
-              <span className="text-[10.5px] font-medium tracking-wider text-[#626B50] hidden min-[400px]:inline">SOUND OFF</span>
-            </>
+            <Music className="w-3.5 h-3.5 text-[#6B7B7D]" />
           )}
+          <span className="font-medium text-[11px] hidden min-[400px]:inline">
+            {isAudioActive ? 'AUDIO ON' : 'SOUND'}
+          </span>
         </button>
 
-        {/* Terminal Quick Command Icon */}
+        {/* Primary Figma Pill Button: Let's Connect → */}
         <button
+          onClick={handleConnectClick}
           onMouseEnter={() => audioEngine.playHover()}
-          onClick={() => audioEngine.playRadarPing()}
-          title="Telemetry Terminal Mode"
-          className="hidden sm:flex items-center justify-center min-w-[44px] min-h-[44px] w-11 h-11 rounded-md border border-[#292B27]/25 bg-[#F4EBDD]/80 text-[#292B27] hover:bg-[#292B27] hover:text-[#F4EBDD] transition-colors duration-200 font-mono text-xs shadow-xs cursor-pointer"
+          className="group relative inline-flex items-center space-x-2 px-5 sm:px-6 py-2 sm:py-2.5 min-h-[38px] rounded-full bg-[#0E1F21] text-white font-inter font-semibold text-xs sm:text-sm hover:bg-[#1A2A2D] shadow-sm hover:shadow-md transition-all active:scale-95 cursor-pointer"
         >
-          <span className="font-mono font-bold text-xs">&gt;_</span>
+          <span>Let's Connect</span>
+          <ArrowRight className="w-3.5 h-3.5 text-white group-hover:translate-x-1 transition-transform duration-200" />
         </button>
 
-        {/* Resume Download Button (Min 44px touch target) */}
-        <button
-          onMouseEnter={() => audioEngine.playHover()}
-          onClick={() => {
-            audioEngine.playClick();
-            onResumeClick();
-          }}
-          className="hidden sm:flex group relative items-center space-x-2 px-4 py-2 min-h-[44px] rounded-md border border-[#292B27] bg-[#F4EBDD] text-[#292B27] hover:bg-[#292B27] hover:text-[#F4EBDD] transition-all duration-200 shadow-sm active:translate-y-0.5 cursor-pointer"
-        >
-          <span className="font-mono text-xs font-semibold tracking-wider uppercase">Resume</span>
-          <Download className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-y-0.5" />
-        </button>
-
-        {/* Mobile menu hamburger (Min 44px touch target) */}
+        {/* Mobile menu hamburger */}
         <button
           onClick={() => {
             audioEngine.playClick();
             setMobileMenuOpen(!mobileMenuOpen);
           }}
-          className="md:hidden flex items-center justify-center min-w-[44px] min-h-[44px] w-11 h-11 rounded border border-[#292B27]/30 text-[#292B27] cursor-pointer"
+          className="md:hidden flex items-center justify-center min-w-[38px] min-h-[38px] w-9 h-9 rounded-full border border-[#D9E3E1] bg-[#FFFFFF]/80 text-[#0E1F21] cursor-pointer"
           aria-label="Toggle Mobile Navigation Menu"
         >
-          {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
         </button>
       </div>
 
-      {/* Mobile Drawer with 44px+ Tap Targets */}
+      {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden absolute top-full left-0 w-full bg-[#F4EBDD] border-b-2 border-[#292B27]/30 p-4 shadow-xl flex flex-col space-y-2 z-50 animate-fadeIn">
+        <div className="md:hidden absolute top-full left-0 w-full bg-[#F4EBDD] border-b border-[#D9E3E1] p-5 shadow-xl flex flex-col space-y-3 z-50 animate-fadeIn">
           {navLinks.map((item) => (
             <button
               key={item.label}
@@ -185,29 +176,31 @@ export default function Navigation({ onExploreClick, onResumeClick, currentView 
                 setMobileMenuOpen(false);
                 if (item.id === 'projects' && onExploreClick) {
                   onExploreClick();
+                } else {
+                  const el = document.getElementById(item.id);
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
                 }
               }}
-              className={`text-left px-4 py-3 min-h-[44px] flex items-center rounded text-sm font-mono cursor-pointer ${
+              className={`text-left px-4 py-2.5 rounded-lg text-sm font-inter cursor-pointer transition-colors ${
                 activeTab === item.label
-                  ? 'bg-[#292B27] text-white font-bold'
-                  : 'text-[#292B27] hover:bg-[#E9DDC7]'
+                  ? 'bg-[#0E1F21] text-white font-semibold'
+                  : 'text-[#1A2A2D] hover:bg-[#E9DDC7]'
               }`}
             >
               {item.label}
             </button>
           ))}
 
-          {/* Mobile Resume CTA */}
+          {/* Mobile Let's Connect CTA */}
           <button
             onClick={() => {
-              audioEngine.playClick();
               setMobileMenuOpen(false);
-              onResumeClick();
+              handleConnectClick();
             }}
-            className="w-full flex items-center justify-center space-x-2 px-4 py-3 min-h-[44px] rounded bg-[#292B27] text-[#F4EBDD] font-mono text-xs font-bold uppercase tracking-wider cursor-pointer mt-2"
+            className="w-full flex items-center justify-center space-x-2 px-4 py-3 rounded-full bg-[#0E1F21] text-white font-inter text-sm font-semibold cursor-pointer mt-2"
           >
-            <span>Download Engineering Resume</span>
-            <Download className="w-4 h-4" />
+            <span>Let's Connect</span>
+            <ArrowRight className="w-4 h-4 text-white" />
           </button>
         </div>
       )}

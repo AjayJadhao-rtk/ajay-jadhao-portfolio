@@ -79,13 +79,13 @@ export default function HeroTypography({ onExploreClick, onAboutClick }) {
 
       {/* ============================================================== */}
       {/* 2. MAIN RIGHT-SIDE HERO TYPOGRAPHY COLUMN (From Reference Spec) */}
-      {/* Positioned cleanly in the sky above the bottom tree line        */}
+      {/* Positioned cleanly on the right half, leaving room for character */}
       {/* ============================================================== */}
-      <div className="w-full flex justify-end px-4 sm:px-8 lg:px-12 xl:px-16 pt-4 sm:pt-6 lg:pt-8 z-30">
-        <div className="w-full lg:w-[56%] xl:w-[50%] max-w-[660px] pointer-events-auto flex flex-col items-start text-left">
+      <div className="w-full flex justify-end px-4 sm:px-6 lg:pr-12 xl:pr-16 pt-3 sm:pt-5 lg:pt-6 z-30">
+        <div className="w-full lg:w-[46%] xl:w-[40%] max-w-[540px] pointer-events-auto flex flex-col items-start text-left">
           
           {/* Overline / Tagline: CREATIVE. CURIOUS. BUILDER. — */}
-          <div className="flex items-center space-x-3 mb-2.5 sm:mb-3.5">
+          <div className="flex items-center space-x-3 mb-2.5 sm:mb-3">
             <span className="font-inter font-semibold text-[11px] sm:text-xs md:text-[13px] tracking-[0.28em] text-[#1A2A2D] uppercase">
               CREATIVE.&nbsp;&nbsp;CURIOUS.&nbsp;&nbsp;BUILDER.
             </span>
@@ -94,7 +94,7 @@ export default function HeroTypography({ onExploreClick, onAboutClick }) {
 
           {/* Main Display Headline: TURNING IDEAS INTO IMPACT */}
           <h1
-            className="font-playfair font-bold text-[#0E1F21] text-4xl sm:text-5xl md:text-6xl lg:text-[68px] xl:text-[78px] leading-[0.96] tracking-tight uppercase mb-3.5 sm:mb-4"
+            className="font-playfair font-bold text-[#0E1F21] text-4xl sm:text-5xl md:text-[58px] lg:text-[64px] xl:text-[74px] leading-[0.96] tracking-tight uppercase mb-3.5 sm:mb-4"
             style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
           >
             <span className="block">TURNING</span>
@@ -129,12 +129,12 @@ export default function HeroTypography({ onExploreClick, onAboutClick }) {
           </h1>
 
           {/* Subtitle / Bio Paragraph */}
-          <p className="font-inter font-normal text-[#1A2A2D]/85 text-xs sm:text-sm md:text-base lg:text-[16.5px] leading-relaxed max-w-[460px] mb-4 sm:mb-5">
+          <p className="font-inter font-normal text-[#1A2A2D]/85 text-xs sm:text-sm md:text-base lg:text-[16px] leading-relaxed max-w-[450px] mb-4 sm:mb-5">
             I'm a designer &amp; developer who loves building meaningful digital experiences.
           </p>
 
           {/* Action Buttons: View My Work & About Me */}
-          <div className="flex flex-wrap items-center gap-4 sm:gap-6 mb-5 sm:mb-7">
+          <div className="flex flex-wrap items-center gap-4 sm:gap-6 mb-5 sm:mb-6">
             {/* Primary Action Button (#0E1F21 pill button) */}
             <button
               onClick={handlePrimaryClick}

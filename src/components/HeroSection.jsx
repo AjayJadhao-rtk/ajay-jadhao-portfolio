@@ -3,6 +3,7 @@ import Navigation from './Navigation';
 import AnimatedCloudStrips from './AnimatedCloudStrips';
 import AnimatedWheel from './AnimatedWheel';
 import BuildingGrassLayer from './BuildingGrassLayer';
+import AnimatedCharacter from './AnimatedCharacter';
 import SurfaceElasticBender from './SurfaceElasticBender';
 import HeroTypography from './HeroTypography';
 
@@ -47,10 +48,15 @@ export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onTog
         <BuildingGrassLayer />
       </div>
 
-      {/* 5. TACTILE SURFACE ELASTIC BENDER (Depression ripple & flex on click/tap) */}
+      {/* 5. ANIMATED CHARACTER LAYER (8-Frame Organic Wind & Breathing Idle Animation) */}
+      <div className="fixed inset-0 w-full h-full pointer-events-none select-none z-30 overflow-hidden">
+        <AnimatedCharacter />
+      </div>
+
+      {/* 6. TACTILE SURFACE ELASTIC BENDER (Depression ripple & flex on click/tap) */}
       <SurfaceElasticBender containerRef={mainContentRef} />
 
-      {/* 6. TOP NAVIGATION BAR */}
+      {/* 7. TOP NAVIGATION BAR */}
       <div className="relative z-40">
         <Navigation
           onExploreClick={onOpen3DWorld}
@@ -60,7 +66,7 @@ export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onTog
         />
       </div>
 
-      {/* 6. MAIN STAGE (Hero Typography & Interactive Controls at z-30) */}
+      {/* 8. MAIN STAGE (Hero Typography & Interactive Controls at z-30) */}
       <main
         ref={mainContentRef}
         className="relative flex-1 w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 py-2 sm:py-4 z-30 pointer-events-none flex flex-col justify-between"
