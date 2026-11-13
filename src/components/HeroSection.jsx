@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import Navigation from './Navigation';
 import AnimatedCloudStrips from './AnimatedCloudStrips';
+import AnimatedWheel from './AnimatedWheel';
 import SurfaceElasticBender from './SurfaceElasticBender';
 
 // ARCHIVED COMPONENTS PRESERVED SAFELY IN THE CODEBASE:
@@ -34,10 +35,15 @@ export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onTog
         <AnimatedCloudStrips />
       </div>
 
-      {/* 3. TACTILE SURFACE ELASTIC BENDER (Depression ripple & flex on click/tap) */}
+      {/* 3. ROTATING GEAR WHEEL (Clockwise spin + speed up on mouse interaction) */}
+      <div className="fixed inset-0 w-full h-full pointer-events-none select-none z-15 overflow-hidden">
+        <AnimatedWheel />
+      </div>
+
+      {/* 4. TACTILE SURFACE ELASTIC BENDER (Depression ripple & flex on click/tap) */}
       <SurfaceElasticBender containerRef={mainContentRef} />
 
-      {/* 4. TOP NAVIGATION BAR */}
+      {/* 5. TOP NAVIGATION BAR */}
       <Navigation
         onExploreClick={onOpen3DWorld}
         onResumeClick={handleDownloadResume}
