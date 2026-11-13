@@ -40,3 +40,8 @@ videos1/
 .env
 .env.*
 !.env.example
+
+# Large Raw Extraction & Scratch Frames
+public/assets/character_100_frames/
+*.zip
+
