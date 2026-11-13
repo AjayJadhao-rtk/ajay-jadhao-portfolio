@@ -8,7 +8,7 @@ export default defineConfig({
     port: 3000,
     open: false,
     watch: {
-      ignored: ['**/videos1/**', '**/*.crdownload', '**/dist/**']
+      ignored: ['**/videos1/**', '**/IMAGES/**', '**/public/**', '**/*.crdownload', '**/dist/**']
     }
   },
   build: {
