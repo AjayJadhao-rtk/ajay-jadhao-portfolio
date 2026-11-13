@@ -270,8 +270,9 @@ export default function AnimatedWheel() {
               cx="0"
               cy="0"
               r="215"
-              fill="transparent"
-              className="pointer-events-auto cursor-pointer"
+              fill="rgba(0,0,0,0.001)"
+              pointerEvents="all"
+              className="cursor-pointer"
               onMouseEnter={handleMouseEnter}
               onMouseMove={handleMouseMoveOverWheel}
               onMouseLeave={handleMouseLeave}
