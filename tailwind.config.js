@@ -38,12 +38,11 @@ export default {
         }
       },
       fontFamily: {
-        editorial: ['"Cormorant Garamond"', '"Playfair Display"', 'Georgia', 'serif'],
-        serif: ['"Playfair Display"', 'Georgia', 'serif'],
-        cinzel: ['"Cinzel"', 'serif'],
+        display: ['"Space Grotesk"', '"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+        heading: ['"Plus Jakarta Sans"', '"Inter"', 'system-ui', 'sans-serif'],
+        sans: ['"Plus Jakarta Sans"', '"Inter"', 'system-ui', 'sans-serif'],
         mono: ['"JetBrains Mono"', '"Space Mono"', 'monospace'],
-        jp: ['"Noto Serif JP"', '"Yu Mincho"', 'serif'],
-        sans: ['"Inter"', 'sans-serif'],
+        editorial: ['"Space Grotesk"', '"Plus Jakarta Sans"', 'sans-serif'],
       },
       fontSize: {
         '2xs': ['0.65rem', { lineHeight: '0.9rem' }],

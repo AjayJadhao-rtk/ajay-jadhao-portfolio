@@ -30,23 +30,24 @@ export default function Navigation({ onExploreClick, onResumeClick, currentView 
   return (
     <header className="relative z-30 w-full px-4 sm:px-8 py-3 flex items-center justify-between border-b border-[#292B27]/12 bg-[#E9DDC7]/80 backdrop-blur-sm transition-all duration-300">
       
-      {/* BRAND IDENTITY: Logo with Technical Viewfinder Crop Marks */}
+      {/* BRAND IDENTITY: Engineering Monogram & Lab Status Badge (Deduplicated, name lives in Hero) */}
       <div
-        className="flex items-center space-x-3 group cursor-pointer"
+        className="flex items-center space-x-2.5 group cursor-pointer select-none"
         onMouseEnter={() => audioEngine.playHover()}
         onClick={() => audioEngine.playRadarPing()}
       >
-        <div className="relative pl-3 border-l-2 border-[#292B27]/70 py-0.5">
+        <div className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-md bg-[#292B27] text-[#F4EBDD] font-display font-bold text-xs sm:text-sm tracking-wider shadow-sm group-hover:bg-[#B17B53] transition-colors border border-[#292B27]/40">
+          AJ
+        </div>
+        <div className="flex flex-col">
           <div className="flex items-center space-x-1.5">
-            <span className="text-[11px] font-mono text-[#89634C] font-bold">┌</span>
-            <span className="font-editorial text-lg sm:text-xl font-bold tracking-[0.14em] text-[#292B27] uppercase">
-              AJAY JADHAO
+            <span className="font-mono text-[10px] sm:text-[11px] font-bold tracking-wider text-[#292B27] uppercase">
+              ROBOTICS & EMBEDDED
             </span>
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
           </div>
-          <p className="font-mono text-[9px] sm:text-[10px] tracking-wider text-[#626B50] font-medium flex items-center space-x-1 mt-0.5">
-            <span className="hidden min-[380px]:inline">Electronics & Telecommunication Engineer</span>
-            <span className="min-[380px]:hidden">E&TC Engineer</span>
-            <span className="text-[#89634C] font-bold">]</span>
+          <p className="font-mono text-[8px] sm:text-[9px] tracking-widest text-[#89634C] font-semibold uppercase">
+            SYSTEMS LAB // 2026
           </p>
         </div>
       </div>
