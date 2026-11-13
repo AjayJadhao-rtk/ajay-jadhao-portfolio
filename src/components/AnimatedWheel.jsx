@@ -232,14 +232,14 @@ export default function AnimatedWheel() {
                 transformOrigin: '0px 0px',
               }}
             >
-              {/* The high-res isolated wheel asset, perfectly centered at (0, 0) */}
+              {/* The high-res isolated wheel asset, mathematically centered at exact axle pin (0, 0) */}
               <image
                 href={wheelIsolatedUrl}
                 xlinkHref={wheelIsolatedUrl}
-                x="-211"
-                y="-211"
-                width="422"
-                height="422"
+                x="-222"
+                y="-222"
+                width="444"
+                height="444"
                 preserveAspectRatio="xMidYMid meet"
                 className="pointer-events-none select-none"
               />
@@ -271,7 +271,7 @@ export default function AnimatedWheel() {
             <circle
               cx="0"
               cy="0"
-              r="215"
+              r="222"
               fill="rgba(0,0,0,0.001)"
               pointerEvents="all"
               className="cursor-pointer"
