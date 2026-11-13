@@ -4,6 +4,7 @@ import AnimatedCloudStrips from './AnimatedCloudStrips';
 import AnimatedWheel from './AnimatedWheel';
 import BuildingGrassLayer from './BuildingGrassLayer';
 import SurfaceElasticBender from './SurfaceElasticBender';
+import HeroTypography from './HeroTypography';
 
 // ARCHIVED COMPONENTS PRESERVED SAFELY IN THE CODEBASE:
 // - LeftIntroSection: src/components/LeftIntroSection.jsx
@@ -59,12 +60,15 @@ export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onTog
         />
       </div>
 
-      {/* 6. MAIN STAGE (Clean slate ready for adding Figma template components one by one) */}
+      {/* 6. MAIN STAGE (Hero Typography & Interactive Controls at z-30) */}
       <main
         ref={mainContentRef}
-        className="relative flex-1 w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 py-6 z-30 pointer-events-none"
+        className="relative flex-1 w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 py-2 sm:py-4 z-30 pointer-events-none flex flex-col justify-between"
       >
-        {/* Hero stage content cleared as requested — adding elements one by one */}
+        <HeroTypography
+          onExploreClick={onOpen3DWorld}
+          onAboutClick={handleDownloadResume}
+        />
       </main>
     </div>
   );

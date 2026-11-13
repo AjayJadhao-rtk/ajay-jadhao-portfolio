@@ -35,14 +35,23 @@ export default {
           rust: '#9E4732',
           amber: '#D49B55',
           gold: '#C59E60',
+        },
+        brand: {
+          primary: '#0E1F21',
+          secondary: '#6A8E8B',
+          tertiary: '#D9E3E1',
+          'text-primary': '#1A2A2D',
+          'text-secondary': '#6B7B7D',
         }
       },
       fontFamily: {
+        playfair: ['"Playfair Display"', 'Georgia', 'serif'],
+        inter: ['"Inter"', 'system-ui', 'sans-serif'],
         display: ['"Space Grotesk"', '"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
         heading: ['"Plus Jakarta Sans"', '"Inter"', 'system-ui', 'sans-serif'],
-        sans: ['"Plus Jakarta Sans"', '"Inter"', 'system-ui', 'sans-serif'],
+        sans: ['"Inter"', '"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
         mono: ['"JetBrains Mono"', '"Space Mono"', 'monospace'],
-        editorial: ['"Space Grotesk"', '"Plus Jakarta Sans"', 'sans-serif'],
+        editorial: ['"Playfair Display"', '"Space Grotesk"', 'serif'],
       },
       fontSize: {
         '2xs': ['0.65rem', { lineHeight: '0.9rem' }],
