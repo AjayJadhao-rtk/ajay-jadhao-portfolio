@@ -31,13 +31,18 @@ export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onTog
   return (
     <div className="relative min-h-screen w-full bg-[#E9DDC7] text-[#292B27] flex flex-col justify-between overflow-x-hidden overflow-y-auto lg:overflow-hidden font-sans select-none">
       
-      {/* 1. FULL-SCREEN LIVING ANIMATION BACKGROUND CANVAS WITH FIXED SKY ARTWORK */}
-      <FullscreenLivingCanvas onFrameUpdate={(f) => setActiveFrame(f)}>
+      {/* 1. FULL-SCREEN BACKGROUND IMAGE (from Figma Template) */}
+      <div className="fixed inset-0 w-full h-full pointer-events-none select-none z-0 overflow-hidden">
+        <img
+          src="/assets/hero-bg-figma.jpg"
+          alt="Portfolio Background"
+          className="w-full h-full object-cover object-center"
+        />
         {/* Fixed atmospheric artwork in sky (Gears, Divergence coordinates, floating particles) */}
-        <div className="absolute inset-0 pointer-events-none select-none z-10 hidden lg:block">
+        <div className="absolute inset-0 pointer-events-none select-none z-10 hidden lg:block opacity-40">
           <CenterHeroArtwork />
         </div>
-      </FullscreenLivingCanvas>
+      </div>
 
       {/* 2. TACTILE SURFACE ELASTIC BENDER (Depression ripple & flex on click/tap) */}
       <SurfaceElasticBender containerRef={mainContentRef} />
