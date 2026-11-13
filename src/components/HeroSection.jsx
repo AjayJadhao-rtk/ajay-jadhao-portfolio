@@ -35,8 +35,8 @@ export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onTog
         <AnimatedCloudStrips />
       </div>
 
-      {/* 3. ROTATING GEAR WHEEL (Clockwise spin + speed up on mouse interaction) */}
-      <div className="fixed inset-0 w-full h-full pointer-events-none select-none z-[15] overflow-hidden">
+      {/* 3. ROTATING GEAR WHEEL (Clockwise spin + speed up on mouse interaction - In front of strips) */}
+      <div className="fixed inset-0 w-full h-full pointer-events-none select-none z-20 overflow-hidden">
         <AnimatedWheel />
       </div>
 
@@ -44,17 +44,19 @@ export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onTog
       <SurfaceElasticBender containerRef={mainContentRef} />
 
       {/* 5. TOP NAVIGATION BAR */}
-      <Navigation
-        onExploreClick={onOpen3DWorld}
-        onResumeClick={handleDownloadResume}
-        currentView={currentView}
-        onToggleView={onToggleView}
-      />
+      <div className="relative z-40">
+        <Navigation
+          onExploreClick={onOpen3DWorld}
+          onResumeClick={handleDownloadResume}
+          currentView={currentView}
+          onToggleView={onToggleView}
+        />
+      </div>
 
       {/* 6. MAIN STAGE (Clean slate ready for adding Figma template components one by one) */}
       <main
         ref={mainContentRef}
-        className="relative flex-1 w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 py-6 z-[20] pointer-events-none"
+        className="relative flex-1 w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 py-6 z-30 pointer-events-none"
       >
         {/* Hero stage content cleared as requested — adding elements one by one */}
       </main>

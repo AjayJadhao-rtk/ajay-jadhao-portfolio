@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import wheelIsolatedUrl from '../assets/wheel_isolated.png';
 
 /**
  * AnimatedWheel Component
@@ -233,13 +234,14 @@ export default function AnimatedWheel() {
             >
               {/* The high-res isolated wheel asset, perfectly centered at (0, 0) */}
               <image
-                href="/assets/Wheel/wheel_isolated.png"
+                href={wheelIsolatedUrl}
+                xlinkHref={wheelIsolatedUrl}
                 x="-211"
                 y="-211"
                 width="422"
                 height="422"
                 preserveAspectRatio="xMidYMid meet"
-                className="pointer-events-none drop-shadow-md select-none"
+                className="pointer-events-none select-none"
               />
             </g>
 
