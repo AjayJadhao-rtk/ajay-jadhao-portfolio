@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Play, Download, Github, Linkedin, Mail } from 'lucide-react';
+import { Play, Download, Github, Linkedin, Mail, Instagram } from 'lucide-react';
 import SatelliteRadar from './SatelliteRadar';
 import { audioEngine } from '../utils/audioSystem';
 
@@ -130,7 +130,7 @@ export default function LeftIntroSection({ onExploreClick, onResumeClick }) {
         {/* HIERARCHY LEVEL 6: Social Identity Badges & Geolocation Stamp (Min 44px tap targets) */}
         <motion.div variants={itemVariants} className="pt-1 flex flex-wrap items-center gap-2.5">
           <a
-            href="https://github.com"
+            href="https://github.com/AjayJadhao-rtk"
             target="_blank"
             rel="noreferrer"
             aria-label="GitHub Profile"
@@ -141,7 +141,7 @@ export default function LeftIntroSection({ onExploreClick, onResumeClick }) {
             <Github className="w-4 h-4" />
           </a>
           <a
-            href="https://linkedin.com"
+            href="https://www.linkedin.com/in/ajay-jadhao-236a74383/"
             target="_blank"
             rel="noreferrer"
             aria-label="LinkedIn Profile"
@@ -152,7 +152,18 @@ export default function LeftIntroSection({ onExploreClick, onResumeClick }) {
             <Linkedin className="w-4 h-4" />
           </a>
           <a
-            href="mailto:ajayjadhao@example.com"
+            href="https://www.instagram.com/rutiklabs?cplk=cWRuYXBsa2w2a3ps"
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Instagram Profile"
+            onMouseEnter={() => audioEngine.playHover()}
+            onClick={() => audioEngine.playClick()}
+            className="flex items-center justify-center min-w-[44px] min-h-[44px] w-11 h-11 rounded-md border border-[#292B27]/30 bg-[#F4EBDD] text-[#292B27] hover:bg-[#292B27] hover:text-[#F4EBDD] hover:border-[#292B27] transition-all duration-200 shadow-xs"
+          >
+            <Instagram className="w-4 h-4" />
+          </a>
+          <a
+            href="mailto:rutikjadhao20@gmail.com"
             aria-label="Send Email"
             onMouseEnter={() => audioEngine.playHover()}
             onClick={() => audioEngine.playClick()}

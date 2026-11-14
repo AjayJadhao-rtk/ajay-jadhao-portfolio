@@ -53,7 +53,7 @@ export default function Navigation({ onExploreClick, onResumeClick, currentView 
       if (el) {
         el.scrollIntoView({ behavior: 'smooth' });
       } else {
-        alert('Connecting with Ajay Jadhao — Email: ajay.jadhao@example.com');
+        alert('Connecting with Ajay Jadhao — Email: rutikjadhao20@gmail.com');
       }
     }
   };

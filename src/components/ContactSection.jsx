@@ -16,8 +16,8 @@ export default function ContactSection({ onScrollToTop, onNavigate }) {
 
   const EMAIL_ADDRESS = "rutikjadhao20@gmail.com";
   const GITHUB_URL = "https://github.com/AjayJadhao-rtk";
-  const LINKEDIN_URL = "https://www.linkedin.com/in/ajayjadhao";
-  const INSTAGRAM_URL = "https://instagram.com/ajayjadhao";
+  const LINKEDIN_URL = "https://www.linkedin.com/in/ajay-jadhao-236a74383/";
+  const INSTAGRAM_URL = "https://www.instagram.com/rutiklabs?cplk=cWRuYXBsa2w2a3ps";
   const TWITTER_URL = "https://twitter.com";
 
   const handleInputChange = (e) => {
@@ -227,7 +227,7 @@ export default function ContactSection({ onScrollToTop, onNavigate }) {
                     LINKEDIN
                   </span>
                   <span className="font-sans font-semibold text-xs sm:text-[13px] text-[#0E1F21] group-hover:text-[#0A66C2] transition-colors">
-                    linkedin.com/in/ajayjadhao
+                    linkedin.com/in/ajay-jadhao
                   </span>
                   <span className="text-[10px] text-[#5A6966] leading-tight">
                     Let&rsquo;s connect professionally.
@@ -277,7 +277,7 @@ export default function ContactSection({ onScrollToTop, onNavigate }) {
                     INSTAGRAM
                   </span>
                   <span className="font-sans font-semibold text-xs sm:text-[13px] text-[#0E1F21] group-hover:text-[#E1306C] transition-colors">
-                    instagram.com/ajayjadhao
+                    instagram.com/rutiklabs
                   </span>
                   <span className="text-[10px] text-[#5A6966] leading-tight">
                     Behind the scenes &amp; more.

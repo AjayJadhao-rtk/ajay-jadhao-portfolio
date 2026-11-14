@@ -21,12 +21,12 @@ export default function WelcomeScreen({ onEnter, onEnter3DWorld }) {
     if (soundEnabled) {
       setTimeout(() => {
         audioEngine.startMusic();
-      }, 400);
+      }, 150);
     }
 
     setTimeout(() => {
       onEnter();
-    }, 700);
+    }, 300);
   };
 
   const handleEnter3D = () => {
@@ -36,12 +36,12 @@ export default function WelcomeScreen({ onEnter, onEnter3DWorld }) {
     if (soundEnabled) {
       setTimeout(() => {
         audioEngine.startMusic();
-      }, 400);
+      }, 150);
     }
 
     setTimeout(() => {
       onEnter3DWorld();
-    }, 700);
+    }, 300);
   };
 
   return (

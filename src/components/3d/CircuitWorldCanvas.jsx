@@ -296,7 +296,7 @@ export default function CircuitWorldCanvas({
     rover.update(curve, 0, 0.016, 0);
     const startRoverPos = rover.mesh.position;
 
-    // 6. GSAP Camera Entrance Transition (Editorial Overview -> Smooth Chase-Cam Alignment)
+    // 6. GSAP Camera Entrance Transition (Silky-Smooth Cinematic Chase-Cam Alignment)
     const FOLLOW_DISTANCE = isMobileInitial ? 18.0 : 14.0;
     const CAMERA_HEIGHT = isMobileInitial ? 13.0 : 10.0;
 
@@ -309,35 +309,51 @@ export default function CircuitWorldCanvas({
     const targetCamY = startRoverPos.y + CAMERA_HEIGHT;
     const targetCamZ = startRoverPos.z - startTangentXZ.z * FOLLOW_DISTANCE;
 
+    // Elevated cinematic vantage point tracking the rover from behind
+    const entryDist = FOLLOW_DISTANCE * 1.8;
+    const entryHeight = targetCamY + (isMobileInitial ? 14.0 : 11.0);
+    const initialCamX = startRoverPos.x - startTangentXZ.x * entryDist;
+    const initialCamY = entryHeight;
+    const initialCamZ = startRoverPos.z - startTangentXZ.z * entryDist;
+
+    camera.position.set(initialCamX, initialCamY, initialCamZ);
+    camLookAtRef.current.set(startRoverPos.x, startRoverPos.y + 1.2, startRoverPos.z);
+    camera.lookAt(camLookAtRef.current);
+
+    // Warm up and precompile all WebGL shader programs so the first render frame never hitches
+    try {
+      renderer.compile(scene, camera);
+    } catch (_) {}
+
     isTransitioningRef.current = true;
-    camera.lookAt(startRoverPos.x, startRoverPos.y + 1.2, startRoverPos.z);
 
-    gsap.fromTo(
-      camera.position,
-      { x: 0, y: 90, z: 48 },
-      {
-        x: targetCamX,
-        y: targetCamY,
-        z: targetCamZ,
-        duration: 2.0,
-        ease: 'power3.inOut',
-        onComplete: () => {
-          isTransitioningRef.current = false;
-        },
-      }
-    );
+    gsap.to(camera.position, {
+      x: targetCamX,
+      y: targetCamY,
+      z: targetCamZ,
+      duration: 1.15,
+      ease: 'power2.out',
+      onUpdate: () => {
+        camera.lookAt(startRoverPos.x, startRoverPos.y + 1.2, startRoverPos.z);
+      },
+      onComplete: () => {
+        isTransitioningRef.current = false;
+        camLookAtRef.current.set(startRoverPos.x, startRoverPos.y + 1.2, startRoverPos.z);
+      },
+    });
 
-    // Register exit handler for smooth return to hero
+    // Register exit handler for swift, fluid return to hero
     if (onRegisterExitHandlerRef.current) {
       onRegisterExitHandlerRef.current((onFinish) => {
         isTransitioningRef.current = true;
         audioEngine.playClick();
         gsap.to(camera.position, {
-          x: 0,
-          y: 90,
-          z: 48,
-          duration: 1.4,
-          ease: 'power3.inOut',
+          y: camera.position.y + 8,
+          duration: 0.45,
+          ease: 'power2.in',
+          onUpdate: () => {
+            camera.lookAt(rover.mesh.position.x, rover.mesh.position.y + 1.2, rover.mesh.position.z);
+          },
           onComplete: () => {
             if (onFinish) onFinish();
           },
@@ -482,7 +498,9 @@ export default function CircuitWorldCanvas({
         targetLookAt.set(roverPos.x, roverPos.y + 1.2, roverPos.z);
       }
 
-      if (!isTransitioningRef.current) {
+      if (isTransitioningRef.current) {
+        camera.lookAt(roverPos.x, roverPos.y + 1.2, roverPos.z);
+      } else {
         const lerpSpeed = povModeRef.current === 'cockpit' ? 0.35 : 0.08;
         camera.position.lerp(camTargetPos, lerpSpeed);
         camLookAtRef.current.lerp(targetLookAt, lerpSpeed);
