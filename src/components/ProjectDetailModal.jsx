@@ -102,7 +102,7 @@ export default function ProjectDetailModal({ project, onClose }) {
                 <div
                   key={i}
                   onMouseEnter={() => audioEngine.playHover()}
-                  className="p-2 rounded bg-[#E9DDC7]/60 border border-[#292B27]/10 flex flex-col transition-colors hover:border-[#B17B53]/50"
+                  className="p-2 rounded bg-[#E9DDC7] border border-[#292B27]/15 flex flex-col transition-colors hover:border-[#B17B53]/50"
                 >
                   <span className="text-[8.5px] text-[#89634C] uppercase tracking-wider">
                     {item.label}

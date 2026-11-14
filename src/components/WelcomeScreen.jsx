@@ -1,191 +1,154 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Volume2, VolumeX, Compass, ArrowRight, Activity, Terminal } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Music, ArrowRight, Compass } from 'lucide-react';
 import { audioEngine } from '../utils/audioSystem';
 
 /**
- * WelcomeScreen: High-impact cinematic entrance gate for Ajay Jadhao's Portfolio.
- * 1. Provides a memorable, high-tech industrial engineering boot sequence.
- * 2. Elegantly solves browser autoplay restrictions with an intentional user gesture.
- * 3. Immediately triggers the exciting driving soundtrack and actuation sound.
- * 4. Offers options to enter with/without sound or jump straight to the 3D Circuit World.
+ * WelcomeScreen: Clean, minimalist entrance screen matching the portfolio's design system:
+ * - Warm parchment background (#E9DDC7) and deep charcoal accents (#0E1F21)
+ * - Sound / Music toggle button
+ * - Elegant "Welcome" card with Enter Portfolio and 3D World buttons
+ * - No cluttered lab diagnostics or technical telemetry
  */
 export default function WelcomeScreen({ onEnter, onEnter3DWorld }) {
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [isInitializing, setIsInitializing] = useState(false);
 
-  const handleEnterStudio = () => {
-    setIsInitializing(true);
-    audioEngine.playSystemBoot();
+  const toggleSound = () => {
+    audioEngine.playClick();
+    const nextState = !soundEnabled;
+    setSoundEnabled(nextState);
+    if (nextState) {
+      audioEngine.startMusic();
+    } else {
+      audioEngine.stopMusic();
+    }
+  };
 
-    if (soundEnabled) {
-      setTimeout(() => {
-        audioEngine.startMusic();
-      }, 150);
+  const handleEnterStudio = () => {
+    if (isInitializing) return;
+    setIsInitializing(true);
+    audioEngine.playClick();
+
+    if (soundEnabled && !audioEngine.isMusicPlaying) {
+      audioEngine.startMusic();
     }
 
     setTimeout(() => {
       onEnter();
-    }, 300);
+    }, 200);
   };
 
   const handleEnter3D = () => {
+    if (isInitializing) return;
     setIsInitializing(true);
-    audioEngine.playSystemBoot();
+    audioEngine.playClick();
 
-    if (soundEnabled) {
-      setTimeout(() => {
-        audioEngine.startMusic();
-      }, 150);
+    if (soundEnabled && !audioEngine.isMusicPlaying) {
+      audioEngine.startMusic();
     }
 
     setTimeout(() => {
       onEnter3DWorld();
-    }, 300);
+    }, 200);
   };
 
   return (
-    <div className="fixed inset-0 z-50 w-full h-full bg-[#181A17] text-[#F4EBDD] flex flex-col justify-between overflow-hidden select-none font-sans">
+    <div className="fixed inset-0 z-50 w-full h-full bg-[#E9DDC7] text-[#0E1F21] flex flex-col justify-between overflow-hidden select-none font-sans">
       
-      {/* Background Blueprint Grid & Ambient Particle Glow */}
-      <div className="absolute inset-0 pointer-events-none opacity-20">
-        <div className="w-full h-full bg-[linear-gradient(to_right,#E9DDC715_1px,transparent_1px),linear-gradient(to_bottom,#E9DDC715_1px,transparent_1px)] bg-[size:32px_32px]" />
+      {/* Subtle Background Canvas Grid (Matching Portfolio Aesthetic) */}
+      <div className="absolute inset-0 pointer-events-none opacity-25">
+        <div className="w-full h-full bg-[linear-gradient(to_right,#0E1F2110_1px,transparent_1px),linear-gradient(to_bottom,#0E1F2110_1px,transparent_1px)] bg-[size:32px_32px]" />
       </div>
 
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#B17B53]/10 rounded-full blur-[140px] pointer-events-none" />
-
-      {/* TOP HEADER: Telemetry Status & Audio Toggle */}
-      <header className="relative z-20 w-full max-w-6xl mx-auto px-6 py-6 flex items-center justify-between text-xs font-mono">
-        <div className="flex items-center space-x-2.5">
-          <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="text-[#DACAB0] tracking-widest uppercase font-bold text-[10px] sm:text-xs">
-            SYS.STATUS // READY
-          </span>
-          <span className="text-white/20 hidden sm:inline">|</span>
-          <span className="text-[#89634C] text-[10px] hidden sm:inline">
-            CORE FREQ: 240 MHz · LAT 18.52° N
+      {/* TOP HEADER: Brand Logo & Music / Sound Toggle */}
+      <header className="relative z-20 w-full max-w-5xl mx-auto px-6 py-6 flex items-center justify-between">
+        {/* Brand Identity */}
+        <div className="flex items-center space-x-2">
+          <span className="font-inter font-bold text-lg sm:text-xl text-[#0E1F21] tracking-tight">
+            Ajay Jadhao
           </span>
         </div>
 
-        {/* Audio Preference Toggle */}
+        {/* Music / Sound Toggle Pill (Matches Portfolio Navigation Style) */}
         <button
-          onClick={() => {
-            audioEngine.playClick();
-            setSoundEnabled(!soundEnabled);
-          }}
-          className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-full border transition-all cursor-pointer text-xs font-mono active:scale-95 ${
+          onClick={toggleSound}
+          className={`flex items-center space-x-2 px-3.5 py-1.5 min-h-[38px] rounded-full border transition-all text-xs font-inter cursor-pointer shadow-xs active:scale-95 ${
             soundEnabled
-              ? 'bg-[#B17B53]/20 border-[#B17B53] text-amber-300 shadow-[0_0_12px_rgba(177,123,83,0.3)]'
-              : 'bg-white/5 border-white/20 text-[#DACAB0]/70 hover:bg-white/10'
+              ? 'bg-[#0E1F21] border-[#0E1F21] text-white'
+              : 'bg-[#FFFFFF]/80 border-[#D9E3E1] text-[#1A2A2D] hover:bg-[#FFFFFF]'
           }`}
-          title={soundEnabled ? 'Music & Sound Enabled' : 'Muted'}
+          title={soundEnabled ? 'Music Active' : 'Music Off'}
         >
           {soundEnabled ? (
-            <>
-              <Volume2 className="w-3.5 h-3.5 text-amber-400" />
-              <span className="font-bold text-[10px] tracking-wider uppercase">SOUND ON</span>
-            </>
+            <div className="flex items-end space-x-0.5 h-3 w-3">
+              <span className="w-0.5 bg-[#6A8E8B] h-full animate-pulse rounded-full" />
+              <span className="w-0.5 bg-teal-300 h-2/3 animate-ping rounded-full" />
+              <span className="w-0.5 bg-[#D9E3E1] h-4/5 animate-pulse rounded-full" />
+            </div>
           ) : (
-            <>
-              <VolumeX className="w-3.5 h-3.5 text-slate-400" />
-              <span className="font-bold text-[10px] tracking-wider uppercase">SOUND OFF</span>
-            </>
+            <Music className="w-3.5 h-3.5 text-[#6B7B7D]" />
           )}
+          <span className="font-semibold text-[11px] tracking-wide">
+            {soundEnabled ? 'MUSIC ON' : 'MUSIC OFF'}
+          </span>
         </button>
       </header>
 
-      {/* CENTER STAGE: Protagonist Identity & Primary Entrance Trigger */}
-      <main className="relative z-20 w-full max-w-4xl mx-auto px-6 py-8 flex flex-col items-center text-center my-auto">
-        
-        {/* Engineering Lab Pill Badge */}
+      {/* CENTER STAGE: Simple, Beautiful Welcome Card matching Portfolio Design */}
+      <main className="relative z-20 w-full max-w-md mx-auto px-5 py-6 flex flex-col items-center text-center my-auto">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#292B27] border border-[#B17B53]/40 text-[#B17B53] font-mono text-[10px] tracking-widest uppercase font-bold mb-4 shadow-inner"
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          className="w-full bg-[#FAF6EE] border border-[#292B27]/20 rounded-2xl shadow-xl p-8 sm:p-10 flex flex-col items-center space-y-5"
+          style={{
+            boxShadow: '0 20px 40px rgba(41, 43, 39, 0.12), inset 0 0 30px rgba(233, 221, 199, 0.3)',
+          }}
         >
-          <span className="w-1.5 h-1.5 rounded-full bg-[#B17B53] animate-ping" />
-          <span>AUTONOMOUS SYSTEMS & ROBOTICS LAB</span>
-        </motion.div>
+          {/* Overline identifier */}
+          <span className="font-mono text-[10px] tracking-[0.25em] text-[#89634C] uppercase font-bold">
+            PERSONAL PORTFOLIO
+          </span>
 
-        {/* Hero Name Headline: AJAY JADHAO */}
-        <motion.h1
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
-          className="font-display text-5xl sm:text-7xl md:text-8xl font-black uppercase tracking-tight text-[#F4EBDD] leading-none mb-3"
-        >
-          AJAY JADHAO
-        </motion.h1>
+          {/* Welcome Title */}
+          <div className="space-y-1">
+            <h1 className="font-serif text-4xl sm:text-5xl font-bold tracking-tight text-[#0E1F21]">
+              Welcome
+            </h1>
+            <p className="font-inter text-sm sm:text-[15px] text-[#292B27]/75 font-medium">
+              Explore the engineering work of Ajay Jadhao
+            </p>
+          </div>
 
-        {/* Role Subtitle */}
-        <motion.p
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
-          className="font-mono text-xs sm:text-sm md:text-base font-bold tracking-[0.16em] uppercase text-[#DACAB0] mb-5"
-        >
-          ELECTRONICS & TELECOMMUNICATION ENGINEER
-        </motion.p>
+          {/* Action Triggers */}
+          <div className="w-full pt-2 flex flex-col space-y-2.5">
+            {/* Primary Action Button: Enter Portfolio */}
+            <button
+              onClick={handleEnterStudio}
+              disabled={isInitializing}
+              className="group w-full flex items-center justify-center space-x-2 py-3.5 px-6 min-h-[48px] rounded-full bg-[#0E1F21] text-white hover:bg-[#1A2A2D] transition-all shadow-md active:scale-98 font-inter text-sm font-semibold cursor-pointer disabled:opacity-50"
+            >
+              <span>{isInitializing ? 'Entering...' : 'Enter Portfolio'}</span>
+              <ArrowRight className="w-4 h-4 text-white group-hover:translate-x-1 transition-transform" />
+            </button>
 
-        {/* Engineering Vision Statement */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
-          className="max-w-xl mx-auto space-y-2 mb-8 bg-[#292B27]/70 backdrop-blur-md p-4 sm:p-5 rounded-xl border border-[#B17B53]/20 shadow-xl"
-        >
-          <p className="font-display text-lg sm:text-2xl font-bold uppercase tracking-tight text-[#F4EBDD]">
-            "I HAVE IDEAS. I BUILD THEM."
-          </p>
-          <p className="font-mono text-xs sm:text-sm text-[#DACAB0]/80 leading-relaxed">
-            Building real-world systems through robotics, embedded systems, IoT and electronics.
-          </p>
-        </motion.div>
-
-        {/* Action Triggers */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.4 }}
-          className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto"
-        >
-          {/* PRIMARY CTA: ENTER STUDIO */}
-          <button
-            onClick={handleEnterStudio}
-            disabled={isInitializing}
-            className="group relative w-full sm:w-auto flex items-center justify-center space-x-3 px-8 py-4 min-h-[54px] rounded-lg bg-[#B17B53] text-[#181A17] hover:bg-amber-400 active:scale-95 transition-all shadow-[0_0_25px_rgba(177,123,83,0.4)] cursor-pointer font-mono font-bold text-sm uppercase tracking-wider disabled:opacity-50"
-          >
-            <div className="w-6 h-6 rounded-full bg-[#181A17] text-[#B17B53] flex items-center justify-center group-hover:bg-[#181A17] group-hover:text-amber-400 transition-colors">
-              <Play className="w-3 h-3 fill-current ml-0.5" />
-            </div>
-            <span>{isInitializing ? 'INITIALIZING STUDIO...' : 'ENTER STUDIO'}</span>
-            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-          </button>
-
-          {/* SECONDARY CTA: JUMP DIRECT TO 3D CIRCUIT WORLD */}
-          <button
-            onClick={handleEnter3D}
-            disabled={isInitializing}
-            className="w-full sm:w-auto flex items-center justify-center space-x-2 px-6 py-4 min-h-[54px] rounded-lg border-2 border-[#DACAB0]/30 hover:border-[#DACAB0] bg-white/5 hover:bg-white/10 text-[#F4EBDD] active:scale-95 transition-all cursor-pointer font-mono text-xs font-bold uppercase tracking-wider disabled:opacity-50"
-          >
-            <Compass className="w-4 h-4 text-[#B17B53]" />
-            <span>EXPLORE 3D WORLD DIRECTLY</span>
-          </button>
+            {/* Secondary Action Button: Explore 3D World */}
+            <button
+              onClick={handleEnter3D}
+              disabled={isInitializing}
+              className="w-full flex items-center justify-center space-x-2 py-2.5 px-4 min-h-[40px] rounded-full border border-[#292B27]/20 hover:border-[#0E1F21] bg-transparent text-[#292B27] hover:bg-[#0E1F21]/5 transition-all font-inter text-xs font-semibold cursor-pointer disabled:opacity-50"
+            >
+              <Compass className="w-3.5 h-3.5 text-[#6A8E8B]" />
+              <span>Explore 3D Circuit World</span>
+            </button>
+          </div>
         </motion.div>
       </main>
 
-      {/* FOOTER BAR: Engineering Specifications & Node Status */}
-      <footer className="relative z-20 w-full max-w-6xl mx-auto px-6 py-4 border-t border-white/10 flex flex-wrap items-center justify-between text-[10px] font-mono text-[#DACAB0]/60 gap-2">
-        <div className="flex items-center space-x-3">
-          <span>SYS.SPEC: ESP32 · LoRa · PID 200Hz</span>
-          <span className="hidden sm:inline">|</span>
-          <span>5 ACTIVE HARDWARE NODES</span>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Terminal className="w-3 h-3 text-[#B17B53]" />
-          <span>© {new Date().getFullYear()} AJAY JADHAO // ALL CIRCUITS ARMED</span>
-        </div>
+      {/* MINIMAL FOOTER: Clean and unencumbered */}
+      <footer className="relative z-20 w-full max-w-5xl mx-auto px-6 py-4 flex items-center justify-center text-[11px] font-inter text-[#292B27]/60">
+        <span>&copy; {new Date().getFullYear()} Ajay Jadhao. All rights reserved.</span>
       </footer>
     </div>
   );
