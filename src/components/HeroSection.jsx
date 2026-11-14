@@ -143,6 +143,7 @@ export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onTog
         // Phase A: Shift to About framing (0.12 -> 0.34)
         tl.to(environmentRef.current, {
           x: -maxShiftAbout,
+          opacity: isNarrow ? 0.15 : 1,
           ease: 'power1.inOut',
           duration: 0.22
         }, 0.12);
@@ -150,6 +151,7 @@ export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onTog
         // Phase B: Shift to Skills framing (0.44 -> 0.64)
         tl.to(environmentRef.current, {
           x: -maxShiftSkills,
+          opacity: isNarrow ? 0.12 : 1,
           ease: 'power1.inOut',
           duration: 0.20
         }, 0.44);
@@ -174,6 +176,7 @@ export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onTog
         // 1. Environment positions strips & building cleanly on left edge
         tl.to(environmentRef.current, {
           x: -maxShiftContactLeft,
+          opacity: isNarrow ? 0.12 : 1,
           ease: 'power1.inOut',
           duration: 0.18
         }, 0.74);

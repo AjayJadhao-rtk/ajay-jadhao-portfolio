@@ -129,7 +129,7 @@ export default function ContactSection({ onScrollToTop, onNavigate }) {
       {/* ========================================================================= */}
       {/* MAIN CONTENT AREA: Leaves left open for rectangle strips & building       */}
       {/* ========================================================================= */}
-      <div className="w-full flex-1 flex flex-col justify-between pl-0 lg:pl-36 xl:pl-48 pr-2 sm:pr-8 max-w-[1720px] mx-auto overflow-y-auto max-h-[calc(100vh-130px)] lg:max-h-none scrollbar-thin">
+      <div className="w-full flex-1 flex flex-col justify-between pl-0 lg:pl-36 xl:pl-48 pr-2 sm:pr-8 max-w-[1720px] mx-auto overflow-y-auto max-h-[calc(100vh-110px)] lg:max-h-none scrollbar-thin touch-pan-y">
         
         {/* Section Header */}
         <div className="flex flex-col items-start space-y-1 mb-2 sm:mb-3">

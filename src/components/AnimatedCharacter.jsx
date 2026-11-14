@@ -129,10 +129,10 @@ export default function AnimatedCharacter() {
       >
         {/* Render HTML5 Canvas inside SVG foreignObject for mathematical lockstep scaling */}
         <foreignObject
-          x="240"
-          y="199"
-          width="596"
-          height="622"
+          x={isMobile ? "180" : "240"}
+          y={isMobile ? "270" : "199"}
+          width={isMobile ? "540" : "596"}
+          height={isMobile ? "551" : "622"}
           className="overflow-visible pointer-events-none"
         >
           <div className="w-full h-full relative pointer-events-none">
