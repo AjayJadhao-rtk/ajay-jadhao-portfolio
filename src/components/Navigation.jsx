@@ -12,10 +12,14 @@ import { audioEngine } from '../utils/audioSystem';
  * 3. Right Action Cluster: Features the Figma-style primary pill button "Let's Connect →"
  *    alongside minimal toggles for 3D World exploration and ambient Audio.
  */
-export default function Navigation({ onExploreClick, onResumeClick, currentView = 'hero', onToggleView }) {
-  const [activeTab, setActiveTab] = useState('Home');
+export default function Navigation({ onExploreClick, onResumeClick, currentView = 'hero', onToggleView, activeSection = 'Home', onNavigate }) {
+  const [activeTab, setActiveTab] = useState(activeSection);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isAudioActive, setIsAudioActive] = useState(() => audioEngine.isMusicPlaying);
+
+  React.useEffect(() => {
+    setActiveTab(activeSection);
+  }, [activeSection]);
 
   React.useEffect(() => {
     setIsAudioActive(audioEngine.isMusicPlaying);
@@ -42,11 +46,15 @@ export default function Navigation({ onExploreClick, onResumeClick, currentView 
 
   const handleConnectClick = () => {
     audioEngine.playClick();
-    const el = document.getElementById('contact');
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
+    if (onNavigate) {
+      onNavigate('contact');
     } else {
-      alert('Connecting with Ajay Jadhao — Email: ajay.jadhao@example.com');
+      const el = document.getElementById('contact');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        alert('Connecting with Ajay Jadhao — Email: ajay.jadhao@example.com');
+      }
     }
   };
 
@@ -57,7 +65,10 @@ export default function Navigation({ onExploreClick, onResumeClick, currentView 
       <div
         className="flex items-center space-x-2 group cursor-pointer select-none whitespace-nowrap flex-shrink-0"
         onMouseEnter={() => audioEngine.playHover()}
-        onClick={() => audioEngine.playRadarPing()}
+        onClick={() => {
+          audioEngine.playRadarPing();
+          if (onNavigate) onNavigate('home');
+        }}
       >
         <span className="font-inter font-bold text-base sm:text-xl md:text-2xl text-[#0E1F21] tracking-tight hover:opacity-85 transition-opacity">
           Ajay Jadhao
@@ -67,7 +78,7 @@ export default function Navigation({ onExploreClick, onResumeClick, currentView 
       {/* CENTER NAVIGATION LINKS (Unboxed, Active underline in #6A8E8B) */}
       <nav className="hidden md:flex items-center space-x-7 lg:space-x-10">
         {navLinks.map((item) => {
-          const isActive = activeTab === item.label;
+          const isActive = activeTab.toLowerCase() === item.label.toLowerCase();
           return (
             <button
               key={item.label}
@@ -75,7 +86,9 @@ export default function Navigation({ onExploreClick, onResumeClick, currentView 
               onClick={() => {
                 audioEngine.playClick();
                 setActiveTab(item.label);
-                if (item.id === 'projects' && onExploreClick) {
+                if (onNavigate) {
+                  onNavigate(item.id);
+                } else if (item.id === 'projects' && onExploreClick) {
                   onExploreClick();
                 } else {
                   const el = document.getElementById(item.id);
@@ -174,7 +187,9 @@ export default function Navigation({ onExploreClick, onResumeClick, currentView 
                 audioEngine.playClick();
                 setActiveTab(item.label);
                 setMobileMenuOpen(false);
-                if (item.id === 'projects' && onExploreClick) {
+                if (onNavigate) {
+                  onNavigate(item.id);
+                } else if (item.id === 'projects' && onExploreClick) {
                   onExploreClick();
                 } else {
                   const el = document.getElementById(item.id);
