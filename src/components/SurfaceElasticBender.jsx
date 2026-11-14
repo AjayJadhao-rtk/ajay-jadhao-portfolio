@@ -151,30 +151,7 @@ export default function SurfaceElasticBender({ containerRef }) {
       // Play soft acoustic surface-tap tactile sound
       audioEngine.playSurfaceBend();
 
-      // Physical 3D flex transform on the container
-      if (containerRef && containerRef.current) {
-        const el = containerRef.current;
-        const rect = el.getBoundingClientRect();
-        const normX = ((x - rect.left) / rect.width - 0.5) * 2;
-        const normY = ((y - rect.top) / rect.height - 0.5) * 2;
-
-        const tiltX = -normY * 1.8; // degrees
-        const tiltY = normX * 1.8;
-
-        el.style.transition = 'transform 0.08s cubic-bezier(0.2, 0.8, 0.4, 1)';
-        el.style.transformOrigin = `${x}px ${y}px`;
-        el.style.transform = `perspective(900px) scale(0.993) rotateX(${tiltX.toFixed(2)}deg) rotateY(${tiltY.toFixed(2)}deg)`;
-
-        // Spring back elastically
-        setTimeout(() => {
-          if (el) {
-            el.style.transition = 'transform 0.45s cubic-bezier(0.18, 0.89, 0.32, 1.28)';
-            el.style.transform = 'perspective(900px) scale(1) rotateX(0deg) rotateY(0deg)';
-          }
-        }, 90);
-      }
-
-      // Start render loop if not running
+      // Start render loop for canvas ripple if not running
       if (!animIdRef.current) {
         animIdRef.current = requestAnimationFrame(render);
       }

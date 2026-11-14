@@ -172,7 +172,7 @@ Best regards,
           {/* ============================================================== */}
           {/* 1. SECTION IDENTIFIER: 01 // ABOUT ——————————————             */}
           {/* ============================================================== */}
-          <div className="w-full flex items-center space-x-3 sm:space-x-4 mb-2 sm:mb-3">
+          <div className="about-eyebrow w-full flex items-center space-x-3 sm:space-x-4 mb-2 sm:mb-3">
             <span className="font-mono text-[11px] sm:text-xs md:text-[13px] font-bold tracking-[0.25em] text-[#0E1F21] uppercase whitespace-nowrap">
               01 &nbsp;//&nbsp; ABOUT
             </span>
@@ -183,7 +183,7 @@ Best regards,
           {/* 2. MAIN DISPLAY HEADING: AJAY JADHAO                           */}
           {/* ============================================================== */}
           <h2
-            className="font-playfair font-bold text-4xl sm:text-5xl md:text-6xl lg:text-[66px] xl:text-[76px] leading-[0.95] tracking-tight uppercase mb-3 sm:mb-4 text-[#0E1F21]"
+            className="about-heading font-playfair font-bold text-4xl sm:text-5xl md:text-6xl lg:text-[66px] xl:text-[76px] leading-[0.95] tracking-tight uppercase mb-3 sm:mb-4 text-[#0E1F21]"
             style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
           >
             <span>AJAY </span>
@@ -202,14 +202,14 @@ Best regards,
           {/* ============================================================== */}
           {/* 3. SUPPORTING BIO PARAGRAPH WITH KEY PHRASE EMPHASIS           */}
           {/* ============================================================== */}
-          <p className="font-inter font-normal text-xs sm:text-sm md:text-[15px] lg:text-[15.5px] leading-relaxed text-[#1A2A2D]/85 max-w-[640px] mb-4 sm:mb-5">
+          <p className="about-bio font-inter font-normal text-xs sm:text-sm md:text-[15px] lg:text-[15.5px] leading-relaxed text-[#1A2A2D]/85 max-w-[640px] mb-4 sm:mb-5">
             I'm an <strong className="font-semibold text-[#0E1F21]">Electronics &amp; Telecommunication Engineering</strong> student at SSGMCE, Shegaon, who builds <strong className="font-semibold text-[#0E1F21]">smart machines, connected hardware, and interactive 3D websites</strong>. From <strong className="font-semibold text-[#0E1F21]">disaster-rescue robots for Smart India Hackathon</strong> to custom embedded devices, I turn complex engineering ideas into <strong className="font-semibold text-[#0E1F21]">working real-world products</strong>.
           </p>
 
           {/* ============================================================== */}
           {/* 4. PROFILE METADATA ROW (Location, Education, Availability)    */}
           {/* ============================================================== */}
-          <div className="w-full grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 py-3 sm:py-3.5 border-y border-[#D9E3E1] mb-4 sm:mb-5">
+          <div className="about-meta w-full grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 py-3 sm:py-3.5 border-y border-[#D9E3E1] mb-4 sm:mb-5">
             {/* Item 1: Location */}
             <div className="flex items-center space-x-2.5">
               <div className="w-7 h-7 rounded-full bg-[#E4ECE7] flex items-center justify-center flex-shrink-0">
@@ -265,7 +265,7 @@ Best regards,
             <button
               onClick={handleHardwareInquiry}
               onMouseEnter={() => audioEngine.playHover()}
-              className="group relative flex flex-col items-start text-left p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-[#E4ECE7] border border-[#CAD8D1] hover:border-[#6A8E8B] hover:bg-[#EDF5F1] shadow-2xs hover:shadow-md hover:-translate-y-1 active:translate-y-0 transition-all duration-200 cursor-pointer"
+              className="about-card-1 group relative flex flex-col items-start text-left p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-[#E4ECE7] border border-[#CAD8D1] hover:border-[#6A8E8B] hover:bg-[#EDF5F1] shadow-2xs hover:shadow-md hover:-translate-y-1 active:translate-y-0 transition-all duration-200 cursor-pointer"
             >
               <div className="w-full flex items-center justify-between mb-2">
                 <RoverIcon className="w-7 h-7 text-[#0E1F21] group-hover:scale-105 transition-transform" />
@@ -285,7 +285,7 @@ Best regards,
             <button
               onClick={handleInteractive3DClick}
               onMouseEnter={() => audioEngine.playHover()}
-              className="group relative flex flex-col items-start text-left p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-[#F7EBE1] border border-[#EAD9CD] hover:border-[#6A8E8B] hover:bg-[#FBF2EB] shadow-2xs hover:shadow-md hover:-translate-y-1 active:translate-y-0 transition-all duration-200 cursor-pointer"
+              className="about-card-2 group relative flex flex-col items-start text-left p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-[#F7EBE1] border border-[#EAD9CD] hover:border-[#6A8E8B] hover:bg-[#FBF2EB] shadow-2xs hover:shadow-md hover:-translate-y-1 active:translate-y-0 transition-all duration-200 cursor-pointer"
             >
               <div className="w-full flex items-center justify-between mb-2">
                 <Browser3DCubeIcon className="w-7 h-7 text-[#0E1F21] group-hover:scale-105 transition-transform" />
@@ -306,7 +306,7 @@ Best regards,
             <button
               onClick={handleBuildPrototype}
               onMouseEnter={() => audioEngine.playHover()}
-              className="group relative flex flex-col items-start text-left p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-[#DDEBE5] border border-[#6A8E8B] hover:border-[#0E1F21] hover:bg-[#EAF5EF] shadow-2xs hover:shadow-lg hover:-translate-y-1 active:translate-y-0 transition-all duration-200 cursor-pointer"
+              className="about-card-3 group relative flex flex-col items-start text-left p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-[#DDEBE5] border border-[#6A8E8B] hover:border-[#0E1F21] hover:bg-[#EAF5EF] shadow-2xs hover:shadow-lg hover:-translate-y-1 active:translate-y-0 transition-all duration-200 cursor-pointer"
             >
               <div className="w-full flex items-center justify-between mb-2">
                 <OrigamiAirplaneIcon className="w-7 h-7 group-hover:scale-110 group-hover:rotate-6 transition-transform" />
@@ -326,7 +326,7 @@ Best regards,
           {/* ============================================================== */}
           {/* 6. BOTTOM RIGHT PHILOSOPHY TAGLINE                             */}
           {/* ============================================================== */}
-          <div className="w-full flex justify-end items-center space-x-3 pt-2">
+          <div className="about-tagline w-full flex justify-end items-center space-x-3 pt-2">
             <span className="w-8 sm:w-12 h-[1px] bg-[#6A8E8B]/40 inline-block align-middle" />
             <span className="font-mono text-[9px] sm:text-[10px] tracking-[0.22em] text-[#6B7B7D] uppercase">
               IDEAS INTO REAL-WORLD SOLUTIONS

@@ -47,6 +47,7 @@ export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onTog
   const aboutLeftAccentRef = useRef(null);
 
   const [activeSection, setActiveSection] = useState('Home');
+  const activeSectionRef = useRef('Home');
   const isMobile = useIsMobile(1024);
 
   const handleDownloadResume = () => {
@@ -80,7 +81,7 @@ export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onTog
     }
   };
 
-  // GSAP ScrollTrigger Master Timeline
+  // GSAP ScrollTrigger Master Timeline with Seamless Hero-to-About Overlap & 0.25s Responsive Scrub
   useEffect(() => {
     if (!trackRef.current || !environmentRef.current) return;
 
@@ -94,56 +95,115 @@ export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onTog
       : Math.round(Math.min(380, Math.max(240, W * 0.19)));
 
     const ctx = gsap.context(() => {
-      // Scrubbed master timeline tied to the 220vh track scroll
+      // Fluid, responsive scrub (0.25s) for instant tracking with zero sluggish lag
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: trackRef.current,
           start: 'top top',
           end: 'bottom bottom',
-          scrub: prefersReducedMotion ? false : 0.8,
+          scrub: prefersReducedMotion ? false : 0.25,
           onUpdate: (self) => {
-            const p = self.progress;
-            if (p > 0.45) {
-              setActiveSection('About');
-            } else {
-              setActiveSection('Home');
+            const next = self.progress > 0.48 ? 'About' : 'Home';
+            if (activeSectionRef.current !== next) {
+              activeSectionRef.current = next;
+              setActiveSection(next);
             }
           }
         }
       });
 
       if (!prefersReducedMotion) {
-        // 1. Progressively shift the entire environment towards the LEFT
+        // 1. Progressively shift the entire illustrated environment towards the LEFT (0.0 -> 1.0)
         tl.to(environmentRef.current, {
           x: -maxShiftX,
           ease: 'power1.inOut',
           duration: 1
         }, 0);
 
-        // 2. Fade out Hero typography on the right
+        // 2. HERO EXIT (0.18 -> 0.58)
+        // Holds full visibility for first 18% of scroll, then gracefully fades out while About enters
         tl.to(heroContentRef.current, {
           opacity: 0,
-          x: -45,
-          y: -15,
+          x: -40,
+          y: -10,
           ease: 'power1.out',
-          duration: 0.45,
-          pointerEvents: 'none'
-        }, 0);
+          duration: 0.40
+        }, 0.18);
 
-        // 3. Fade in and reveal About section content on the right
+        // Switch pointer-events at midpoint
+        tl.set(heroContentRef.current, { pointerEvents: 'none' }, 0.48);
+        tl.set(aboutContentRef.current, { pointerEvents: 'auto' }, 0.48);
+
+        // 3. ABOUT ENTRANCE WITH CONTROLLED OVERLAP (0.28 -> 0.78)
+        // Starts entering at 0.28 while Hero is still ~70% visible, eliminating ANY blank space!
         tl.fromTo(aboutContentRef.current, {
           opacity: 0,
-          x: 45,
-          y: 15,
-          pointerEvents: 'none'
+          x: 40,
+          y: 10,
         }, {
           opacity: 1,
           x: 0,
           y: 0,
           ease: 'power1.out',
-          duration: 0.55,
-          pointerEvents: 'auto'
-        }, 0.45);
+          duration: 0.45
+        }, 0.28);
+
+        // Staggered internal entrance for cinematic polish
+        // Eyebrow & Heading
+        tl.fromTo('.about-eyebrow, .about-heading', {
+          opacity: 0,
+          y: 20
+        }, {
+          opacity: 1,
+          y: 0,
+          ease: 'power1.out',
+          duration: 0.32
+        }, 0.30);
+
+        // Bio paragraph
+        tl.fromTo('.about-bio', {
+          opacity: 0,
+          y: 18
+        }, {
+          opacity: 1,
+          y: 0,
+          ease: 'power1.out',
+          duration: 0.30
+        }, 0.38);
+
+        // Profile metadata row
+        tl.fromTo('.about-meta', {
+          opacity: 0,
+          y: 18
+        }, {
+          opacity: 1,
+          y: 0,
+          ease: 'power1.out',
+          duration: 0.30
+        }, 0.44);
+
+        // Three Interactive Cards (staggered)
+        tl.fromTo('.about-card-1, .about-card-2, .about-card-3', {
+          opacity: 0,
+          y: 20
+        }, {
+          opacity: 1,
+          y: 0,
+          stagger: 0.05,
+          ease: 'power1.out',
+          duration: 0.32
+        }, 0.50);
+
+        // Tagline
+        tl.fromTo('.about-tagline', {
+          opacity: 0,
+          y: 10
+        }, {
+          opacity: 1,
+          y: 0,
+          ease: 'power1.out',
+          duration: 0.25
+        }, 0.60);
 
         // 4. Reveal bottom-left "HARDWARE + SOFTWARE —" in About mode
         if (aboutLeftAccentRef.current) {
@@ -154,24 +214,24 @@ export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onTog
             opacity: 1,
             y: 0,
             ease: 'power1.out',
-            duration: 0.4
-          }, 0.55);
+            duration: 0.35
+          }, 0.45);
         }
       } else {
-        // Reduced motion: simple crossfade without rapid translation
+        // Reduced motion fallback: gentle crossfade
         tl.to(heroContentRef.current, {
           opacity: 0,
-          duration: 0.45,
+          duration: 0.40,
           pointerEvents: 'none'
-        }, 0);
+        }, 0.20);
         tl.fromTo(aboutContentRef.current, {
           opacity: 0,
           pointerEvents: 'none'
         }, {
           opacity: 1,
-          duration: 0.55,
+          duration: 0.45,
           pointerEvents: 'auto'
-        }, 0.45);
+        }, 0.28);
       }
     }, trackRef);
 
@@ -182,9 +242,9 @@ export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onTog
     <div className="relative w-full bg-[#E9DDC7] text-[#292B27] font-sans select-none">
       
       {/* ========================================================================= */}
-      {/* 220VH CONTINUOUS SCROLL TRACK (Tied to GSAP ScrollTrigger)               */}
+      {/* 200VH CONTINUOUS SCROLL TRACK (Tied to GSAP ScrollTrigger)               */}
       {/* ========================================================================= */}
-      <div ref={trackRef} className="relative w-full h-[220vh]">
+      <div ref={trackRef} className="relative w-full h-[200vh]">
         
         {/* PINNED VIEWPORT STAGE (Sticky at top: 0, height: 100vh) */}
         <div

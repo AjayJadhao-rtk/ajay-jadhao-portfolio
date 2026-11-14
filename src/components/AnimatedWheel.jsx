@@ -17,10 +17,10 @@ import wheelIsolatedUrl from '../assets/wheel_isolated.png';
 export default function AnimatedWheel() {
   const isMobile = useIsMobile(1024);
   const [isHovered, setIsHovered] = useState(false);
-  const [rpmDisplay, setRpmDisplay] = useState('2.5 RPM');
-  const [mouseShift, setMouseShift] = useState({ x: 0, y: 0 });
 
   const wheelGroupRef = useRef(null);
+  const parallaxWrapperRef = useRef(null);
+  const rpmTextRef = useRef(null);
   const angleRef = useRef(0);
   const lastTimeRef = useRef(null);
   const animFrameIdRef = useRef(null);
@@ -33,20 +33,27 @@ export default function AnimatedWheel() {
   const isHoveredRef = useRef(false);
   const lastMouseMoveTime = useRef(0);
 
-  // Parallax tracking matching the cloud strips
+  // High-performance Parallax tracking (Direct DOM transform, 0 React re-renders)
   useEffect(() => {
+    let mouseRafId = null;
     const handleMouseMove = (e) => {
-      const { innerWidth, innerHeight } = window;
-      const xNorm = (e.clientX / innerWidth - 0.5) * 2;
-      const yNorm = (e.clientY / innerHeight - 0.5) * 2;
-      setMouseShift({
-        x: xNorm * 10,
-        y: yNorm * 6,
+      if (mouseRafId) return;
+      mouseRafId = requestAnimationFrame(() => {
+        mouseRafId = null;
+        if (!parallaxWrapperRef.current) return;
+        const xNorm = (e.clientX / window.innerWidth - 0.5) * 2;
+        const yNorm = (e.clientY / window.innerHeight - 0.5) * 2;
+        const px = (xNorm * 10).toFixed(1);
+        const py = (yNorm * 6).toFixed(1);
+        parallaxWrapperRef.current.style.transform = `translate3d(${px}px, ${py}px, 0)`;
       });
     };
 
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      if (mouseRafId) cancelAnimationFrame(mouseRafId);
+    };
   }, []);
 
   // Butter-smooth continuous rotation loop with momentum physics
@@ -72,11 +79,11 @@ export default function AnimatedWheel() {
         );
       }
 
-      // Update RPM display every ~15 frames to prevent React re-render lag
+      // Update RPM text via DOM ref without triggering React re-renders
       rpmThrottleCounter++;
-      if (rpmThrottleCounter % 15 === 0) {
+      if (rpmThrottleCounter % 15 === 0 && rpmTextRef.current) {
         const rpm = (currentSpeedRef.current * 1000 / 360 * 60).toFixed(1);
-        setRpmDisplay(`${rpm} RPM`);
+        rpmTextRef.current.textContent = `GEAR // ${rpm} RPM`;
       }
 
       animFrameIdRef.current = requestAnimationFrame(animateWheel);
@@ -122,9 +129,10 @@ export default function AnimatedWheel() {
       
       {/* Parallax coordinate wrapper matching cloud strips */}
       <div
-        className="relative w-full h-full transition-transform duration-500 ease-out flex items-center justify-start"
+        ref={parallaxWrapperRef}
+        className="relative w-full h-full flex items-center justify-start"
         style={{
-          transform: `translate3d(${mouseShift.x}px, ${mouseShift.y}px, 0)`,
+          transform: 'translate3d(0, 0, 0)',
           willChange: 'transform',
         }}
       >
@@ -304,8 +312,8 @@ export default function AnimatedWheel() {
                 stroke="#38BDF8"
                 strokeWidth="0.75"
               />
-              <text x="0" y="2" fill="#E2F1EC" fontSize="8" fontWeight="600" letterSpacing="0.08em">
-                GEAR // {rpmDisplay}
+              <text ref={rpmTextRef} x="0" y="2" fill="#E2F1EC" fontSize="8" fontWeight="600" letterSpacing="0.08em">
+                GEAR // 2.5 RPM
               </text>
             </g>
 

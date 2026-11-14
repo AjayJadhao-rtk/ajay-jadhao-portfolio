@@ -15,7 +15,7 @@ import { useIsMobile } from '../hooks/useIsMobile';
 export default function AnimatedCloudStrips() {
   const isMobile = useIsMobile(1024);
   const [opacities, setOpacities] = useState({ f1: 1, f2: 0, f3: 0 });
-  const [mouseShift, setMouseShift] = useState({ x: 0, y: 0 });
+  const parallaxRef = useRef(null);
   const animFrameRef = useRef(null);
   const startTimeRef = useRef(null);
 
@@ -36,7 +36,6 @@ export default function AnimatedCloudStrips() {
       const angle = progress * Math.PI * 2;
 
       // 3-phase sinusoidal blend with soft normalization
-      // Phase 1 (0 rad), Phase 2 (2*PI/3 rad), Phase 3 (4*PI/3 rad)
       const raw1 = Math.max(0, Math.cos(angle));
       const raw2 = Math.max(0, Math.cos(angle - (2 * Math.PI) / 3));
       const raw3 = Math.max(0, Math.cos(angle - (4 * Math.PI) / 3));
@@ -61,20 +60,27 @@ export default function AnimatedCloudStrips() {
     };
   }, []);
 
-  // Subtle interactive parallax
+  // Subtle interactive parallax (Direct DOM RAF update, 0 React re-renders)
   useEffect(() => {
+    let mouseRafId = null;
     const handleMouseMove = (e) => {
-      const { innerWidth, innerHeight } = window;
-      const xNorm = (e.clientX / innerWidth - 0.5) * 2;
-      const yNorm = (e.clientY / innerHeight - 0.5) * 2;
-      setMouseShift({
-        x: xNorm * 10,
-        y: yNorm * 6,
+      if (mouseRafId) return;
+      mouseRafId = requestAnimationFrame(() => {
+        mouseRafId = null;
+        if (!parallaxRef.current) return;
+        const xNorm = (e.clientX / window.innerWidth - 0.5) * 2;
+        const yNorm = (e.clientY / window.innerHeight - 0.5) * 2;
+        const px = (xNorm * 10).toFixed(1);
+        const py = (yNorm * 6).toFixed(1);
+        parallaxRef.current.style.transform = `translate3d(${px}px, ${py}px, 0)`;
       });
     };
 
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      if (mouseRafId) cancelAnimationFrame(mouseRafId);
+    };
   }, []);
 
   return (
@@ -82,10 +88,11 @@ export default function AnimatedCloudStrips() {
       
       {/* 3D Parallax & Atmospheric Floating Container */}
       <div
-        className="relative w-full h-full transition-transform duration-500 ease-out flex items-center justify-start"
+        ref={parallaxRef}
+        className="relative w-full h-full flex items-center justify-start"
         style={{
-          transform: `translate3d(${mouseShift.x}px, ${mouseShift.y}px, 0)`,
-          willChange: 'transform, opacity',
+          transform: 'translate3d(0, 0, 0)',
+          willChange: 'transform',
         }}
       >
         {/* SVG Viewport matching 1451x821 master coordinate system (Responsive for mobile grounding) */}
