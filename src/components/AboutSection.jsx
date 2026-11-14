@@ -60,6 +60,7 @@ function OrigamiAirplaneIcon({ className = "w-8 h-8" }) {
 }
 
 export default function AboutSection({ onOpen3DWorld, onExploreClick }) {
+  const [activeMetric, setActiveMetric] = React.useState(null);
 
   // CARD 01 ACTION — SMART HARDWARE & ROBOTICS INQUIRY
   const handleHardwareInquiry = () => {
@@ -218,6 +219,39 @@ Best regards,
             </div>
           </div>
 
+          {/* INTERACTIVE ENGINEERING METRICS RIBBON */}
+          <div className="w-full grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3 flex-shrink-0">
+            {[
+              { label: '15+ BUILDS', desc: 'Hardware & IoT products designed from scratch' },
+              { label: "SIH '24 FINALIST", desc: 'Disaster-Rescue Autonomous Rover' },
+              { label: '40+ SENSORS', desc: 'IMUs, LIDAR, GPS & Biometric chips' },
+              { label: '60 FPS 3D', desc: 'Hardware-accelerated Three.js WebGL' },
+            ].map((m, idx) => (
+              <div
+                key={idx}
+                onMouseEnter={() => {
+                  audioEngine.playHover();
+                  setActiveMetric(idx);
+                }}
+                onMouseLeave={() => setActiveMetric(null)}
+                className={`p-2 rounded-lg border transition-all cursor-pointer text-left ${
+                  activeMetric === idx
+                    ? 'bg-[#1E3A32] text-[#F4ECE1] border-[#1E3A32] shadow-xs scale-102'
+                    : 'bg-[#F4ECE1]/70 border-[#CAD8D1] text-[#0E1F21] hover:bg-[#F4ECE1]'
+                }`}
+              >
+                <div className="font-mono text-[10px] font-bold tracking-wider truncate">
+                  {m.label}
+                </div>
+                <div className={`text-[8.5px] leading-tight truncate mt-0.5 ${
+                  activeMetric === idx ? 'text-[#D1E7DD]' : 'text-[#6B7B7D]'
+                }`}>
+                  {m.desc}
+                </div>
+              </div>
+            ))}
+          </div>
+
           {/* ============================================================== */}
           {/* 5. THREE INTERACTIVE CARDS (Preserved visual design & actions)  */}
           {/* ============================================================== */}
@@ -241,6 +275,11 @@ Best regards,
               <p className="font-inter text-[10px] sm:text-[10.5px] text-[#556965] leading-relaxed">
                 Custom IoT devices, sensors &amp; autonomous robots
               </p>
+              <div className="flex flex-wrap gap-1 mt-2 pt-1 border-t border-[#CAD8D1]/60">
+                <span className="text-[8px] font-mono bg-[#CAD8D1]/70 text-[#1E3A32] px-1.5 py-0.5 rounded font-bold">ESP32</span>
+                <span className="text-[8px] font-mono bg-[#CAD8D1]/70 text-[#1E3A32] px-1.5 py-0.5 rounded font-bold">FreeRTOS</span>
+                <span className="text-[8px] font-mono bg-[#CAD8D1]/70 text-[#1E3A32] px-1.5 py-0.5 rounded font-bold">Sensors</span>
+              </div>
             </button>
 
             {/* CARD 02: INTERACTIVE 3D & WEB */}
@@ -262,6 +301,11 @@ Best regards,
               <p className="font-inter text-[10px] sm:text-[10.5px] text-[#6B7B7D] leading-relaxed">
                 Modern 3D web experiences &amp; product showcases
               </p>
+              <div className="flex flex-wrap gap-1 mt-2 pt-1 border-t border-[#EAD9CD]/60">
+                <span className="text-[8px] font-mono bg-[#EAD9CD]/70 text-[#1E3A32] px-1.5 py-0.5 rounded font-bold">Three.js</span>
+                <span className="text-[8px] font-mono bg-[#EAD9CD]/70 text-[#1E3A32] px-1.5 py-0.5 rounded font-bold">WebGL</span>
+                <span className="text-[8px] font-mono bg-[#EAD9CD]/70 text-[#1E3A32] px-1.5 py-0.5 rounded font-bold">GSAP</span>
+              </div>
             </button>
 
             {/* CARD 03: BUILD YOUR PROTOTYPE → */}
@@ -281,6 +325,11 @@ Best regards,
               <p className="font-inter text-[10px] sm:text-[10.5px] text-[#D1E7DD] leading-relaxed">
                 Have an idea? Let&rsquo;s turn it into a working MVP
               </p>
+              <div className="flex flex-wrap gap-1 mt-2 pt-1 border-t border-white/20">
+                <span className="text-[8px] font-mono bg-white/20 text-[#A5F3FC] px-1.5 py-0.5 rounded font-bold">PCB Routing</span>
+                <span className="text-[8px] font-mono bg-white/20 text-[#A5F3FC] px-1.5 py-0.5 rounded font-bold">Firmware</span>
+                <span className="text-[8px] font-mono bg-white/20 text-[#A5F3FC] px-1.5 py-0.5 rounded font-bold">MVP Test</span>
+              </div>
             </button>
 
           </div>

@@ -87,6 +87,25 @@ export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onTog
     window.scrollTo({ top: targetY, behavior: 'smooth' });
   };
 
+  // Global Keyboard Navigation Shortcuts (Press 1..4 to jump, M for music, W for 3D world)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) return;
+      if (e.key === '1') handleNavigate('home');
+      else if (e.key === '2') handleNavigate('about');
+      else if (e.key === '3') handleNavigate('skills');
+      else if (e.key === '4') handleNavigate('contact');
+      else if (e.key === 'w' || e.key === 'W') {
+        if (onOpen3DWorld) onOpen3DWorld();
+      } else if (e.key === 'm' || e.key === 'M') {
+        if (audioEngine.isMusicPlaying) audioEngine.stopMusic();
+        else audioEngine.startMusic();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onOpen3DWorld]);
+
   // GSAP ScrollTrigger Master 4-Phase Timeline
   useEffect(() => {
     if (!trackRef.current || !environmentRef.current) return;
@@ -377,7 +396,7 @@ export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onTog
             </div>
 
             {/* 100-Frame Ultra-Smooth Character Engine (EXITS out of frame in Contact) */}
-            <div ref={characterRef} className="absolute inset-0 w-full h-full" style={{ willChange: 'transform' }}>
+            <div ref={characterRef} className="absolute inset-0 w-full h-full pointer-events-auto" style={{ willChange: 'transform' }}>
               <AnimatedCharacter />
             </div>
 
@@ -413,7 +432,7 @@ export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onTog
           {/* 5. HERO TYPOGRAPHY LAYER (z-30) */}
           <main
             ref={heroContentRef}
-            className="absolute inset-0 pt-20 pb-4 sm:pb-6 px-4 sm:px-6 lg:px-8 z-30 pointer-events-auto flex flex-col justify-between"
+            className="absolute inset-0 pt-20 pb-4 sm:pb-6 px-4 sm:px-6 lg:px-8 z-30 pointer-events-none flex flex-col justify-between"
           >
             <HeroTypography
               onExploreClick={onOpen3DWorld}

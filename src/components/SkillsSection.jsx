@@ -254,6 +254,27 @@ const TechnicalIcons = {
 
 export default function SkillsSection({ onOpen3DWorld }) {
   const [hoveredSkill, setHoveredSkill] = useState(null);
+  const [activeCategory, setActiveCategory] = useState('all');
+  const [activeInsight, setActiveInsight] = useState(null);
+
+  const SKILL_INSIGHTS = {
+    "Embedded C/C++ Programming": "Authored custom DMA-driven drivers for I2C, SPI & UART sensor buses",
+    "Microcontroller Programming": "Firmware development across ESP32, STM32 ARM Cortex-M & AVR architectures",
+    "Digital Electronics": "Designed digital logic, shift registers, multiplexers & timing generators",
+    "Circuit Prototyping": "Breadboarded & soldered custom test fixtures with noise filtering",
+    "Sensor Interfacing": "Interfaced IMUs, ultrasonic, lidar, optical pulse oximeters & gas sensors",
+    "Hardware–Software Integration": "Bridged microcontrollers with high-level Python, ROS2 & React interfaces",
+    "GPIO and Peripheral Interfacing": "Configured hardware timers, interrupts, PWM & ADC/DAC peripherals",
+    "OLED and LCD Interfacing": "Drove SSD1306 OLEDs & character LCDs with SPI/I2C graphic buffers",
+    "Electronics Troubleshooting": "Signal analysis using digital oscilloscopes, logic analyzers & multimeters",
+    "ESP32": "Engineered Cellular Emergency Beacon & Bio-Telemetry Wearable with FreeRTOS",
+    "STM32": "Developed bare-metal motor controllers & high-speed CAN bus routines",
+    "ROS2": "Architected navigation2 & slam_toolbox on SIH disaster-rescue rover",
+    "React.js": "Engineered this 60FPS dual-view editorial portfolio with GSAP",
+    "Three.js": "Programmed 3D low-poly landscape with Catmull-Rom spline camera path",
+    "Figma": "Created complete typography & UI component system — Live file linked!",
+    "Python": "Wrote robotic computer vision routines & serial telemetry scripts",
+  };
 
   const FIGMA_PROJECT_URL = "https://www.figma.com/design/998ew7eGo5JNZVyIvjnCHG/Untitled?node-id=0-1&t=0B5KIEru0l8EEztt-1";
 
@@ -374,8 +395,23 @@ export default function SkillsSection({ onOpen3DWorld }) {
 
   const handleSkillHover = (name) => {
     setHoveredSkill(name);
+    if (SKILL_INSIGHTS[name]) {
+      setActiveInsight({ name, detail: SKILL_INSIGHTS[name] });
+    }
     audioEngine.playHover();
   };
+
+  const handleSkillClick = (name) => {
+    audioEngine.playClick();
+    setActiveInsight({
+      name,
+      detail: SKILL_INSIGHTS[name] || "Production engineering expertise & hardware implementation",
+    });
+  };
+
+  const displayedCategories = activeCategory === 'all'
+    ? skillCategories
+    : skillCategories.filter(c => c.id === activeCategory);
 
   return (
     <div className="relative w-full h-full flex flex-col justify-between py-1 sm:py-2 select-none">
@@ -402,6 +438,34 @@ export default function SkillsSection({ onOpen3DWorld }) {
           <p className="text-[11px] sm:text-xs md:text-[13px] font-sans text-[#292B27]/85 max-w-xl font-normal leading-relaxed">
             Bridging hardware, software and creative engineering to build intelligent experiences.
           </p>
+
+          {/* Interactive Filter Pills */}
+          <div className="flex flex-wrap items-center gap-1.5 pt-1">
+            {[
+              { id: 'all', label: 'ALL (6)' },
+              { id: '01', label: 'EMBEDDED' },
+              { id: '02', label: 'ROBOTICS' },
+              { id: '03', label: 'IOT & WIRELESS' },
+              { id: '04', label: 'SOFTWARE' },
+              { id: '05', label: 'UI/UX' },
+              { id: '06', label: '3D & CAD' },
+            ].map((f) => (
+              <button
+                key={f.id}
+                onClick={() => {
+                  audioEngine.playClick();
+                  setActiveCategory(f.id);
+                }}
+                className={`px-2 py-0.5 rounded text-[8.5px] sm:text-[9px] font-mono tracking-wider uppercase transition-all cursor-pointer ${
+                  activeCategory === f.id
+                    ? 'bg-[#0E1F21] text-[#F4ECE1] font-bold shadow-xs scale-102'
+                    : 'bg-[#1E3A32]/10 text-[#1E3A32] hover:bg-[#1E3A32]/20'
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Right Blueprint Technical Illustration & Identifier (Desktop) */}
@@ -424,7 +488,7 @@ export default function SkillsSection({ onOpen3DWorld }) {
       {/* 6 MODULAR CATEGORY CARDS (Fully Open & Responsive with Real Images)      */}
       {/* ========================================================================= */}
       <div className="w-full flex-1 grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-3.5 pl-0 lg:pl-16 xl:pl-28 pr-1 sm:pr-4 overflow-y-auto max-h-[calc(100vh-140px)] lg:max-h-none scrollbar-thin touch-pan-y">
-        {skillCategories.map((cat) => (
+        {displayedCategories.map((cat) => (
           <div
             key={cat.id}
             className="group relative flex flex-col md:flex-row items-stretch justify-between bg-[#F8F3EA] hover:bg-[#FAF6EF] border border-[#2C3835]/30 rounded-xl md:rounded-[4px] shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex-shrink-0"
@@ -499,13 +563,27 @@ export default function SkillsSection({ onOpen3DWorld }) {
                     return (
                       <div
                         key={idx}
+                        onClick={() => handleSkillClick(item.name)}
                         onMouseEnter={() => handleSkillHover(item.name)}
-                        className="flex items-center space-x-1.5 px-1.5 py-0.5 rounded hover:bg-[#0E1F21]/[0.06] transition-all duration-150 cursor-default group/item"
+                        className={`flex items-center space-x-1.5 px-1.5 py-0.5 rounded transition-all duration-150 cursor-pointer group/item ${
+                          activeInsight?.name === item.name
+                            ? 'bg-[#1E3A32] text-[#F4ECE1]'
+                            : 'hover:bg-[#0E1F21]/[0.08]'
+                        }`}
+                        title="Click to view hardware details"
                       >
-                        <span className="text-[#1E3A32] group-hover/item:text-[#6A8E8B] group-hover/item:scale-110 transition-all duration-150 flex-shrink-0">
+                        <span className={`flex-shrink-0 transition-all duration-150 ${
+                          activeInsight?.name === item.name
+                            ? 'text-teal-300'
+                            : 'text-[#1E3A32] group-hover/item:text-[#6A8E8B] group-hover/item:scale-110'
+                        }`}>
                           <IconComponent />
                         </span>
-                        <span className="font-sans text-[11px] sm:text-xs text-[#292B27] group-hover/item:text-[#0E1F21] group-hover/item:translate-x-0.5 transition-all duration-150 font-medium leading-tight">
+                        <span className={`font-sans text-[11px] sm:text-xs transition-all duration-150 font-medium leading-tight ${
+                          activeInsight?.name === item.name
+                            ? 'text-[#F4ECE1] font-bold'
+                            : 'text-[#292B27] group-hover/item:text-[#0E1F21] group-hover/item:translate-x-0.5'
+                        }`}>
                           {item.name}
                         </span>
                       </div>
@@ -520,13 +598,27 @@ export default function SkillsSection({ onOpen3DWorld }) {
                     return (
                       <div
                         key={idx}
+                        onClick={() => handleSkillClick(item.name)}
                         onMouseEnter={() => handleSkillHover(item.name)}
-                        className="flex items-center space-x-1.5 px-1.5 py-0.5 rounded hover:bg-[#0E1F21]/[0.06] transition-all duration-150 cursor-default group/item"
+                        className={`flex items-center space-x-1.5 px-1.5 py-0.5 rounded transition-all duration-150 cursor-pointer group/item ${
+                          activeInsight?.name === item.name
+                            ? 'bg-[#1E3A32] text-[#F4ECE1]'
+                            : 'hover:bg-[#0E1F21]/[0.08]'
+                        }`}
+                        title="Click to view hardware details"
                       >
-                        <span className="text-[#1E3A32] group-hover/item:text-[#6A8E8B] group-hover/item:scale-110 transition-all duration-150 flex-shrink-0">
+                        <span className={`flex-shrink-0 transition-all duration-150 ${
+                          activeInsight?.name === item.name
+                            ? 'text-teal-300'
+                            : 'text-[#1E3A32] group-hover/item:text-[#6A8E8B] group-hover/item:scale-110'
+                        }`}>
                           <IconComponent />
                         </span>
-                        <span className="font-sans text-[11px] sm:text-xs text-[#292B27] group-hover/item:text-[#0E1F21] group-hover/item:translate-x-0.5 transition-all duration-150 font-medium leading-tight">
+                        <span className={`font-sans text-[11px] sm:text-xs transition-all duration-150 font-medium leading-tight ${
+                          activeInsight?.name === item.name
+                            ? 'text-[#F4ECE1] font-bold'
+                            : 'text-[#292B27] group-hover/item:text-[#0E1F21] group-hover/item:translate-x-0.5'
+                        }`}>
                           {item.name}
                         </span>
                       </div>
@@ -555,6 +647,25 @@ export default function SkillsSection({ onOpen3DWorld }) {
           </div>
         ))}
       </div>
+
+      {/* ========================================================================= */}
+      {/* INTERACTIVE SKILL DETAIL TOAST BANNER                                      */}
+      {/* ========================================================================= */}
+      {activeInsight && (
+        <div className="w-full flex items-center justify-between pl-0 lg:pl-16 xl:pl-28 pr-2 sm:pr-6 py-1.5 px-3 bg-[#FAF6EE] border border-[#1E3A32]/30 rounded-lg shadow-sm text-xs font-mono text-[#0E1F21] animate-fadeIn mt-1 flex-shrink-0">
+          <div className="flex items-center space-x-2 truncate">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping flex-shrink-0" />
+            <span className="font-bold text-[#1E3A32] uppercase">{activeInsight.name}:</span>
+            <span className="text-[#556965] truncate font-sans font-medium">{activeInsight.detail}</span>
+          </div>
+          <button
+            onClick={() => setActiveInsight(null)}
+            className="text-[10px] text-[#89634C] hover:text-[#0E1F21] font-bold cursor-pointer ml-2 flex-shrink-0"
+          >
+            DISMISS ✕
+          </button>
+        </div>
+      )}
 
       {/* ========================================================================= */}
       {/* BOTTOM QUOTATION / TAGLINE                                               */}

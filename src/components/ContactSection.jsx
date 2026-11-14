@@ -295,9 +295,39 @@ export default function ContactSection({ onScrollToTop, onNavigate }) {
           <div className="lg:col-span-5 bg-[#FAF6EE]/95 border border-[#2C3835]/20 rounded-xl p-3.5 sm:p-4 shadow-sm flex flex-col justify-between">
             <div>
               {/* Form Header */}
-              <div className="flex items-center space-x-2 text-[10px] font-mono tracking-widest uppercase font-bold text-[#1E3A32] border-b border-[#2C3835]/15 pb-2 mb-3">
+              <div className="flex items-center space-x-2 text-[10px] font-mono tracking-widest uppercase font-bold text-[#1E3A32] border-b border-[#2C3835]/15 pb-2 mb-2">
                 <span>SEND A MESSAGE</span>
                 <span className="flex-1 h-[1px] bg-[#2C3835]/15" />
+              </div>
+
+              {/* Quick Interactive Subject Chips */}
+              <div className="flex flex-wrap items-center gap-1.5 mb-2.5">
+                {[
+                  { label: '👋 Say Hello', subject: 'Saying Hello', msg: 'Hi Ajay, I came across your portfolio and wanted to reach out!' },
+                  { label: '🤖 Robotics & IoT', subject: 'Robotics & Hardware Collaboration', msg: "Hi Ajay, I'd like to collaborate on an embedded systems / robotics project with you." },
+                  { label: '🌐 3D / Web', subject: 'Interactive 3D Web Inquiry', msg: "Hi Ajay, I love your 3D interactive work and want to discuss building a project." },
+                  { label: '💼 Opportunity', subject: 'Engineering Opportunity', msg: "Hello Ajay, I have an exciting engineering opportunity that matches your skillset." },
+                ].map((chip, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => {
+                      audioEngine.playClick();
+                      setFormData(prev => ({
+                        ...prev,
+                        subject: chip.subject,
+                        message: prev.message || chip.msg,
+                      }));
+                    }}
+                    className={`px-2 py-0.5 rounded text-[8.5px] sm:text-[9px] font-mono tracking-wider transition-all cursor-pointer ${
+                      formData.subject === chip.subject
+                        ? 'bg-[#1E4E49] text-white font-bold'
+                        : 'bg-[#1E3A32]/10 text-[#1E3A32] hover:bg-[#1E3A32]/20'
+                    }`}
+                  >
+                    {chip.label}
+                  </button>
+                ))}
               </div>
 
               {/* Form Fields */}
@@ -354,9 +384,20 @@ export default function ContactSection({ onScrollToTop, onNavigate }) {
                     rows="3"
                     value={formData.message}
                     onChange={handleInputChange}
+                    placeholder="Tell me about your project, idea, or questions..."
                     required
                     className="w-full text-xs font-sans text-[#0E1F21] bg-transparent outline-none resize-none placeholder:text-[#5A6966]/60 leading-relaxed"
                   />
+                </div>
+
+                {/* Live Character Count & Feedback */}
+                <div className="flex justify-between items-center px-1 text-[9px] font-mono text-[#5A6966]">
+                  <span>{formData.message.length} characters</span>
+                  {formData.message.length > 10 && (
+                    <span className="text-emerald-700 font-semibold flex items-center space-x-1">
+                      <span>✓ Ready to dispatch</span>
+                    </span>
+                  )}
                 </div>
 
                 {/* Submit Pill Button (Matches Reference) */}
