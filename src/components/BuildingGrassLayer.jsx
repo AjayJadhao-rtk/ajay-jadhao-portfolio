@@ -22,7 +22,7 @@ import treesUrl from '../assets/trees_clean.png';
  * - Master 1451x821 viewBox matching Figma template, Cloud Strips, and Rotating Wheel.
  * - Stacking Index: z-[25] (in front of Wheel z-20 & Cloud Strips z-10).
  */
-export default function BuildingGrassLayer() {
+export default function BuildingGrassLayer({ buildingRef, bushesRef }) {
   const isMobile = useIsMobile(1024);
 
   return (
@@ -82,7 +82,7 @@ export default function BuildingGrassLayer() {
         {/* "There should be no movement in the buildings" */}
         {/* Completely static, zero transforms, zero mouse shift */}
         {/* ========================================================== */}
-        <g id="stationary-building-layer" filter="url(#buildingAtmosphere)">
+        <g ref={buildingRef} id="stationary-building-layer" filter="url(#buildingAtmosphere)">
           <image
             href={buildingUrl}
             xlinkHref={buildingUrl}
@@ -106,7 +106,7 @@ export default function BuildingGrassLayer() {
         {/* "The grass should be move with smooth animation" */}
         {/* Continuous, ultra-smooth GPU-accelerated wave motion */}
         {/* ========================================================== */}
-        <g id="animated-trees-layer">
+        <g ref={bushesRef} id="animated-trees-layer">
           {/* Primary Trunk & Grove Sway */}
           <g className="tree-sway-primary">
             {/* Secondary Foliage Canopy Breeze */}

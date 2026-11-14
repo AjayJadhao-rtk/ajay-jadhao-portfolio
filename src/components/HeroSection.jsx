@@ -24,7 +24,7 @@ if (typeof window !== 'undefined') {
  * 
  * Cinematic Scroll Orchestration:
  * 1. Home (Hero):
- *    - Character, wheel, building, cloud strips in original right-of-center framing.
+ *    - Character, wheel, building, bushes, cloud strips in original right-of-center framing.
  *    - Editorial typography on right ("TURNING IDEAS INTO IMPACT").
  *    - Top-left name "Ajay Jadhao" visible.
  * 2. About:
@@ -33,17 +33,24 @@ if (typeof window !== 'undefined') {
  *    - About content ("01 // ABOUT", "AJAY JADHAO", bio, 3 interactive cards) fades in seamlessly.
  * 3. Skills:
  *    - Environment shifts further left to the edge, exactly matching "Skill section reference image.png".
- *    - Cloud strips tilt according to reference image.
+ *    - Cloud strips tilt according to reference image (-3.8deg).
  *    - 6 modular category cards appear with right-side technical artwork, live Figma link, and custom hovers.
  * 4. Contact:
- *    - Entire environment (character, building, bushes, wheel, and strips) moves COMPLETELY OUT OF FRAME to the left.
- *    - Clean, full-width editorial Contact section reveals ("Let's Build Something Exceptional").
+ *    - Transition from Skills to Contact:
+ *      - RECTANGLE STRIPS & BUILDING REMAIN IN FRAME on the left side (matching "reference image for contact section.png").
+ *      - Cloud strips smoothly return to neutral tilt (0deg).
+ *      - CHARACTER, BUSHES (TREES/GRASS), and WHEEL slide completely OUT OF FRAME to the left (x: -120vw, opacity: 0).
+ *    - Clean, editorial Contact section reveals ("LET'S CONNECT", 5 contact cards, send message form).
  */
 export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onToggleView }) {
   const trackRef = useRef(null);
   const viewportRef = useRef(null);
   const environmentRef = useRef(null);
   const stripsRef = useRef(null);
+  const characterRef = useRef(null);
+  const wheelRef = useRef(null);
+  const bushesRef = useRef(null);
+  const buildingRef = useRef(null);
 
   const heroContentRef = useRef(null);
   const aboutContentRef = useRef(null);
@@ -97,10 +104,10 @@ export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onTog
       ? Math.round(W * 0.36)
       : Math.round(Math.min(680, Math.max(460, W * 0.36)));
 
-    // In Contact, environment moves COMPLETELY out of frame to the left
-    const maxShiftContact = isNarrow
-      ? Math.round(W * 1.35)
-      : Math.round(Math.max(W + 500, 1600));
+    // In Contact, environment keeps rectangle strips & building framing the left edge
+    const maxShiftContactLeft = isNarrow
+      ? Math.round(W * 0.38)
+      : Math.round(Math.min(700, Math.max(480, W * 0.38)));
 
     const ctx = gsap.context(() => {
       // Fluid, responsive scrub (0.25s) for instant tracking with zero sluggish lag
@@ -157,20 +164,43 @@ export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onTog
           }, 0.48);
         }
 
-        // Phase C: Move COMPLETELY OUT OF FRAME to the left for Contact (0.74 -> 0.92)
+        // =====================================================================
+        // Phase C: SKILLS -> CONTACT TRANSITION (0.74 -> 0.92)
+        // User Requirement:
+        // "only rectangle strips and building should remains others such character,
+        //  bushes and wheel will to go to left side as they goes to out of frame"
+        // =====================================================================
+
+        // 1. Environment positions strips & building cleanly on left edge
         tl.to(environmentRef.current, {
-          x: -maxShiftContact,
+          x: -maxShiftContactLeft,
           ease: 'power1.inOut',
-          duration: 0.20
+          duration: 0.18
         }, 0.74);
 
-        // Phase C Untilt: Strips return to neutral when moving out (0.74 -> 0.88)
+        // 2. Rectangle strips return to neutral vertical alignment
         if (stripsRef.current) {
           tl.to(stripsRef.current, {
             rotation: 0,
             transformOrigin: '15% 50%',
             ease: 'power1.out',
-            duration: 0.14
+            duration: 0.16
+          }, 0.74);
+        }
+
+        // 3. CHARACTER, BUSHES (TREES/GRASS), and WHEEL slide completely OUT OF FRAME to the left!
+        const exitElements = [
+          characterRef.current,
+          wheelRef.current,
+          bushesRef.current
+        ].filter(Boolean);
+
+        if (exitElements.length > 0) {
+          tl.to(exitElements, {
+            x: -Math.max(W * 1.2, 1400),
+            opacity: 0,
+            ease: 'power1.inOut',
+            duration: 0.20
           }, 0.74);
         }
 
@@ -322,29 +352,29 @@ export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onTog
             />
           </div>
 
-          {/* 2. COORDINATED ENVIRONMENTAL ARTWORK CONTAINER (Shifts Left on Scroll) */}
+          {/* 2. COORDINATED ENVIRONMENTAL ARTWORK CONTAINER */}
           <div
             ref={environmentRef}
             className="fixed inset-0 w-full h-full pointer-events-none select-none z-20 overflow-hidden"
             style={{ willChange: 'transform' }}
           >
-            {/* Animated Rectangle Cloud Strips (with tilt ref for Skills section) */}
+            {/* Animated Rectangle Cloud Strips (REMAINS in Contact, tilts in Skills) */}
             <div ref={stripsRef} className="absolute inset-0 w-full h-full" style={{ willChange: 'transform' }}>
               <AnimatedCloudStrips />
             </div>
 
-            {/* Rotating Gear Wheel */}
-            <div className="absolute inset-0 w-full h-full">
+            {/* Rotating Gear Wheel (EXITS out of frame in Contact) */}
+            <div ref={wheelRef} className="absolute inset-0 w-full h-full" style={{ willChange: 'transform' }}>
               <AnimatedWheel />
             </div>
 
-            {/* Stationary Building & Waving Grass/Trees */}
+            {/* Stationary Building (REMAINS in Contact) & Animated Bushes/Trees (EXITS in Contact) */}
             <div className="absolute inset-0 w-full h-full">
-              <BuildingGrassLayer />
+              <BuildingGrassLayer buildingRef={buildingRef} bushesRef={bushesRef} />
             </div>
 
-            {/* 100-Frame Ultra-Smooth Character Engine */}
-            <div className="absolute inset-0 w-full h-full">
+            {/* 100-Frame Ultra-Smooth Character Engine (EXITS out of frame in Contact) */}
+            <div ref={characterRef} className="absolute inset-0 w-full h-full" style={{ willChange: 'transform' }}>
               <AnimatedCharacter />
             </div>
 
@@ -415,11 +445,11 @@ export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onTog
           <section
             id="contact"
             ref={contactContentRef}
-            className="absolute inset-0 pt-20 pb-4 sm:pb-6 px-4 sm:px-6 lg:px-8 z-45 pointer-events-none opacity-0 flex flex-col justify-between"
+            className="absolute inset-0 pt-16 sm:pt-20 pb-2 sm:pb-4 px-3 sm:px-6 lg:px-8 z-45 pointer-events-none opacity-0 flex flex-col justify-between"
           >
             <ContactSection
-              onOpen3DWorld={onOpen3DWorld}
-              onResumeClick={handleDownloadResume}
+              onScrollToTop={() => handleNavigate('home')}
+              onNavigate={handleNavigate}
             />
           </section>
 
