@@ -4,22 +4,24 @@ import React, { useState, useEffect, useRef } from 'react';
  * AnimatedCharacter Component
  * 
  * Ultra-Smooth 60 FPS Cinematic Hero Character Animation Engine:
- * - 50-frame high-resolution sequence from '100 frame hero char png.zip'
+ * - 100-frame high-resolution sequence from 'Final hero.zip'
+ * - Background cleanly removed with edge defringing & alpha feathering.
+ * - Gentle, slowed-down cinematic pace (targetPaceFps = 14 keyframes/sec)
+ *   producing a calm, meditative 14-second deep breathing & natural blinking cycle.
  * - HTML5 Canvas rendering pipeline with hardware GPU acceleration.
  * - Sub-frame temporal interpolation: continuously blends between consecutive frames
  *   (dual-frame alpha cross-dissolve) at native display refresh rate (60Hz / 120Hz / 144Hz)
  *   completely eliminating discrete frame-stepping and stutter.
- * - Seamless 98-step harmonic breathing & blinking cycle (Frame 0 -> 49 -> 0).
- * - Master 1451x821 viewBox coordinate placement (X: 170px, Y: 199px, W: 715px, H: 622px)
+ * - Master 1451x821 viewBox coordinate placement (X: 240px, Y: 199px, W: 596px, H: 622px)
  *   anchored firmly to the bottom ground edge (y = 821px).
  */
 
-const TOTAL_FRAMES = 50;
-const CYCLE_LENGTH = 2 * (TOTAL_FRAMES - 1); // 98 steps for seamless ping-pong loop
+const TOTAL_FRAMES = 100;
+const CYCLE_LENGTH = 2 * (TOTAL_FRAMES - 1); // 198 steps for seamless ping-pong loop
 
-// 50 WebP frame paths
+// 100 WebP frame paths from character_final
 const FRAME_PATHS = Array.from({ length: TOTAL_FRAMES }, (_, i) => 
-  `/assets/character_100/frame_${String(i + 1).padStart(2, '0')}.webp`
+  `/assets/character_final/frame_${String(i + 1).padStart(3, '0')}.webp`
 );
 
 export default function AnimatedCharacter() {
@@ -42,8 +44,8 @@ export default function AnimatedCharacter() {
         loadedImages[idx] = img;
         loadedCount++;
 
-        // Start playback once initial batch is warm
-        if (loadedCount >= Math.min(10, TOTAL_FRAMES) && !isReady) {
+        // Start playback once initial batch of frames is warm
+        if (loadedCount >= Math.min(15, TOTAL_FRAMES) && !isReady) {
           setIsReady(true);
         }
       };
@@ -57,8 +59,9 @@ export default function AnimatedCharacter() {
       }
     });
 
-    // 2. High-Precision 60 FPS Continuous Sub-Frame Motion Engine
-    const targetPaceFps = 25; // 25 keyframe changes/sec = 3.92s full breathing & blinking cycle
+    // 2. Gentle Slowed-Down 60 FPS Continuous Motion Engine
+    // 14 keyframe steps/sec = ~7.1s forward + ~7.1s reverse = 14.2s natural breathing cycle
+    const targetPaceFps = 14;
     const stepDurationMs = 1000 / targetPaceFps;
     const startTime = performance.now();
 
@@ -70,14 +73,14 @@ export default function AnimatedCharacter() {
       const ctx = canvas.getContext('2d', { alpha: true });
       if (!ctx) return;
 
-      // Calculate continuous floating-point progress through the 98-step cycle
+      // Calculate continuous floating-point progress through the 198-step cycle
       const elapsed = now - startTime;
       const rawProgress = (elapsed / stepDurationMs) % CYCLE_LENGTH;
       const stepA = Math.floor(rawProgress);
       const stepB = (stepA + 1) % CYCLE_LENGTH;
       const blendFraction = rawProgress - stepA; // 0.0 to 1.0 smooth sub-frame interpolation
 
-      // Map ping-pong steps: 0..49..0
+      // Map ping-pong steps: 0..99..0
       const idxA = stepA < TOTAL_FRAMES ? stepA : CYCLE_LENGTH - stepA;
       const idxB = stepB < TOTAL_FRAMES ? stepB : CYCLE_LENGTH - stepB;
 
@@ -123,9 +126,9 @@ export default function AnimatedCharacter() {
       >
         {/* Render HTML5 Canvas inside SVG foreignObject for mathematical lockstep scaling */}
         <foreignObject
-          x="170"
+          x="240"
           y="199"
-          width="715"
+          width="596"
           height="622"
           className="overflow-visible pointer-events-none"
         >
@@ -145,8 +148,8 @@ export default function AnimatedCharacter() {
             {/* 60 FPS Sub-Frame Interpolated Canvas Engine */}
             <canvas
               ref={canvasRef}
-              width={800}
-              height={696}
+              width={690}
+              height={720}
               className={`w-full h-full object-contain pointer-events-none transition-opacity duration-300 ${
                 isReady ? 'opacity-100' : 'opacity-0'
               }`}

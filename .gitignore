@@ -43,5 +43,6 @@ videos1/
 
 # Large Raw Extraction & Scratch Frames
 public/assets/character_100_frames/
+public/assets/final_hero_raw/
 *.zip
 
