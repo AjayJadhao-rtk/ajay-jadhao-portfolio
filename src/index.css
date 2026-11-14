@@ -9,7 +9,7 @@
     background-color: #E9DDC7;
     color: #292B27;
     font-family: 'JetBrains Mono', monospace;
-    overflow-x: hidden;
+    overflow-x: clip;
   }
 
   /* Custom Vintage Scrollbar */
