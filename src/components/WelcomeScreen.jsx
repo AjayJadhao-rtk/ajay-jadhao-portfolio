@@ -61,15 +61,8 @@ export default function WelcomeScreen({ onEnter, onEnter3DWorld }) {
         <div className="w-full h-full bg-[linear-gradient(to_right,#0E1F2110_1px,transparent_1px),linear-gradient(to_bottom,#0E1F2110_1px,transparent_1px)] bg-[size:32px_32px]" />
       </div>
 
-      {/* TOP HEADER: Brand Logo & Music / Sound Toggle */}
-      <header className="relative z-20 w-full max-w-5xl mx-auto px-6 py-6 flex items-center justify-between">
-        {/* Brand Identity */}
-        <div className="flex items-center space-x-2">
-          <span className="font-inter font-bold text-lg sm:text-xl text-[#0E1F21] tracking-tight">
-            Ajay Jadhao
-          </span>
-        </div>
-
+      {/* TOP HEADER: Music / Sound Toggle (Aligned to Top Right) */}
+      <header className="relative z-20 w-full max-w-5xl mx-auto px-6 py-6 flex items-center justify-end">
         {/* Music / Sound Toggle Pill (Matches Portfolio Navigation Style) */}
         <button
           onClick={toggleSound}
@@ -140,7 +133,7 @@ export default function WelcomeScreen({ onEnter, onEnter3DWorld }) {
               className="w-full flex items-center justify-center space-x-2 py-2.5 px-4 min-h-[40px] rounded-full border border-[#292B27]/20 hover:border-[#0E1F21] bg-transparent text-[#292B27] hover:bg-[#0E1F21]/5 transition-all font-inter text-xs font-semibold cursor-pointer disabled:opacity-50"
             >
               <Compass className="w-3.5 h-3.5 text-[#6A8E8B]" />
-              <span>Explore 3D Circuit World</span>
+              <span>Explore projects in 3d world</span>
             </button>
           </div>
         </motion.div>
