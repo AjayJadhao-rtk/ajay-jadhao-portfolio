@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useIsMobile } from '../hooks/useIsMobile';
 import wheelIsolatedUrl from '../assets/wheel_isolated.png';
 
 /**
@@ -14,6 +15,7 @@ import wheelIsolatedUrl from '../assets/wheel_isolated.png';
  * 7. Matches the parallax drift of the cloud strips for locked perspective.
  */
 export default function AnimatedWheel() {
+  const isMobile = useIsMobile(1024);
   const [isHovered, setIsHovered] = useState(false);
   const [rpmDisplay, setRpmDisplay] = useState('2.5 RPM');
   const [mouseShift, setMouseShift] = useState({ x: 0, y: 0 });
@@ -126,10 +128,10 @@ export default function AnimatedWheel() {
           willChange: 'transform',
         }}
       >
-        {/* SVG Stage matching 1451x821 coordinate system */}
+        {/* SVG Stage matching 1451x821 coordinate system (Responsive for mobile grounding) */}
         <svg
-          viewBox="0 0 1451 821"
-          preserveAspectRatio="xMinYMid meet"
+          viewBox={isMobile ? "80 0 880 821" : "0 0 1451 821"}
+          preserveAspectRatio={isMobile ? "xMidYMax meet" : "xMinYMid meet"}
           className="w-full h-full overflow-visible pointer-events-none"
         >
           <defs>

@@ -1,16 +1,16 @@
 /**
  * Professional Interactive Audio Engine for Ajay Jadhao's Portfolio
+ * 
  * Powered by Web Audio API Synthesizers & Step Sequencer:
- * 1. Energetic, exciting, driving electronic-acoustic hybrid soundtrack (124 BPM)
- *    - 4-on-the-floor punchy acoustic/electronic kick drum
- *    - Snappy transient snare & rimshot
- *    - 16th-note running groove hi-hats with offbeat accents
- *    - Driving arpeggiated running bassline (D minor electro-groove)
- *    - Energetic syncopated chord stabs (Dm9 -> Bbmaj7 -> Gm7 -> A7)
- *    - High-octane shimmering arpeggio lead melody
- * 2. Futuristic system boot & activation sound effects
- * 3. Tactile UI sound effects (surface bend tap, hover blip, click actuation, modal unfold, radar chirp)
- * 4. 100% compliant with browser autoplay policies (no AudioContext start warnings)
+ * - Soundtrack: Serene, atmospheric Lo-Fi Anime / Ghibli-inspired Dreamscape (74 BPM)
+ *   * Warm, pillowy low-pass kick drum (calm heartbeat pulse)
+ *   * Soft brushed acoustic rimshot / vinyl snare
+ *   * Gentle swinging 8th-note hi-hats with soft analog warmth
+ *   * Deep, smooth acoustic-electric sub bassline (Fmaj7 -> Cmaj7/E -> Dm9 -> Bbmaj7)
+ *   * Lush warm Rhodes / dream-pop electric piano chords
+ *   * Twinkling celestial music-box / bell arpeggio melody
+ * - Futuristic tactile UI sound effects (clicks, surface bend, modal unfold, radar chirp)
+ * - 100% compliant with browser autoplay policies
  */
 
 class PortfolioAudioEngine {
@@ -18,21 +18,19 @@ class PortfolioAudioEngine {
     this.ctx = null;
     this.isMuted = false;
     this.isMusicPlaying = false;
-    this.isUnlocked = false; // Flag to prevent eager AudioContext creation before user gesture
+    this.isUnlocked = false;
     this.masterGain = null;
     this.sfxGain = null;
     this.musicGain = null;
 
-    // Music Step Sequencer state
+    // Lo-Fi Sequencer State (74 BPM relaxed downtempo)
     this.stepIntervalId = null;
     this.stepIndex = 0;
-    this.bpm = 124;
-    this.stepDuration = (60 / this.bpm) / 4; // 16th note = ~121ms
+    this.bpm = 74;
+    this.stepDuration = (60 / this.bpm) / 4; // 16th note = ~202.7ms
 
-    // Pre-create white noise buffer for drums & transients
     this.noiseBuffer = null;
 
-    // Register first user gesture to cleanly unlock audio without browser warnings
     if (typeof window !== 'undefined') {
       const unlock = () => {
         this.isUnlocked = true;
@@ -50,7 +48,6 @@ class PortfolioAudioEngine {
     }
   }
 
-  // Initialize Web Audio Context upon user interaction
   init() {
     if (this.ctx) return;
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -61,32 +58,29 @@ class PortfolioAudioEngine {
 
       // Master Gain
       this.masterGain = this.ctx.createGain();
-      this.masterGain.gain.setValueAtTime(0.75, this.ctx.currentTime);
+      this.masterGain.gain.setValueAtTime(0.70, this.ctx.currentTime);
       this.masterGain.connect(this.ctx.destination);
 
       // SFX Gain
       this.sfxGain = this.ctx.createGain();
-      this.sfxGain.gain.setValueAtTime(0.4, this.ctx.currentTime);
+      this.sfxGain.gain.setValueAtTime(0.35, this.ctx.currentTime);
       this.sfxGain.connect(this.masterGain);
 
       // Music Gain
       this.musicGain = this.ctx.createGain();
-      this.musicGain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+      this.musicGain.gain.setValueAtTime(0.38, this.ctx.currentTime);
       this.musicGain.connect(this.masterGain);
 
-      // Generate 1-second white noise buffer for drums & transients
-      const bufferSize = this.ctx.sampleRate;
+      // Generate subtle vinyl/noise buffer for lo-fi brush and hats
+      const bufferSize = this.ctx.sampleRate * 2;
       this.noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
       const data = this.noiseBuffer.getChannelData(0);
       for (let i = 0; i < bufferSize; i++) {
         data[i] = Math.random() * 2 - 1;
       }
-    } catch (e) {
-      // AudioContext creation fallback
-    }
+    } catch (e) {}
   }
 
-  // Ensure AudioContext is initialized and running
   async ensureContext() {
     if (!this.ctx) {
       this.init();
@@ -99,77 +93,82 @@ class PortfolioAudioEngine {
   }
 
   // =========================================================================
-  // ENERGETIC PERCUSSION SYNTHESIZERS (Kick, Snare, Hi-Hats)
+  // SERENE LO-FI PERCUSSION (Warm Kick, Soft Rimshot, Gentle Swing Hats)
   // =========================================================================
 
   /**
-   * Punchy, driving kick drum with fast pitch drop
+   * Warm, pillowy low-pass heartbeat kick
    */
-  playKick(time, velocity = 0.8) {
+  playLofiKick(time, velocity = 0.7) {
     if (!this.ctx || this.isMuted) return;
     const t = time || this.ctx.currentTime;
 
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
+    const filter = this.ctx.createBiquadFilter();
 
     osc.type = 'sine';
-    // Pitch sweep: 155 Hz -> 42 Hz
-    osc.frequency.setValueAtTime(160, t);
-    osc.frequency.exponentialRampToValueAtTime(42, t + 0.08);
+    osc.frequency.setValueAtTime(110, t);
+    osc.frequency.exponentialRampToValueAtTime(38, t + 0.12);
 
-    gain.gain.setValueAtTime(0.35 * velocity, t);
-    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.26);
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(160, t);
 
-    osc.connect(gain);
+    gain.gain.setValueAtTime(0.45 * velocity, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+
+    osc.connect(filter);
+    filter.connect(gain);
     gain.connect(this.musicGain);
 
     osc.start(t);
-    osc.stop(t + 0.28);
+    osc.stop(t + 0.38);
   }
 
   /**
-   * Snappy punchy snare & clap hybrid
+   * Soft brushed acoustic rimshot / vinyl snare
    */
-  playSnare(time, velocity = 0.6) {
+  playLofiSnare(time, velocity = 0.5) {
     if (!this.ctx || this.isMuted || !this.noiseBuffer) return;
     const t = time || this.ctx.currentTime;
 
-    // 1. Tonal body
+    // Warm low tone body
     const osc = this.ctx.createOscillator();
     const oscGain = this.ctx.createGain();
     osc.type = 'triangle';
-    osc.frequency.setValueAtTime(220, t);
-    osc.frequency.exponentialRampToValueAtTime(110, t + 0.08);
+    osc.frequency.setValueAtTime(175, t);
+    osc.frequency.exponentialRampToValueAtTime(95, t + 0.08);
 
-    oscGain.gain.setValueAtTime(0.2 * velocity, t);
-    oscGain.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+    oscGain.gain.setValueAtTime(0.18 * velocity, t);
+    oscGain.gain.exponentialRampToValueAtTime(0.001, t + 0.14);
     osc.connect(oscGain);
     oscGain.connect(this.musicGain);
     osc.start(t);
-    osc.stop(t + 0.13);
+    osc.stop(t + 0.15);
 
-    // 2. Noise snap
+    // Filtered soft brush noise
     const noiseSource = this.ctx.createBufferSource();
     noiseSource.buffer = this.noiseBuffer;
     const filter = this.ctx.createBiquadFilter();
-    filter.type = 'highpass';
-    filter.frequency.setValueAtTime(1200, t);
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(1600, t);
+    filter.Q.setValueAtTime(1.2, t);
 
     const noiseGain = this.ctx.createGain();
-    noiseGain.gain.setValueAtTime(0.18 * velocity, t);
-    noiseGain.gain.exponentialRampToValueAtTime(0.001, t + 0.16);
+    noiseGain.gain.setValueAtTime(0.12 * velocity, t);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
 
     noiseSource.connect(filter);
     filter.connect(noiseGain);
     noiseGain.connect(this.musicGain);
     noiseSource.start(t);
-    noiseSource.stop(t + 0.18);
+    noiseSource.stop(t + 0.24);
   }
 
   /**
-   * Crisp 16th-note closed / open hi-hat
+   * Warm, soft swung hi-hat with vinyl character
    */
-  playHiHat(time, isOpen = false, velocity = 0.4) {
+  playLofiHat(time, velocity = 0.3) {
     if (!this.ctx || this.isMuted || !this.noiseBuffer) return;
     const t = time || this.ctx.currentTime;
 
@@ -178,101 +177,71 @@ class PortfolioAudioEngine {
 
     const filter = this.ctx.createBiquadFilter();
     filter.type = 'bandpass';
-    filter.frequency.setValueAtTime(9000, t);
-    filter.Q.setValueAtTime(3.5, t);
+    filter.frequency.setValueAtTime(7500, t);
+    filter.Q.setValueAtTime(2.2, t);
 
     const gain = this.ctx.createGain();
-    const duration = isOpen ? 0.14 : 0.035;
-
-    gain.gain.setValueAtTime(0.12 * velocity, t);
-    gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
+    gain.gain.setValueAtTime(0.06 * velocity, t);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.045);
 
     noiseSource.connect(filter);
     filter.connect(gain);
     gain.connect(this.musicGain);
 
     noiseSource.start(t);
-    noiseSource.stop(t + duration + 0.01);
+    noiseSource.stop(t + 0.05);
   }
 
   // =========================================================================
-  // ENERGETIC BASSLINE, CHORDS & ARPEGGIO SYNTHESIZERS
+  // WARM RHODES CHORDS, DEEP BASS & TWINKLING CELESTA MELODY
   // =========================================================================
 
   /**
-   * Punchy, resonant driving synth bassline note
+   * Warm Rhodes electric piano chords with soft envelope
    */
-  playBass(freq, time, duration = 0.15, velocity = 0.7) {
+  playLofiChord(freqs, time, duration = 1.4, velocity = 0.45) {
     if (!this.ctx || this.isMuted) return;
     const t = time || this.ctx.currentTime;
 
-    const oscSaw = this.ctx.createOscillator();
-    const oscSquare = this.ctx.createOscillator();
-    const filter = this.ctx.createBiquadFilter();
-    const gain = this.ctx.createGain();
-
-    oscSaw.type = 'sawtooth';
-    oscSaw.frequency.setValueAtTime(freq, t);
-
-    oscSquare.type = 'square';
-    oscSquare.frequency.setValueAtTime(freq, t);
-
-    // Resonant lowpass filter sweep
-    filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(2400, t);
-    filter.frequency.exponentialRampToValueAtTime(260, t + duration * 0.85);
-    filter.Q.setValueAtTime(3.2, t);
-
-    gain.gain.setValueAtTime(0.18 * velocity, t);
-    gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
-
-    oscSaw.connect(filter);
-    oscSquare.connect(filter);
-    filter.connect(gain);
-    gain.connect(this.musicGain);
-
-    oscSaw.start(t);
-    oscSquare.start(t);
-    oscSaw.stop(t + duration + 0.02);
-    oscSquare.stop(t + duration + 0.02);
-  }
-
-  /**
-   * Uplifting syncopated chord stab
-   */
-  playChordStab(freqs, time, duration = 0.22, velocity = 0.45) {
-    if (!this.ctx || this.isMuted) return;
-    const t = time || this.ctx.currentTime;
-
-    freqs.forEach((freq) => {
-      const osc = this.ctx.createOscillator();
+    freqs.forEach((freq, i) => {
+      // Dual oscillator for rich warmth: Sine + Soft Triangle
+      const osc1 = this.ctx.createOscillator();
+      const osc2 = this.ctx.createOscillator();
       const filter = this.ctx.createBiquadFilter();
       const gain = this.ctx.createGain();
 
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(freq, t);
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(freq, t);
+
+      osc2.type = 'triangle';
+      osc2.frequency.setValueAtTime(freq * 1.002, t); // slight analog chorus detune
 
       filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(3200, t);
-      filter.frequency.exponentialRampToValueAtTime(800, t + duration);
-      filter.Q.setValueAtTime(1.8, t);
+      filter.frequency.setValueAtTime(1400, t);
+      filter.frequency.exponentialRampToValueAtTime(500, t + duration);
+      filter.Q.setValueAtTime(1.1, t);
 
-      gain.gain.setValueAtTime(0.045 * velocity, t);
+      // Gentle piano envelope
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.linearRampToValueAtTime(0.055 * velocity, t + 0.035);
       gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
 
-      osc.connect(filter);
+      osc1.connect(filter);
+      osc2.connect(filter);
       filter.connect(gain);
       gain.connect(this.musicGain);
 
-      osc.start(t);
-      osc.stop(t + duration + 0.02);
+      osc1.start(t);
+      osc2.start(t);
+      osc1.stop(t + duration + 0.05);
+      osc2.stop(t + duration + 0.05);
     });
   }
 
   /**
-   * Shimmering, energetic lead arpeggio note
+   * Deep, smooth acoustic-electric sub bass
    */
-  playArpLead(freq, time, duration = 0.12, velocity = 0.35) {
+  playLofiBass(freq, time, duration = 0.75, velocity = 0.6) {
     if (!this.ctx || this.isMuted) return;
     const t = time || this.ctx.currentTime;
 
@@ -280,15 +249,44 @@ class PortfolioAudioEngine {
     const filter = this.ctx.createBiquadFilter();
     const gain = this.ctx.createGain();
 
-    osc.type = 'triangle';
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq, t);
+
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(280, t);
+
+    gain.gain.setValueAtTime(0.001, t);
+    gain.gain.linearRampToValueAtTime(0.28 * velocity, t + 0.04);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.musicGain);
+
+    osc.start(t);
+    osc.stop(t + duration + 0.05);
+  }
+
+  /**
+   * Sparkling celesta / music box / anime sky melody notes
+   */
+  playCelestaLead(freq, time, duration = 0.6, velocity = 0.35) {
+    if (!this.ctx || this.isMuted) return;
+    const t = time || this.ctx.currentTime;
+
+    const osc = this.ctx.createOscillator();
+    const filter = this.ctx.createBiquadFilter();
+    const gain = this.ctx.createGain();
+
+    osc.type = 'sine';
     osc.frequency.setValueAtTime(freq, t);
 
     filter.type = 'bandpass';
-    filter.frequency.setValueAtTime(freq * 1.5, t);
-    filter.Q.setValueAtTime(2.0, t);
+    filter.frequency.setValueAtTime(freq * 1.2, t);
+    filter.Q.setValueAtTime(1.5, t);
 
-    gain.gain.setValueAtTime(0.001, t);
-    gain.gain.linearRampToValueAtTime(0.05 * velocity, t + 0.005);
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.linearRampToValueAtTime(0.045 * velocity, t + 0.012);
     gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
 
     osc.connect(filter);
@@ -296,11 +294,11 @@ class PortfolioAudioEngine {
     gain.connect(this.musicGain);
 
     osc.start(t);
-    osc.stop(t + duration + 0.02);
+    osc.stop(t + duration + 0.05);
   }
 
   // =========================================================================
-  // EXCITING 124-BPM STEP SEQUENCER
+  // SERENE 74-BPM LO-FI CHILLHOP / GHIBLI STEP SEQUENCER
   // =========================================================================
 
   startMusic() {
@@ -311,94 +309,88 @@ class PortfolioAudioEngine {
     this.stepIndex = 0;
 
     /**
-     * Energetic 4-bar progression in D Minor:
-     * Bar 1: Dm (D2 / Dm9)
-     * Bar 2: Bb (Bb1 / Bbmaj7)
-     * Bar 3: Gm (G1 / Gm7)
-     * Bar 4: A (A1 / A7)
+     * Heartwarming, nostalgic anime progression in F Major / D Minor:
+     * Bar 1: Fmaj7  (F3, A3, C4, E4)   - Peaceful morning sky
+     * Bar 2: Cmaj7  (E3, G3, B3, C4)   - Gentle reflection
+     * Bar 3: Dm9    (D3, F3, A3, C4, E4) - Contemplative depth
+     * Bar 4: Bbmaj7 (Bb2, D3, F3, A3)  - Uplifting horizon
      */
-    // 64 16th-notes running bassline frequencies (Hz)
-    const bassRiff = [
-      // Bar 1: Dm
-      73.42, 73.42, 87.31, 73.42, 98.0, 73.42, 110.0, 87.31,
-      73.42, 73.42, 87.31, 73.42, 98.0, 110.0, 130.81, 146.83,
-      // Bar 2: Bb
-      58.27, 58.27, 73.42, 58.27, 87.31, 58.27, 98.0, 87.31,
-      58.27, 58.27, 73.42, 58.27, 87.31, 98.0, 110.0, 130.81,
-      // Bar 3: Gm
-      49.0, 49.0, 58.27, 49.0, 73.42, 49.0, 87.31, 73.42,
-      49.0, 49.0, 58.27, 49.0, 73.42, 87.31, 98.0, 110.0,
-      // Bar 4: A
-      55.0, 55.0, 73.42, 55.0, 82.41, 55.0, 98.0, 82.41,
-      55.0, 73.42, 82.41, 98.0, 110.0, 130.81, 146.83, 164.81,
+    const chords = [
+      [174.61, 220.00, 261.63, 329.63], // Fmaj7
+      [164.81, 196.00, 246.94, 261.63], // Cmaj7/E
+      [146.83, 174.61, 220.00, 261.63, 329.63], // Dm9
+      [116.54, 146.83, 174.61, 220.00], // Bbmaj7
     ];
 
-    // Chords (Hz)
-    const chords = {
-      dm: [146.83, 174.61, 220.0, 261.63, 329.63], // D3, F3, A3, C4, E4
-      bb: [116.54, 146.83, 174.61, 220.0],         // Bb2, D3, F3, A3
-      gm: [98.0, 116.54, 146.83, 174.61],          // G2, Bb2, D3, F3
-      a:  [110.0, 138.59, 164.81, 220.0],          // A2, C#3, E3, A3
-    };
+    const bassNotes = [
+      87.31,  // F2
+      82.41,  // E2
+      73.42,  // D2
+      58.27,  // Bb1
+    ];
 
-    // Shimmering Arpeggio notes (Hz)
-    const arpNotes = [
-      440.0, 523.25, 587.33, 659.25, 698.46, 587.33, 523.25, 440.0,
-      392.0, 440.0, 523.25, 587.33, 659.25, 587.33, 523.25, 392.0,
-      349.23, 392.0, 440.0, 523.25, 587.33, 523.25, 440.0, 349.23,
-      440.0, 554.37, 659.25, 783.99, 880.0, 783.99, 659.25, 554.37,
+    // Pentatonic anime sky bell melody (Hz) across 64 steps
+    const melodyPattern = [
+      // Bar 1 (Fmaj7): Warm morning sunrise
+      523.25, 0, 587.33, 0, 659.25, 0, 0, 523.25,
+      0, 659.25, 783.99, 0, 659.25, 0, 587.33, 0,
+      // Bar 2 (Cmaj7): Wind in the trees
+      493.88, 0, 523.25, 0, 659.25, 0, 0, 493.88,
+      0, 587.33, 659.25, 0, 587.33, 0, 523.25, 0,
+      // Bar 3 (Dm9): Looking skyward
+      440.00, 0, 523.25, 0, 587.33, 0, 0, 659.25,
+      0, 783.99, 880.00, 0, 783.99, 0, 659.25, 0,
+      // Bar 4 (Bbmaj7): Gentle breath
+      587.33, 0, 523.25, 0, 440.00, 0, 0, 392.00,
+      0, 440.00, 523.25, 0, 587.33, 0, 0, 0
     ];
 
     const runStep = () => {
       if (!this.isMusicPlaying || !this.ctx || this.ctx.state !== 'running') return;
       const t = this.ctx.currentTime + 0.02;
-      const step = this.stepIndex % 64;
-      const beatInBar = Math.floor((step % 16) / 4); // 0, 1, 2, 3
-      const stepInBeat = step % 4; // 0, 1, 2, 3
+      const step = this.stepIndex % 64; // 4 bars of 16 steps
       const bar = Math.floor(step / 16); // 0, 1, 2, 3
+      const stepInBar = step % 16;       // 0 to 15
+      const beatInBar = Math.floor(stepInBar / 4); // 0, 1, 2, 3
+      const stepInBeat = stepInBar % 4; // 0, 1, 2, 3
 
-      // 1. KICK: 4-on-the-floor (every beat: stepInBeat === 0)
-      if (stepInBeat === 0) {
-        this.playKick(t, 0.85);
+      // 1. CHORD PADS: Played on beat 1 of each bar with long smooth decay
+      if (stepInBar === 0) {
+        this.playLofiChord(chords[bar], t, 2.8, 0.42);
+        this.playLofiBass(bassNotes[bar], t, 1.8, 0.65);
+      } else if (stepInBar === 8) {
+        // Subtle chord continuation / syncopated gentle strum on beat 3
+        this.playLofiChord(chords[bar], t, 1.5, 0.28);
       }
 
-      // 2. SNARE: Beats 2 and 4 (beatInBar === 1 or 3, stepInBeat === 0)
-      if ((beatInBar === 1 || beatInBar === 3) && stepInBeat === 0) {
-        this.playSnare(t, 0.7);
+      // 2. KICK: Beat 1 (stepInBar === 0) and syncopated beat 3.5 (stepInBar === 10)
+      if (stepInBar === 0) {
+        this.playLofiKick(t, 0.75);
+      } else if (stepInBar === 10) {
+        this.playLofiKick(t, 0.55);
       }
 
-      // 3. HI-HATS:
-      // Open hat on the offbeats (stepInBeat === 2)
-      if (stepInBeat === 2) {
-        this.playHiHat(t, true, 0.45);
-      } else {
-        // Closed hats on 16th notes
-        this.playHiHat(t, false, stepInBeat === 0 ? 0.35 : 0.2);
+      // 3. SNARE / RIMSHOT: Beat 2 and Beat 4 (stepInBar === 4 and stepInBar === 12)
+      if (stepInBar === 4 || stepInBar === 12) {
+        this.playLofiSnare(t, 0.5);
       }
 
-      // 4. BASS: Driving 16th-note bassline
-      const bassFreq = bassRiff[step] || 73.42;
-      this.playBass(bassFreq, t, 0.12, 0.75);
-
-      // 5. CHORD STABS: Syncopated energetic stabs (on beats 1.5, 2.5, 3.5)
-      if (stepInBeat === 2 && (beatInBar === 0 || beatInBar === 2)) {
-        let currentChord = chords.dm;
-        if (bar === 1) currentChord = chords.bb;
-        if (bar === 2) currentChord = chords.gm;
-        if (bar === 3) currentChord = chords.a;
-        this.playChordStab(currentChord, t, 0.2, 0.5);
+      // 4. HI-HATS: Swung 8th notes (steps 0, 2, 4, 6, 8, 10, 12, 14)
+      if (stepInBeat === 0 || stepInBeat === 2) {
+        const vel = stepInBeat === 0 ? 0.35 : 0.22;
+        this.playLofiHat(t, vel);
       }
 
-      // 6. ARP LEAD: Shimmering high melody on 16th notes
-      const arpFreq = arpNotes[step % 32];
-      if (arpFreq) {
-        this.playArpLead(arpFreq, t, 0.1, 0.3);
+      // 5. CELESTA / ANIME SKY MELODY: Twinkling music box notes
+      const melodyFreq = melodyPattern[step];
+      if (melodyFreq && melodyFreq > 0) {
+        this.playCelestaLead(melodyFreq, t, 0.7, 0.38);
       }
 
       this.stepIndex++;
     };
 
-    // Run clock loop at 16th-note resolution
+    // Run clock loop at 16th-note resolution (~202ms per step at 74 BPM)
     this.stepIntervalId = setInterval(runStep, this.stepDuration * 1000);
   }
 
@@ -411,12 +403,9 @@ class PortfolioAudioEngine {
   }
 
   // =========================================================================
-  // FUTURISTIC SYSTEM BOOT & WELCOME ACTUATION SOUNDS
+  // TACTILE UI SOUND EFFECTS (Calm & Elegant)
   // =========================================================================
 
-  /**
-   * Exciting futuristic laboratory boot actuation sound when entering portfolio
-   */
   playSystemBoot() {
     if (this.isMuted) return;
     this.isUnlocked = true;
@@ -425,55 +414,29 @@ class PortfolioAudioEngine {
 
     try {
       const t = this.ctx.currentTime;
-
-      // 1. Rising holographic frequency sweep
-      const sweepOsc = this.ctx.createOscillator();
-      const sweepGain = this.ctx.createGain();
-      sweepOsc.type = 'sawtooth';
-      sweepOsc.frequency.setValueAtTime(140, t);
-      sweepOsc.frequency.exponentialRampToValueAtTime(1200, t + 0.45);
-
-      const filter = this.ctx.createBiquadFilter();
-      filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(600, t);
-      filter.frequency.exponentialRampToValueAtTime(3600, t + 0.45);
-      filter.Q.setValueAtTime(3.0, t);
-
-      sweepGain.gain.setValueAtTime(0.01, t);
-      sweepGain.gain.linearRampToValueAtTime(0.12, t + 0.35);
-      sweepGain.gain.exponentialRampToValueAtTime(0.001, t + 0.55);
-
-      sweepOsc.connect(filter);
-      filter.connect(sweepGain);
-      sweepGain.connect(this.sfxGain);
-
-      sweepOsc.start(t);
-      sweepOsc.stop(t + 0.56);
-
-      // 2. Triumphant major chord actuation chime (D, F#, A, D)
-      const notes = [293.66, 369.99, 440.0, 587.33, 880.0];
+      // Soft major chime (F3, A3, C4, E4)
+      const notes = [174.61, 220.0, 261.63, 329.63, 523.25];
       notes.forEach((freq, idx) => {
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
-        const delay = 0.35 + idx * 0.04;
+        const delay = idx * 0.05;
 
         osc.type = 'sine';
         osc.frequency.setValueAtTime(freq, t + delay);
 
         gain.gain.setValueAtTime(0.001, t + delay);
-        gain.gain.linearRampToValueAtTime(0.08, t + delay + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.0001, t + delay + 0.65);
+        gain.gain.linearRampToValueAtTime(0.06, t + delay + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + delay + 0.8);
 
         osc.connect(gain);
         gain.connect(this.sfxGain);
 
         osc.start(t + delay);
-        osc.stop(t + delay + 0.7);
+        osc.stop(t + delay + 0.85);
       });
     } catch (e) {}
   }
 
-  // Tactile Surface Bend Tap Sound
   playSurfaceBend() {
     if (this.isMuted) return;
     this.isUnlocked = true;
@@ -487,25 +450,24 @@ class PortfolioAudioEngine {
       const filter = this.ctx.createBiquadFilter();
 
       osc.type = 'triangle';
-      osc.frequency.setValueAtTime(180, t);
-      osc.frequency.exponentialRampToValueAtTime(75, t + 0.07);
+      osc.frequency.setValueAtTime(140, t);
+      osc.frequency.exponentialRampToValueAtTime(65, t + 0.08);
 
       filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(420, t);
+      filter.frequency.setValueAtTime(350, t);
 
-      gain.gain.setValueAtTime(0.09, t);
-      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.07);
+      gain.gain.setValueAtTime(0.07, t);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.08);
 
       osc.connect(filter);
       filter.connect(gain);
       gain.connect(this.sfxGain);
 
       osc.start(t);
-      osc.stop(t + 0.075);
+      osc.stop(t + 0.085);
     } catch (e) {}
   }
 
-  // Tactile Hover Blip
   playHover() {
     if (this.isMuted || !this.isUnlocked) return;
     this.ensureContext();
@@ -515,28 +477,22 @@ class PortfolioAudioEngine {
       const t = this.ctx.currentTime;
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
-      const filter = this.ctx.createBiquadFilter();
 
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(1400, t);
-      osc.frequency.exponentialRampToValueAtTime(800, t + 0.035);
+      osc.frequency.setValueAtTime(1200, t);
+      osc.frequency.exponentialRampToValueAtTime(880, t + 0.03);
 
-      filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(2200, t);
+      gain.gain.setValueAtTime(0.025, t);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.03);
 
-      gain.gain.setValueAtTime(0.04, t);
-      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.035);
-
-      osc.connect(filter);
-      filter.connect(gain);
+      osc.connect(gain);
       gain.connect(this.sfxGain);
 
       osc.start(t);
-      osc.stop(t + 0.04);
+      osc.stop(t + 0.035);
     } catch (e) {}
   }
 
-  // Mechanical Actuation Click
   playClick() {
     if (this.isMuted) return;
     this.isUnlocked = true;
@@ -545,36 +501,24 @@ class PortfolioAudioEngine {
 
     try {
       const t = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
 
-      // High transient
-      const oscHigh = this.ctx.createOscillator();
-      const gainHigh = this.ctx.createGain();
-      oscHigh.type = 'triangle';
-      oscHigh.frequency.setValueAtTime(950, t);
-      oscHigh.frequency.exponentialRampToValueAtTime(240, t + 0.04);
-      gainHigh.gain.setValueAtTime(0.12, t);
-      gainHigh.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
-      oscHigh.connect(gainHigh);
-      gainHigh.connect(this.sfxGain);
-      oscHigh.start(t);
-      oscHigh.stop(t + 0.045);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(620, t);
+      osc.frequency.exponentialRampToValueAtTime(180, t + 0.035);
 
-      // Low tactile body
-      const oscLow = this.ctx.createOscillator();
-      const gainLow = this.ctx.createGain();
-      oscLow.type = 'sine';
-      oscLow.frequency.setValueAtTime(180, t);
-      oscLow.frequency.exponentialRampToValueAtTime(45, t + 0.06);
-      gainLow.gain.setValueAtTime(0.15, t);
-      gainLow.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
-      oscLow.connect(gainLow);
-      gainLow.connect(this.sfxGain);
-      oscLow.start(t);
-      oscLow.stop(t + 0.07);
+      gain.gain.setValueAtTime(0.08, t);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.035);
+
+      osc.connect(gain);
+      gain.connect(this.sfxGain);
+
+      osc.start(t);
+      osc.stop(t + 0.04);
     } catch (e) {}
   }
 
-  // Blueprint Modal Unfold Sound
   playModalOpen() {
     if (this.isMuted) return;
     this.isUnlocked = true;
@@ -583,7 +527,7 @@ class PortfolioAudioEngine {
 
     try {
       const t = this.ctx.currentTime;
-      const notes = [293.66, 369.99, 440.0, 587.33];
+      const notes = [261.63, 329.63, 392.0, 523.25];
       notes.forEach((freq, idx) => {
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
@@ -593,7 +537,7 @@ class PortfolioAudioEngine {
         osc.frequency.setValueAtTime(freq, t + delay);
 
         gain.gain.setValueAtTime(0.0001, t + delay);
-        gain.gain.linearRampToValueAtTime(0.05, t + delay + 0.02);
+        gain.gain.linearRampToValueAtTime(0.04, t + delay + 0.02);
         gain.gain.exponentialRampToValueAtTime(0.0001, t + delay + 0.45);
 
         osc.connect(gain);
@@ -602,14 +546,9 @@ class PortfolioAudioEngine {
         osc.start(t + delay);
         osc.stop(t + delay + 0.5);
       });
-
-      if (this.musicGain) {
-        this.musicGain.gain.linearRampToValueAtTime(0.12, t + 0.2);
-      }
     } catch (e) {}
   }
 
-  // Modal Close Sound
   playModalClose() {
     if (this.isMuted) return;
     this.ensureContext();
@@ -620,24 +559,19 @@ class PortfolioAudioEngine {
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(440, t);
-      osc.frequency.exponentialRampToValueAtTime(220, t + 0.12);
+      osc.frequency.setValueAtTime(392, t);
+      osc.frequency.exponentialRampToValueAtTime(196, t + 0.1);
 
-      gain.gain.setValueAtTime(0.08, t);
-      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.12);
+      gain.gain.setValueAtTime(0.05, t);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.1);
 
       osc.connect(gain);
       gain.connect(this.sfxGain);
       osc.start(t);
-      osc.stop(t + 0.13);
-
-      if (this.musicGain) {
-        this.musicGain.gain.linearRampToValueAtTime(0.3, t + 0.3);
-      }
+      osc.stop(t + 0.11);
     } catch (e) {}
   }
 
-  // Radar / Divergence Ping
   playRadarPing() {
     if (this.isMuted) return;
     this.ensureContext();
@@ -648,34 +582,32 @@ class PortfolioAudioEngine {
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(2150, t);
-      osc.frequency.exponentialRampToValueAtTime(1750, t + 0.18);
+      osc.frequency.setValueAtTime(1760, t);
+      osc.frequency.exponentialRampToValueAtTime(1320, t + 0.15);
 
-      gain.gain.setValueAtTime(0.03, t);
-      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.2);
+      gain.gain.setValueAtTime(0.025, t);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.16);
 
       osc.connect(gain);
       gain.connect(this.sfxGain);
       osc.start(t);
-      osc.stop(t + 0.22);
+      osc.stop(t + 0.17);
     } catch (e) {}
   }
 
-  // Toggle Mute
   toggleMute() {
     this.isMuted = !this.isMuted;
     if (this.masterGain && this.ctx) {
       const t = this.ctx.currentTime;
-      this.masterGain.gain.linearRampToValueAtTime(this.isMuted ? 0 : 0.75, t + 0.1);
+      this.masterGain.gain.linearRampToValueAtTime(this.isMuted ? 0 : 0.70, t + 0.1);
     }
     return this.isMuted;
   }
 
-  // Set Master Volume (0.0 to 1.0)
   setVolume(val) {
     if (this.masterGain && this.ctx) {
       const t = this.ctx.currentTime;
-      this.masterGain.gain.linearRampToValueAtTime(val * 0.75, t + 0.05);
+      this.masterGain.gain.linearRampToValueAtTime(val * 0.70, t + 0.05);
     }
   }
 }

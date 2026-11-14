@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 /**
  * AnimatedCloudStrips renders the 4 vertical rectangle strips
@@ -12,6 +13,7 @@ import React, { useState, useEffect, useRef } from 'react';
  * 4. Interactive mouse parallax response.
  */
 export default function AnimatedCloudStrips() {
+  const isMobile = useIsMobile(1024);
   const [opacities, setOpacities] = useState({ f1: 1, f2: 0, f3: 0 });
   const [mouseShift, setMouseShift] = useState({ x: 0, y: 0 });
   const animFrameRef = useRef(null);
@@ -86,78 +88,103 @@ export default function AnimatedCloudStrips() {
           willChange: 'transform, opacity',
         }}
       >
-        {/* ========================================================================= */}
-        {/* 3 SEQUENTIAL SVG STRIP FRAMES WITH SMOOTH CONTINUOUS BLENDING */}
-        {/* ========================================================================= */}
-
-        {/* Frame 01: Base Cloud Formation */}
-        <div
-          className="absolute inset-0 w-full h-full pointer-events-none will-change-transform"
-          style={{
-            opacity: opacities.f1,
-            transition: 'opacity 0.1s linear',
-          }}
+        {/* SVG Viewport matching 1451x821 master coordinate system (Responsive for mobile grounding) */}
+        <svg
+          viewBox={isMobile ? "80 0 880 821" : "0 0 1451 821"}
+          preserveAspectRatio={isMobile ? "xMidYMax meet" : "xMinYMid meet"}
+          className="w-full h-full overflow-visible pointer-events-none"
         >
-          <img
-            src={stripSvgFiles[0]}
-            alt="Rectangle Cloud Strip Frame 01"
-            className="w-full h-full object-contain object-left pointer-events-none drop-shadow-sm"
+          <defs>
+            <linearGradient id="cloudSunGlow" x1="0" y1="1" x2="1" y2="0">
+              <stop offset="0%" stopColor="#A5F3FC" stopOpacity="0.25" />
+              <stop offset="50%" stopColor="#FFFFFF" stopOpacity="0.45" />
+              <stop offset="100%" stopColor="#FEF08A" stopOpacity="0.30" />
+            </linearGradient>
+            <linearGradient id="cloudSkyGlow" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#38BDF8" stopOpacity="0.25" />
+              <stop offset="50%" stopColor="#38BDF8" stopOpacity="0" />
+              <stop offset="100%" stopColor="#5EEAD4" stopOpacity="0.2" />
+            </linearGradient>
+          </defs>
+
+          {/* ========================================================================= */}
+          {/* 3 SEQUENTIAL SVG STRIP FRAMES WITH SMOOTH CONTINUOUS BLENDING */}
+          {/* ========================================================================= */}
+
+          {/* Frame 01: Base Cloud Formation */}
+          <g
+            style={{
+              opacity: opacities.f1,
+              transition: 'opacity 0.1s linear',
+            }}
+          >
+            <image
+              href={stripSvgFiles[0]}
+              xlinkHref={stripSvgFiles[0]}
+              x="0"
+              y="0"
+              width="1451"
+              height="821"
+              className="pointer-events-none"
+            />
+          </g>
+
+          {/* Frame 02: Mid-Drift Cloud Puffs */}
+          <g
+            style={{
+              opacity: opacities.f2,
+              transition: 'opacity 0.1s linear',
+            }}
+          >
+            <image
+              href={stripSvgFiles[1]}
+              xlinkHref={stripSvgFiles[1]}
+              x="0"
+              y="0"
+              width="1451"
+              height="821"
+              className="pointer-events-none"
+            />
+          </g>
+
+          {/* Frame 03: Ascending Cloud Puffs with Sunlight Highlights */}
+          <g
+            style={{
+              opacity: opacities.f3,
+              transition: 'opacity 0.1s linear',
+            }}
+          >
+            <image
+              href={stripSvgFiles[2]}
+              xlinkHref={stripSvgFiles[2]}
+              x="0"
+              y="0"
+              width="1451"
+              height="821"
+              className="pointer-events-none"
+            />
+          </g>
+
+          {/* ========================================================================= */}
+          {/* ATMOSPHERIC CLOUD LUMINESCENCE (Animates the blue and whitish cloud colors) */}
+          {/* ========================================================================= */}
+          <rect
+            x="110"
+            y="0"
+            width="600"
+            height="821"
+            fill="url(#cloudSunGlow)"
+            className="pointer-events-none mix-blend-color-dodge animate-pulse duration-[3500ms]"
           />
-        </div>
-
-        {/* Frame 02: Mid-Drift Cloud Puffs */}
-        <div
-          className="absolute inset-0 w-full h-full pointer-events-none will-change-transform"
-          style={{
-            opacity: opacities.f2,
-            transition: 'opacity 0.1s linear',
-          }}
-        >
-          <img
-            src={stripSvgFiles[1]}
-            alt="Rectangle Cloud Strip Frame 02"
-            className="w-full h-full object-contain object-left pointer-events-none drop-shadow-sm"
+          <rect
+            x="110"
+            y="0"
+            width="600"
+            height="821"
+            fill="url(#cloudSkyGlow)"
+            className="pointer-events-none mix-blend-overlay animate-pulse duration-[5500ms]"
           />
-        </div>
-
-        {/* Frame 03: Ascending Cloud Puffs with Sunlight Highlights */}
-        <div
-          className="absolute inset-0 w-full h-full pointer-events-none will-change-transform"
-          style={{
-            opacity: opacities.f3,
-            transition: 'opacity 0.1s linear',
-          }}
-        >
-          <img
-            src={stripSvgFiles[2]}
-            alt="Rectangle Cloud Strip Frame 03"
-            className="w-full h-full object-contain object-left pointer-events-none drop-shadow-sm"
-          />
-        </div>
-
-        {/* ========================================================================= */}
-        {/* ATMOSPHERIC CLOUD LUMINESCENCE (Animates the blue and whitish cloud colors) */}
-        {/* ========================================================================= */}
-        
-        {/* Shimmering sunlight glow wave moving across the whitish cloud puffs */}
-        <div
-          className="absolute inset-0 w-full h-full pointer-events-none mix-blend-color-dodge opacity-40 animate-pulse duration-[3500ms]"
-          style={{
-            clipPath: 'polygon(7% 0%, 58% 0%, 58% 100%, 7% 100%)', // Constrained strictly to the 4 rectangle strips area
-          }}
-        >
-          <div className="w-full h-full bg-gradient-to-tr from-cyan-200/10 via-white/35 to-amber-100/20" />
-        </div>
-
-        {/* Delicate azure sky atmospheric depth wave */}
-        <div
-          className="absolute inset-0 w-full h-full pointer-events-none mix-blend-overlay opacity-30 animate-pulse duration-[5500ms]"
-          style={{
-            clipPath: 'polygon(7% 0%, 58% 0%, 58% 100%, 7% 100%)',
-          }}
-        >
-          <div className="w-full h-full bg-gradient-to-b from-sky-400/20 via-transparent to-teal-300/15" />
-        </div>
+        </svg>
       </div>
     </div>
   );

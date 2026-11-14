@@ -55,11 +55,11 @@ export default function Navigation({ onExploreClick, onResumeClick, currentView 
       
       {/* BRAND IDENTITY: Clean Modern Text Logo matching Figma "YourName" */}
       <div
-        className="flex items-center space-x-2 group cursor-pointer select-none"
+        className="flex items-center space-x-2 group cursor-pointer select-none whitespace-nowrap flex-shrink-0"
         onMouseEnter={() => audioEngine.playHover()}
         onClick={() => audioEngine.playRadarPing()}
       >
-        <span className="font-inter font-bold text-lg sm:text-xl md:text-2xl text-[#0E1F21] tracking-tight hover:opacity-85 transition-opacity">
+        <span className="font-inter font-bold text-base sm:text-xl md:text-2xl text-[#0E1F21] tracking-tight hover:opacity-85 transition-opacity">
           Ajay Jadhao
         </span>
       </div>
@@ -144,7 +144,7 @@ export default function Navigation({ onExploreClick, onResumeClick, currentView 
         <button
           onClick={handleConnectClick}
           onMouseEnter={() => audioEngine.playHover()}
-          className="group relative inline-flex items-center space-x-2 px-5 sm:px-6 py-2 sm:py-2.5 min-h-[38px] rounded-full bg-[#0E1F21] text-white font-inter font-semibold text-xs sm:text-sm hover:bg-[#1A2A2D] shadow-sm hover:shadow-md transition-all active:scale-95 cursor-pointer"
+          className="hidden sm:inline-flex group relative items-center space-x-2 px-5 sm:px-6 py-2 sm:py-2.5 min-h-[38px] rounded-full bg-[#0E1F21] text-white font-inter font-semibold text-xs sm:text-sm hover:bg-[#1A2A2D] shadow-sm hover:shadow-md transition-all active:scale-95 cursor-pointer"
         >
           <span>Let's Connect</span>
           <ArrowRight className="w-3.5 h-3.5 text-white group-hover:translate-x-1 transition-transform duration-200" />

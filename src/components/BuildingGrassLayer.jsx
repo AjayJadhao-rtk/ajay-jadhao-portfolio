@@ -1,4 +1,5 @@
 import React from 'react';
+import { useIsMobile } from '../hooks/useIsMobile';
 import buildingUrl from '../assets/building_clean.png';
 import treesUrl from '../assets/trees_clean.png';
 
@@ -22,6 +23,8 @@ import treesUrl from '../assets/trees_clean.png';
  * - Stacking Index: z-[25] (in front of Wheel z-20 & Cloud Strips z-10).
  */
 export default function BuildingGrassLayer() {
+  const isMobile = useIsMobile(1024);
+
   return (
     <div className="relative w-full h-full max-w-[1920px] mx-auto select-none pointer-events-none overflow-hidden flex items-center justify-start">
       
@@ -61,10 +64,10 @@ export default function BuildingGrassLayer() {
         }
       `}</style>
 
-      {/* SVG Viewport matching 1451x821 master coordinate system — 100% STATIONARY WRAPPER */}
+      {/* SVG Viewport matching 1451x821 master coordinate system (Responsive for mobile grounding) */}
       <svg
-        viewBox="0 0 1451 821"
-        preserveAspectRatio="xMinYMid meet"
+        viewBox={isMobile ? "80 0 880 821" : "0 0 1451 821"}
+        preserveAspectRatio={isMobile ? "xMidYMax meet" : "xMinYMid meet"}
         className="w-full h-full overflow-visible pointer-events-none"
       >
         <defs>
