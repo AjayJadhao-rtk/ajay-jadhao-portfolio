@@ -9,6 +9,8 @@ import AnimatedCharacter from './AnimatedCharacter';
 import SurfaceElasticBender from './SurfaceElasticBender';
 import HeroTypography from './HeroTypography';
 import AboutSection from './AboutSection';
+import SkillsSection from './SkillsSection';
+import ContactSection from './ContactSection';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { audioEngine } from '../utils/audioSystem';
 
@@ -18,32 +20,35 @@ if (typeof window !== 'undefined') {
 }
 
 /**
- * HeroSection Component with Integrated Continuous About Section
+ * HeroSection Component with Integrated Continuous About, Skills & Contact Journey
  * 
- * Features:
- * 1. Cinematic Continuous Scroll Experience:
- *    - Pinned viewport container inside a 220vh scroll track.
- *    - Environmental artwork (Character, Wheel, Building/Trees, Cloud Strips) progressively
- *      shifts towards the LEFT as user scrolls from Hero into About.
- *    - Relative visual positions are 100% maintained in lockstep.
- *    - Hero typography fades out on the right as the About section content reveals.
- * 2. GPU Accelerated:
- *    - Pure transform: translate3d(-xShift, 0, 0) with willChange: transform.
- *    - Smooth 0.8s scrub physics for liquid responsiveness.
- * 3. Dynamic Navigation:
- *    - Active tab automatically transitions between "Home" and "About" based on scroll position.
- *    - Clicking "About" or "About Me" smoothly scrolls to the About section.
- *    - Clicking "Home" smoothly returns to the Hero section.
- * 4. Responsive & Accessible:
- *    - Dynamic shift calibration for mobile viewports.
- *    - Reduced-motion fallback for accessibility.
+ * Cinematic Scroll Orchestration:
+ * 1. Home (Hero):
+ *    - Character, wheel, building, cloud strips in original right-of-center framing.
+ *    - Editorial typography on right ("TURNING IDEAS INTO IMPACT").
+ *    - Top-left name "Ajay Jadhao" visible.
+ * 2. About:
+ *    - Character & environment shift smoothly towards the LEFT.
+ *    - Top-left name fades out and disappears.
+ *    - About content ("01 // ABOUT", "AJAY JADHAO", bio, 3 interactive cards) fades in seamlessly.
+ * 3. Skills:
+ *    - Environment shifts further left to the edge, exactly matching "Skill section reference image.png".
+ *    - Cloud strips tilt according to reference image.
+ *    - 6 modular category cards appear with right-side technical artwork, live Figma link, and custom hovers.
+ * 4. Contact:
+ *    - Entire environment (character, building, bushes, wheel, and strips) moves COMPLETELY OUT OF FRAME to the left.
+ *    - Clean, full-width editorial Contact section reveals ("Let's Build Something Exceptional").
  */
 export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onToggleView }) {
   const trackRef = useRef(null);
   const viewportRef = useRef(null);
   const environmentRef = useRef(null);
+  const stripsRef = useRef(null);
+
   const heroContentRef = useRef(null);
   const aboutContentRef = useRef(null);
+  const skillsContentRef = useRef(null);
+  const contactContentRef = useRef(null);
   const aboutLeftAccentRef = useRef(null);
 
   const [activeSection, setActiveSection] = useState('Home');
@@ -55,33 +60,27 @@ export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onTog
     alert('Opening Resume: Ajay Jadhao — Electronics & Telecommunication Engineer (PDF)');
   };
 
-  const scrollToAbout = () => {
-    audioEngine.playClick();
-    if (trackRef.current) {
-      const target = trackRef.current.offsetTop + trackRef.current.offsetHeight - window.innerHeight;
-      window.scrollTo({ top: target, behavior: 'smooth' });
-    }
-  };
-
-  const scrollToHome = () => {
-    audioEngine.playClick();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
   const handleNavigate = (id) => {
-    if (id === 'about') {
-      scrollToAbout();
-    } else if (id === 'home') {
-      scrollToHome();
-    } else if (id === 'projects') {
+    audioEngine.playClick();
+    if (id === 'projects') {
       if (onOpen3DWorld) onOpen3DWorld();
-    } else {
-      const el = document.getElementById(id);
-      if (el) el.scrollIntoView({ behavior: 'smooth' });
+      return;
     }
+
+    if (!trackRef.current) return;
+    const totalScroll = trackRef.current.offsetHeight - window.innerHeight;
+
+    let targetRatio = 0;
+    if (id === 'home') targetRatio = 0;
+    else if (id === 'about') targetRatio = 0.35;
+    else if (id === 'skills') targetRatio = 0.65;
+    else if (id === 'contact') targetRatio = 0.95;
+
+    const targetY = trackRef.current.offsetTop + Math.round(totalScroll * targetRatio);
+    window.scrollTo({ top: targetY, behavior: 'smooth' });
   };
 
-  // GSAP ScrollTrigger Master Timeline with Seamless Hero-to-About Overlap & 0.25s Responsive Scrub
+  // GSAP ScrollTrigger Master 4-Phase Timeline
   useEffect(() => {
     if (!trackRef.current || !environmentRef.current) return;
 
@@ -89,10 +88,19 @@ export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onTog
     const isNarrow = window.innerWidth < 1024;
     const W = window.innerWidth;
     
-    // Calibrated horizontal shift so character, wheel & building shift left matching reference image
-    const maxShiftX = isNarrow
+    // Calibrated shifts
+    const maxShiftAbout = isNarrow
       ? Math.round(W * 0.16)
       : Math.round(Math.min(380, Math.max(240, W * 0.19)));
+
+    const maxShiftSkills = isNarrow
+      ? Math.round(W * 0.36)
+      : Math.round(Math.min(680, Math.max(460, W * 0.36)));
+
+    // In Contact, environment moves COMPLETELY out of frame to the left
+    const maxShiftContact = isNarrow
+      ? Math.round(W * 1.35)
+      : Math.round(Math.max(W + 500, 1600));
 
     const ctx = gsap.context(() => {
       // Fluid, responsive scrub (0.25s) for instant tracking with zero sluggish lag
@@ -103,7 +111,15 @@ export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onTog
           end: 'bottom bottom',
           scrub: prefersReducedMotion ? false : 0.25,
           onUpdate: (self) => {
-            const next = self.progress > 0.48 ? 'About' : 'Home';
+            const p = self.progress;
+            let next = 'Home';
+            if (p >= 0.80) {
+              next = 'Contact';
+            } else if (p >= 0.52) {
+              next = 'Skills';
+            } else if (p >= 0.22) {
+              next = 'About';
+            }
             if (activeSectionRef.current !== next) {
               activeSectionRef.current = next;
               setActiveSection(next);
@@ -113,99 +129,52 @@ export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onTog
       });
 
       if (!prefersReducedMotion) {
-        // 1. Progressively shift the entire illustrated environment towards the LEFT (0.0 -> 1.0)
+        // =====================================================================
+        // 1. ENVIRONMENTAL ARTWORK MOVEMENT (Horizontal Translation)
+        // =====================================================================
+
+        // Phase A: Shift to About framing (0.12 -> 0.34)
         tl.to(environmentRef.current, {
-          x: -maxShiftX,
+          x: -maxShiftAbout,
           ease: 'power1.inOut',
-          duration: 1
-        }, 0);
+          duration: 0.22
+        }, 0.12);
 
-        // 2. HERO EXIT (0.18 -> 0.58)
-        // Holds full visibility for first 18% of scroll, then gracefully fades out while About enters
-        tl.to(heroContentRef.current, {
-          opacity: 0,
-          x: -40,
-          y: -10,
-          ease: 'power1.out',
-          duration: 0.40
-        }, 0.18);
-
-        // Switch pointer-events at midpoint
-        tl.set(heroContentRef.current, { pointerEvents: 'none' }, 0.48);
-        tl.set(aboutContentRef.current, { pointerEvents: 'auto' }, 0.48);
-
-        // 3. ABOUT ENTRANCE WITH CONTROLLED OVERLAP (0.28 -> 0.78)
-        // Starts entering at 0.28 while Hero is still ~70% visible, eliminating ANY blank space!
-        tl.fromTo(aboutContentRef.current, {
-          opacity: 0,
-          x: 40,
-          y: 10,
-        }, {
-          opacity: 1,
-          x: 0,
-          y: 0,
-          ease: 'power1.out',
-          duration: 0.45
-        }, 0.28);
-
-        // Staggered internal entrance for cinematic polish
-        // Eyebrow & Heading
-        tl.fromTo('.about-eyebrow, .about-heading', {
-          opacity: 0,
-          y: 20
-        }, {
-          opacity: 1,
-          y: 0,
-          ease: 'power1.out',
-          duration: 0.32
-        }, 0.30);
-
-        // Bio paragraph
-        tl.fromTo('.about-bio', {
-          opacity: 0,
-          y: 18
-        }, {
-          opacity: 1,
-          y: 0,
-          ease: 'power1.out',
-          duration: 0.30
-        }, 0.38);
-
-        // Profile metadata row
-        tl.fromTo('.about-meta', {
-          opacity: 0,
-          y: 18
-        }, {
-          opacity: 1,
-          y: 0,
-          ease: 'power1.out',
-          duration: 0.30
+        // Phase B: Shift to Skills framing (0.44 -> 0.64)
+        tl.to(environmentRef.current, {
+          x: -maxShiftSkills,
+          ease: 'power1.inOut',
+          duration: 0.20
         }, 0.44);
 
-        // Three Interactive Cards (staggered)
-        tl.fromTo('.about-card-1, .about-card-2, .about-card-3', {
-          opacity: 0,
-          y: 20
-        }, {
-          opacity: 1,
-          y: 0,
-          stagger: 0.05,
-          ease: 'power1.out',
-          duration: 0.32
-        }, 0.50);
+        // Phase B Tilt: Rectangle strips tilt in Skills section (0.48 -> 0.64)
+        if (stripsRef.current) {
+          tl.to(stripsRef.current, {
+            rotation: -3.8,
+            transformOrigin: '15% 50%',
+            ease: 'power1.out',
+            duration: 0.16
+          }, 0.48);
+        }
 
-        // Tagline
-        tl.fromTo('.about-tagline', {
-          opacity: 0,
-          y: 10
-        }, {
-          opacity: 1,
-          y: 0,
-          ease: 'power1.out',
-          duration: 0.25
-        }, 0.60);
+        // Phase C: Move COMPLETELY OUT OF FRAME to the left for Contact (0.74 -> 0.92)
+        tl.to(environmentRef.current, {
+          x: -maxShiftContact,
+          ease: 'power1.inOut',
+          duration: 0.20
+        }, 0.74);
 
-        // 4. Reveal bottom-left "HARDWARE + SOFTWARE —" in About mode
+        // Phase C Untilt: Strips return to neutral when moving out (0.74 -> 0.88)
+        if (stripsRef.current) {
+          tl.to(stripsRef.current, {
+            rotation: 0,
+            transformOrigin: '15% 50%',
+            ease: 'power1.out',
+            duration: 0.14
+          }, 0.74);
+        }
+
+        // Reveal bottom-left "HARDWARE + SOFTWARE —" in About mode
         if (aboutLeftAccentRef.current) {
           tl.fromTo(aboutLeftAccentRef.current, {
             opacity: 0,
@@ -214,24 +183,117 @@ export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onTog
             opacity: 1,
             y: 0,
             ease: 'power1.out',
-            duration: 0.35
-          }, 0.45);
+            duration: 0.14
+          }, 0.26);
+
+          tl.to(aboutLeftAccentRef.current, {
+            opacity: 0,
+            y: -10,
+            ease: 'power1.in',
+            duration: 0.10
+          }, 0.46);
         }
-      } else {
-        // Reduced motion fallback: gentle crossfade
+
+        // =====================================================================
+        // 2. HERO CONTENT TIMELINE (0.00 -> 0.30)
+        // =====================================================================
         tl.to(heroContentRef.current, {
           opacity: 0,
-          duration: 0.40,
-          pointerEvents: 'none'
-        }, 0.20);
+          x: -35,
+          y: -8,
+          ease: 'power1.out',
+          duration: 0.14
+        }, 0.16);
+
+        tl.set(heroContentRef.current, { pointerEvents: 'none' }, 0.24);
+
+        // =====================================================================
+        // 3. ABOUT CONTENT TIMELINE (0.20 -> 0.58)
+        // =====================================================================
         tl.fromTo(aboutContentRef.current, {
           opacity: 0,
-          pointerEvents: 'none'
+          x: 35,
+          y: 8,
         }, {
           opacity: 1,
-          duration: 0.45,
-          pointerEvents: 'auto'
-        }, 0.28);
+          x: 0,
+          y: 0,
+          ease: 'power1.out',
+          duration: 0.16
+        }, 0.20);
+
+        tl.set(aboutContentRef.current, { pointerEvents: 'auto' }, 0.24);
+
+        // Staggered internal entrance for About items
+        tl.fromTo('.about-eyebrow, .about-heading', { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.12 }, 0.22);
+        tl.fromTo('.about-bio', { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.12 }, 0.26);
+        tl.fromTo('.about-meta', { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.12 }, 0.30);
+        tl.fromTo('.about-card-1, .about-card-2, .about-card-3', { opacity: 0, y: 15 }, { opacity: 1, y: 0, stagger: 0.03, duration: 0.14 }, 0.32);
+
+        // About exit
+        tl.to(aboutContentRef.current, {
+          opacity: 0,
+          x: -35,
+          y: -8,
+          ease: 'power1.out',
+          duration: 0.12
+        }, 0.46);
+
+        tl.set(aboutContentRef.current, { pointerEvents: 'none' }, 0.52);
+
+        // =====================================================================
+        // 4. SKILLS CONTENT TIMELINE (0.50 -> 0.86)
+        // =====================================================================
+        tl.fromTo(skillsContentRef.current, {
+          opacity: 0,
+          x: 35,
+          y: 8,
+        }, {
+          opacity: 1,
+          x: 0,
+          y: 0,
+          ease: 'power1.out',
+          duration: 0.16
+        }, 0.50);
+
+        tl.set(skillsContentRef.current, { pointerEvents: 'auto' }, 0.54);
+
+        // Skills exit
+        tl.to(skillsContentRef.current, {
+          opacity: 0,
+          x: -35,
+          y: -8,
+          ease: 'power1.out',
+          duration: 0.12
+        }, 0.74);
+
+        tl.set(skillsContentRef.current, { pointerEvents: 'none' }, 0.80);
+
+        // =====================================================================
+        // 5. CONTACT CONTENT TIMELINE (0.78 -> 1.00)
+        // =====================================================================
+        tl.fromTo(contactContentRef.current, {
+          opacity: 0,
+          x: 35,
+          y: 8,
+        }, {
+          opacity: 1,
+          x: 0,
+          y: 0,
+          ease: 'power1.out',
+          duration: 0.16
+        }, 0.78);
+
+        tl.set(contactContentRef.current, { pointerEvents: 'auto' }, 0.82);
+
+      } else {
+        // Reduced motion fallback: sequential crossfade without large translations
+        tl.to(heroContentRef.current, { opacity: 0, duration: 0.15, pointerEvents: 'none' }, 0.15);
+        tl.fromTo(aboutContentRef.current, { opacity: 0, pointerEvents: 'none' }, { opacity: 1, duration: 0.15, pointerEvents: 'auto' }, 0.20);
+        tl.to(aboutContentRef.current, { opacity: 0, duration: 0.15, pointerEvents: 'none' }, 0.45);
+        tl.fromTo(skillsContentRef.current, { opacity: 0, pointerEvents: 'none' }, { opacity: 1, duration: 0.15, pointerEvents: 'auto' }, 0.50);
+        tl.to(skillsContentRef.current, { opacity: 0, duration: 0.15, pointerEvents: 'none' }, 0.75);
+        tl.fromTo(contactContentRef.current, { opacity: 0, pointerEvents: 'none' }, { opacity: 1, duration: 0.15, pointerEvents: 'auto' }, 0.80);
       }
     }, trackRef);
 
@@ -242,9 +304,9 @@ export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onTog
     <div className="relative w-full bg-[#E9DDC7] text-[#292B27] font-sans select-none">
       
       {/* ========================================================================= */}
-      {/* 200VH CONTINUOUS SCROLL TRACK (Tied to GSAP ScrollTrigger)               */}
+      {/* 420VH CONTINUOUS SCROLL TRACK (Tied to GSAP ScrollTrigger)               */}
       {/* ========================================================================= */}
-      <div ref={trackRef} className="relative w-full h-[200vh]">
+      <div ref={trackRef} className="relative w-full h-[420vh]">
         
         {/* PINNED VIEWPORT STAGE (Sticky at top: 0, height: 100vh) */}
         <div
@@ -266,8 +328,8 @@ export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onTog
             className="fixed inset-0 w-full h-full pointer-events-none select-none z-20 overflow-hidden"
             style={{ willChange: 'transform' }}
           >
-            {/* Animated Rectangle Cloud Strips */}
-            <div className="absolute inset-0 w-full h-full">
+            {/* Animated Rectangle Cloud Strips (with tilt ref for Skills section) */}
+            <div ref={stripsRef} className="absolute inset-0 w-full h-full" style={{ willChange: 'transform' }}>
               <AnimatedCloudStrips />
             </div>
 
@@ -286,7 +348,7 @@ export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onTog
               <AnimatedCharacter />
             </div>
 
-            {/* About Section Far Bottom-Left Technical Accent (From Reference Image) */}
+            {/* About Section Far Bottom-Left Technical Accent */}
             <div
               ref={aboutLeftAccentRef}
               className="hidden lg:flex flex-col items-start absolute left-6 xl:left-12 bottom-10 z-30 pointer-events-none select-none text-[#1A2A2D] font-mono opacity-0"
@@ -315,26 +377,49 @@ export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onTog
             />
           </div>
 
-          {/* 5. HERO TYPOGRAPHY LAYER (z-30, fades out as user scrolls down) */}
+          {/* 5. HERO TYPOGRAPHY LAYER (z-30) */}
           <main
             ref={heroContentRef}
             className="absolute inset-0 pt-20 pb-4 sm:pb-6 px-4 sm:px-6 lg:px-8 z-30 pointer-events-auto flex flex-col justify-between"
           >
             <HeroTypography
               onExploreClick={onOpen3DWorld}
-              onAboutClick={scrollToAbout}
+              onAboutClick={() => handleNavigate('about')}
             />
           </main>
 
-          {/* 6. ABOUT SECTION LAYER (z-40, reveals on right as environment shifts left) */}
+          {/* 6. ABOUT SECTION LAYER (z-35) */}
           <section
             id="about"
             ref={aboutContentRef}
-            className="absolute inset-0 pt-20 pb-4 sm:pb-6 px-4 sm:px-6 lg:px-8 z-40 pointer-events-none opacity-0 flex flex-col justify-between"
+            className="absolute inset-0 pt-20 pb-4 sm:pb-6 px-4 sm:px-6 lg:px-8 z-35 pointer-events-none opacity-0 flex flex-col justify-between"
           >
             <AboutSection
               onOpen3DWorld={onOpen3DWorld}
               onExploreClick={onOpen3DWorld}
+            />
+          </section>
+
+          {/* 7. SKILLS SECTION LAYER (z-40) */}
+          <section
+            id="skills"
+            ref={skillsContentRef}
+            className="absolute inset-0 pt-16 sm:pt-20 pb-2 sm:pb-4 px-3 sm:px-6 lg:px-8 z-40 pointer-events-none opacity-0 flex flex-col justify-between"
+          >
+            <SkillsSection
+              onOpen3DWorld={onOpen3DWorld}
+            />
+          </section>
+
+          {/* 8. CONTACT SECTION LAYER (z-45) */}
+          <section
+            id="contact"
+            ref={contactContentRef}
+            className="absolute inset-0 pt-20 pb-4 sm:pb-6 px-4 sm:px-6 lg:px-8 z-45 pointer-events-none opacity-0 flex flex-col justify-between"
+          >
+            <ContactSection
+              onOpen3DWorld={onOpen3DWorld}
+              onResumeClick={handleDownloadResume}
             />
           </section>
 

@@ -61,9 +61,13 @@ export default function Navigation({ onExploreClick, onResumeClick, currentView 
   return (
     <header className="relative z-40 w-full px-4 sm:px-8 lg:px-12 py-4 sm:py-5 flex items-center justify-between border-b border-[#D9E3E1]/70 bg-[#E9DDC7]/40 backdrop-blur-md transition-all duration-300">
       
-      {/* BRAND IDENTITY: Clean Modern Text Logo matching Figma "YourName" */}
+      {/* BRAND IDENTITY: Clean Modern Text Logo matching Figma "YourName" - Hidden outside Home/Hero */}
       <div
-        className="flex items-center space-x-2 group cursor-pointer select-none whitespace-nowrap flex-shrink-0"
+        className={`flex items-center space-x-2 group cursor-pointer select-none whitespace-nowrap flex-shrink-0 transition-all duration-300 ${
+          activeTab.toLowerCase() !== 'home'
+            ? 'opacity-0 pointer-events-none -translate-x-3'
+            : 'opacity-100 translate-x-0'
+        }`}
         onMouseEnter={() => audioEngine.playHover()}
         onClick={() => {
           audioEngine.playRadarPing();
