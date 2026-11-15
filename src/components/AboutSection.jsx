@@ -6,64 +6,70 @@ import { audioEngine } from '../utils/audioSystem';
  * Custom SVG Icons matching the exact artwork in "About section reference image.png"
  */
 
-// Card 1 Icon: Smart Robotics Rover with wheels, mast, and sensor head
-function RoverIcon({ className = "w-8 h-8" }) {
+// Card 1 Icon: Smart Robotics Rover with smooth drive-back-and-forth animation
+function RoverIcon({ className = "w-8 h-8", isDark = false }) {
   return (
-    <svg className={className} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M24 16V8M20 8H28M24 8L26 5" stroke="#0E1F21" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-      <rect x="20" y="10" width="8" height="6" rx="1.5" stroke="#0E1F21" strokeWidth="2" fill="#E4ECE7" />
-      <circle cx="24" cy="13" r="1.5" fill="#6A8E8B" />
-      <rect x="12" y="16" width="24" height="12" rx="2" stroke="#0E1F21" strokeWidth="2.2" fill="#FFFFFF" />
-      <line x1="16" y1="20" x2="32" y2="20" stroke="#6A8E8B" strokeWidth="1.5" strokeDasharray="2 2" />
-      <line x1="16" y1="24" x2="32" y2="24" stroke="#6A8E8B" strokeWidth="1.5" strokeDasharray="2 2" />
-      <path d="M14 28L10 34M34 28L38 34M24 28V34" stroke="#0E1F21" strokeWidth="2" strokeLinecap="round" />
-      <rect x="7" y="32" width="7" height="9" rx="2" fill="#0E1F21" />
-      <rect x="21" y="32" width="6" height="9" rx="2" fill="#0E1F21" />
-      <rect x="34" y="32" width="7" height="9" rx="2" fill="#0E1F21" />
-      <line x1="8" y1="36.5" x2="13" y2="36.5" stroke="#FFFFFF" strokeWidth="1" />
-      <line x1="22" y1="36.5" x2="26" y2="36.5" stroke="#FFFFFF" strokeWidth="1" />
-      <line x1="35" y1="36.5" x2="40" y2="36.5" stroke="#FFFFFF" strokeWidth="1" />
-    </svg>
+    <div style={{ animation: 'roverDriveBackAndForth 2.4s ease-in-out infinite' }}>
+      <svg className={className} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M24 16V8M20 8H28M24 8L26 5" stroke={isDark ? "#A5F3FC" : "#0E1F21"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+        <rect x="20" y="10" width="8" height="6" rx="1.5" stroke={isDark ? "#A5F3FC" : "#0E1F21"} strokeWidth="2" fill={isDark ? "#1E2A25" : "#E4ECE7"} />
+        <circle cx="24" cy="13" r="1.5" fill="#6A8E8B" />
+        <rect x="12" y="16" width="24" height="12" rx="2" stroke={isDark ? "#A5F3FC" : "#0E1F21"} strokeWidth="2.2" fill={isDark ? "#162520" : "#FFFFFF"} />
+        <line x1="16" y1="20" x2="32" y2="20" stroke="#6A8E8B" strokeWidth="1.5" strokeDasharray="2 2" />
+        <line x1="16" y1="24" x2="32" y2="24" stroke="#6A8E8B" strokeWidth="1.5" strokeDasharray="2 2" />
+        <path d="M14 28L10 34M34 28L38 34M24 28V34" stroke={isDark ? "#A5F3FC" : "#0E1F21"} strokeWidth="2" strokeLinecap="round" />
+        <rect x="7" y="32" width="7" height="9" rx="2" fill={isDark ? "#A5F3FC" : "#0E1F21"} />
+        <rect x="21" y="32" width="6" height="9" rx="2" fill={isDark ? "#A5F3FC" : "#0E1F21"} />
+        <rect x="34" y="32" width="7" height="9" rx="2" fill={isDark ? "#A5F3FC" : "#0E1F21"} />
+        <line x1="8" y1="36.5" x2="13" y2="36.5" stroke="#FFFFFF" strokeWidth="1" />
+        <line x1="22" y1="36.5" x2="26" y2="36.5" stroke="#FFFFFF" strokeWidth="1" />
+        <line x1="35" y1="36.5" x2="40" y2="36.5" stroke="#FFFFFF" strokeWidth="1" />
+      </svg>
+    </div>
   );
 }
 
 // Card 2 Icon: Browser Window with Isometric 3D Cube inside
-function Browser3DCubeIcon({ className = "w-8 h-8" }) {
+function Browser3DCubeIcon({ className = "w-8 h-8", isDark = false }) {
   return (
     <svg className={className} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="6" y="8" width="36" height="32" rx="4" stroke="#0E1F21" strokeWidth="2.2" fill="#FFFFFF" />
-      <path d="M6 16H42" stroke="#0E1F21" strokeWidth="1.8" />
+      <rect x="6" y="8" width="36" height="32" rx="4" stroke={isDark ? "#A5F3FC" : "#0E1F21"} strokeWidth="2.2" fill={isDark ? "#162520" : "#FFFFFF"} />
+      <path d="M6 16H42" stroke={isDark ? "#6A8E8B" : "#0E1F21"} strokeWidth="1.8" />
       <circle cx="11" cy="12" r="1.5" fill="#EF4444" />
       <circle cx="16" cy="12" r="1.5" fill="#F59E0B" />
       <circle cx="21" cy="12" r="1.5" fill="#10B981" />
       <g transform="translate(24, 28) scale(0.72)">
-        <polygon points="0,-16 14,-8 0,0 -14,-8" fill="#F5EAE0" stroke="#0E1F21" strokeWidth="2" strokeLinejoin="round" />
-        <polygon points="-14,-8 0,0 0,16 -14,8" fill="#EAD9CD" stroke="#0E1F21" strokeWidth="2" strokeLinejoin="round" />
-        <polygon points="0,0 14,-8 14,8 0,16" fill="#FBF2EB" stroke="#0E1F21" strokeWidth="2" strokeLinejoin="round" />
+        <polygon points="0,-16 14,-8 0,0 -14,-8" fill="#F5EAE0" stroke={isDark ? "#A5F3FC" : "#0E1F21"} strokeWidth="2" strokeLinejoin="round" />
+        <polygon points="-14,-8 0,0 0,16 -14,8" fill="#EAD9CD" stroke={isDark ? "#A5F3FC" : "#0E1F21"} strokeWidth="2" strokeLinejoin="round" />
+        <polygon points="0,0 14,-8 14,8 0,16" fill="#FBF2EB" stroke={isDark ? "#A5F3FC" : "#0E1F21"} strokeWidth="2" strokeLinejoin="round" />
         <circle cx="0" cy="0" r="1.5" fill="#6A8E8B" />
       </g>
     </svg>
   );
 }
 
-// Card 3 Icon: Origami Paper Airplane in Teal
-function OrigamiAirplaneIcon({ className = "w-8 h-8" }) {
+// Card 3 Icon: Origami Paper Airplane in Teal with subtle floating flight animation
+function OrigamiAirplaneIcon({ className = "w-8 h-8", isDark = false }) {
   return (
-    <svg className={className} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M40 8L8 23L22 28L40 8Z" fill="#6A8E8B" stroke="#0E1F21" strokeWidth="2.2" strokeLinejoin="round" />
-      <path d="M40 8L28 38L22 28L40 8Z" fill="#4A6E6B" stroke="#0E1F21" strokeWidth="2.2" strokeLinejoin="round" />
-      <path d="M22 28L28 38L27 28L22 28Z" fill="#2A4E4B" stroke="#0E1F21" strokeWidth="1.5" strokeLinejoin="round" />
-      <path d="M6 18C4 18 3 20 5 21" stroke="#6A8E8B" strokeWidth="1.5" strokeLinecap="round" />
-      <path d="M12 32C10 33 9 35 12 36" stroke="#6A8E8B" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
+    <div style={{ animation: 'airplaneGentleFly 3.6s ease-in-out infinite' }}>
+      <svg className={className} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M40 8L8 23L22 28L40 8Z" fill={isDark ? "#A5F3FC" : "#6A8E8B"} stroke={isDark ? "#FFFFFF" : "#0E1F21"} strokeWidth="2.2" strokeLinejoin="round" />
+        <path d="M40 8L28 38L22 28L40 8Z" fill={isDark ? "#38BDF8" : "#4A6E6B"} stroke={isDark ? "#FFFFFF" : "#0E1F21"} strokeWidth="2.2" strokeLinejoin="round" />
+        <path d="M22 28L28 38L27 28L22 28Z" fill={isDark ? "#0284C7" : "#2A4E4B"} stroke={isDark ? "#FFFFFF" : "#0E1F21"} strokeWidth="1.5" strokeLinejoin="round" />
+        <path d="M6 18C4 18 3 20 5 21" stroke={isDark ? "#A5F3FC" : "#6A8E8B"} strokeWidth="1.5" strokeLinecap="round" />
+        <path d="M12 32C10 33 9 35 12 36" stroke={isDark ? "#A5F3FC" : "#6A8E8B"} strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    </div>
   );
 }
 
 export default function AboutSection({ onOpen3DWorld, onExploreClick }) {
   const [activeMetric, setActiveMetric] = React.useState(null);
+  const [selectedCardId, setSelectedCardId] = React.useState(3);
 
   // CARD 01 ACTION — SMART HARDWARE & ROBOTICS INQUIRY
   const handleHardwareInquiry = () => {
+    setSelectedCardId(1);
     audioEngine.playClick();
     const subject = encodeURIComponent('Smart Hardware & Robotics Collaboration');
     const body = encodeURIComponent(
@@ -87,6 +93,7 @@ Best regards,
 
   // CARD 02 ACTION — INTERACTIVE 3D & WEB (Launch 3D Circuit World)
   const handleInteractive3DClick = () => {
+    setSelectedCardId(2);
     audioEngine.playRadarPing();
     if (onOpen3DWorld) {
       onOpen3DWorld();
@@ -98,6 +105,7 @@ Best regards,
 
   // CARD 03 ACTION — BUILD YOUR PROTOTYPE
   const handleBuildPrototype = () => {
+    setSelectedCardId(3);
     audioEngine.playClick();
     const subject = encodeURIComponent('Prototype Development Inquiry');
     const body = encodeURIComponent(
@@ -123,8 +131,53 @@ Best regards,
     window.location.href = `mailto:rutikjadhao20@gmail.com?subject=${subject}&body=${body}`;
   };
 
+  const handleCard1Click = () => {
+    audioEngine.playClick();
+    if (selectedCardId === 1) {
+      handleHardwareInquiry();
+    } else {
+      setSelectedCardId(1);
+    }
+  };
+
+  const handleCard2Click = () => {
+    audioEngine.playClick();
+    if (selectedCardId === 2) {
+      handleInteractive3DClick();
+    } else {
+      setSelectedCardId(2);
+    }
+  };
+
+  const handleCard3Click = () => {
+    audioEngine.playClick();
+    if (selectedCardId === 3) {
+      handleBuildPrototype();
+    } else {
+      setSelectedCardId(3);
+    }
+  };
+
+  const isCard1Dark = selectedCardId === 1;
+  const isCard2Dark = selectedCardId === 2;
+  const isCard3Dark = selectedCardId === 3;
+
   return (
     <div className="relative w-full h-full max-w-[1920px] mx-auto select-none pointer-events-none flex flex-col justify-between">
+      <style>{`
+        @keyframes roverDriveBackAndForth {
+          0% { transform: translateX(0); }
+          50% { transform: translateX(-8px); }
+          100% { transform: translateX(0); }
+        }
+        @keyframes airplaneGentleFly {
+          0% { transform: translate(0, 0) rotate(0deg); }
+          25% { transform: translate(3px, -4px) rotate(2.5deg); }
+          50% { transform: translate(0, -5px) rotate(0deg); }
+          75% { transform: translate(-3px, -2.5px) rotate(-2deg); }
+          100% { transform: translate(0, 0) rotate(0deg); }
+        }
+      `}</style>
       
       {/* MAIN RIGHT-SIDE ABOUT CONTENT STAGE */}
       <div className="w-full flex justify-end px-2 sm:px-6 lg:pr-10 xl:pr-16 pt-1 sm:pt-4 lg:pt-6 z-40">
@@ -253,82 +306,145 @@ Best regards,
           </div>
 
           {/* ============================================================== */}
-          {/* 5. THREE INTERACTIVE CARDS (Preserved visual design & actions)  */}
+          {/* 5. THREE INTERACTIVE CARDS (Single active dark tone on tap)     */}
           {/* ============================================================== */}
           <div className="w-full grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 mb-3 flex-shrink-0">
             
             {/* CARD 01: SMART HARDWARE & ROBOTICS */}
             <button
-              onClick={handleHardwareInquiry}
+              onClick={handleCard1Click}
               onMouseEnter={() => audioEngine.playHover()}
-              className="about-card-1 group relative flex flex-col items-start text-left p-3 sm:p-3.5 rounded-xl bg-[#E4ECE7] border border-[#CAD8D1] hover:border-[#1E3A32] hover:bg-[#EDF5F1] shadow-xs hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer"
+              className={`about-card-1 group relative flex flex-col items-start text-left p-3 sm:p-3.5 rounded-xl border shadow-xs hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 cursor-pointer ${
+                isCard1Dark
+                  ? 'bg-[#0E1F21] text-white border-[#0E1F21] shadow-lg ring-1 ring-[#A5F3FC]/30'
+                  : 'bg-[#E4ECE7] text-[#0E1F21] border-[#CAD8D1] hover:border-[#1E3A32] hover:bg-[#EDF5F1]'
+              }`}
             >
               <div className="w-full flex items-center justify-between mb-1.5">
-                <RoverIcon className="w-6 h-6 text-[#0E1F21] group-hover:scale-105 transition-transform" />
-                <span className="text-[9px] font-mono font-bold text-[#1E3A32] opacity-80 group-hover:opacity-100 transition-opacity">
+                <RoverIcon className="w-6 h-6 text-[#0E1F21] group-hover:scale-105 transition-transform" isDark={isCard1Dark} />
+                <span
+                  onClick={(e) => { e.stopPropagation(); handleHardwareInquiry(); }}
+                  className={`text-[9px] font-mono font-bold transition-opacity cursor-pointer ${
+                    isCard1Dark ? 'text-[#A5F3FC] opacity-100' : 'text-[#1E3A32] opacity-80 group-hover:opacity-100'
+                  }`}
+                >
                   INQUIRE &rarr;
                 </span>
               </div>
-              <h3 className="font-inter font-bold text-xs sm:text-[12px] text-[#0E1F21] tracking-wide uppercase mb-0.5 leading-snug">
+              <h3 className={`font-inter font-bold text-xs sm:text-[12px] tracking-wide uppercase mb-0.5 leading-snug ${
+                isCard1Dark ? 'text-white' : 'text-[#0E1F21]'
+              }`}>
                 SMART HARDWARE &amp; ROBOTICS
               </h3>
-              <p className="font-inter text-[10px] sm:text-[10.5px] text-[#556965] leading-relaxed">
+              <p className={`font-inter text-[10px] sm:text-[10.5px] leading-relaxed ${
+                isCard1Dark ? 'text-[#D1E7DD]' : 'text-[#556965]'
+              }`}>
                 Custom IoT devices, sensors &amp; autonomous robots
               </p>
-              <div className="flex flex-wrap gap-1 mt-2 pt-1 border-t border-[#CAD8D1]/60">
-                <span className="text-[8px] font-mono bg-[#CAD8D1]/70 text-[#1E3A32] px-1.5 py-0.5 rounded font-bold">ESP32</span>
-                <span className="text-[8px] font-mono bg-[#CAD8D1]/70 text-[#1E3A32] px-1.5 py-0.5 rounded font-bold">FreeRTOS</span>
-                <span className="text-[8px] font-mono bg-[#CAD8D1]/70 text-[#1E3A32] px-1.5 py-0.5 rounded font-bold">Sensors</span>
+              <div className={`flex flex-wrap gap-1 mt-2 pt-1 border-t ${
+                isCard1Dark ? 'border-white/20' : 'border-[#CAD8D1]/60'
+              }`}>
+                <span className={`text-[8px] font-mono px-1.5 py-0.5 rounded font-bold ${
+                  isCard1Dark ? 'bg-white/15 text-[#A5F3FC]' : 'bg-[#CAD8D1]/70 text-[#1E3A32]'
+                }`}>ESP32</span>
+                <span className={`text-[8px] font-mono px-1.5 py-0.5 rounded font-bold ${
+                  isCard1Dark ? 'bg-white/15 text-[#A5F3FC]' : 'bg-[#CAD8D1]/70 text-[#1E3A32]'
+                }`}>FreeRTOS</span>
+                <span className={`text-[8px] font-mono px-1.5 py-0.5 rounded font-bold ${
+                  isCard1Dark ? 'bg-white/15 text-[#A5F3FC]' : 'bg-[#CAD8D1]/70 text-[#1E3A32]'
+                }`}>Sensors</span>
               </div>
             </button>
 
             {/* CARD 02: INTERACTIVE 3D & WEB */}
             <button
-              onClick={handleInteractive3DClick}
+              onClick={handleCard2Click}
               onMouseEnter={() => audioEngine.playHover()}
-              className="about-card-2 group relative flex flex-col items-start text-left p-3 sm:p-3.5 rounded-xl bg-[#F7EBE1] border border-[#EAD9CD] hover:border-[#1E3A32] hover:bg-[#FBF2EB] shadow-xs hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer"
+              className={`about-card-2 group relative flex flex-col items-start text-left p-3 sm:p-3.5 rounded-xl border shadow-xs hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 cursor-pointer ${
+                isCard2Dark
+                  ? 'bg-[#0E1F21] text-white border-[#0E1F21] shadow-lg ring-1 ring-[#A5F3FC]/30'
+                  : 'bg-[#F7EBE1] text-[#0E1F21] border-[#EAD9CD] hover:border-[#1E3A32] hover:bg-[#FBF2EB]'
+              }`}
             >
               <div className="w-full flex items-center justify-between mb-1.5">
-                <Browser3DCubeIcon className="w-6 h-6 text-[#0E1F21] group-hover:scale-105 transition-transform" />
-                <span className="text-[9px] font-mono font-bold text-[#1E3A32] opacity-80 group-hover:opacity-100 transition-opacity flex items-center space-x-0.5">
+                <Browser3DCubeIcon className="w-6 h-6 text-[#0E1F21] group-hover:scale-105 transition-transform" isDark={isCard2Dark} />
+                <span
+                  onClick={(e) => { e.stopPropagation(); handleInteractive3DClick(); }}
+                  className={`text-[9px] font-mono font-bold transition-opacity flex items-center space-x-0.5 cursor-pointer ${
+                    isCard2Dark ? 'text-[#A5F3FC] opacity-100' : 'text-[#1E3A32] opacity-80 group-hover:opacity-100'
+                  }`}
+                >
                   <span>LAUNCH</span>
                   <ExternalLink className="w-2.5 h-2.5" />
                 </span>
               </div>
-              <h3 className="font-inter font-bold text-xs sm:text-[12px] text-[#0E1F21] tracking-wide uppercase mb-0.5 leading-snug">
+              <h3 className={`font-inter font-bold text-xs sm:text-[12px] tracking-wide uppercase mb-0.5 leading-snug ${
+                isCard2Dark ? 'text-white' : 'text-[#0E1F21]'
+              }`}>
                 INTERACTIVE 3D &amp; WEB
               </h3>
-              <p className="font-inter text-[10px] sm:text-[10.5px] text-[#6B7B7D] leading-relaxed">
+              <p className={`font-inter text-[10px] sm:text-[10.5px] leading-relaxed ${
+                isCard2Dark ? 'text-[#D1E7DD]' : 'text-[#6B7B7D]'
+              }`}>
                 Modern 3D web experiences &amp; product showcases
               </p>
-              <div className="flex flex-wrap gap-1 mt-2 pt-1 border-t border-[#EAD9CD]/60">
-                <span className="text-[8px] font-mono bg-[#EAD9CD]/70 text-[#1E3A32] px-1.5 py-0.5 rounded font-bold">Three.js</span>
-                <span className="text-[8px] font-mono bg-[#EAD9CD]/70 text-[#1E3A32] px-1.5 py-0.5 rounded font-bold">WebGL</span>
-                <span className="text-[8px] font-mono bg-[#EAD9CD]/70 text-[#1E3A32] px-1.5 py-0.5 rounded font-bold">GSAP</span>
+              <div className={`flex flex-wrap gap-1 mt-2 pt-1 border-t ${
+                isCard2Dark ? 'border-white/20' : 'border-[#EAD9CD]/60'
+              }`}>
+                <span className={`text-[8px] font-mono px-1.5 py-0.5 rounded font-bold ${
+                  isCard2Dark ? 'bg-white/15 text-[#A5F3FC]' : 'bg-[#EAD9CD]/70 text-[#1E3A32]'
+                }`}>Three.js</span>
+                <span className={`text-[8px] font-mono px-1.5 py-0.5 rounded font-bold ${
+                  isCard2Dark ? 'bg-white/15 text-[#A5F3FC]' : 'bg-[#EAD9CD]/70 text-[#1E3A32]'
+                }`}>WebGL</span>
+                <span className={`text-[8px] font-mono px-1.5 py-0.5 rounded font-bold ${
+                  isCard2Dark ? 'bg-white/15 text-[#A5F3FC]' : 'bg-[#EAD9CD]/70 text-[#1E3A32]'
+                }`}>GSAP</span>
               </div>
             </button>
 
             {/* CARD 03: BUILD YOUR PROTOTYPE → */}
             <button
-              onClick={handleBuildPrototype}
+              onClick={handleCard3Click}
               onMouseEnter={() => audioEngine.playHover()}
-              className="about-card-3 group relative flex flex-col items-start text-left p-3 sm:p-3.5 rounded-xl bg-[#1E3A32] text-white border border-[#1E3A32] hover:bg-[#27433B] shadow-xs hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer"
+              className={`about-card-3 group relative flex flex-col items-start text-left p-3 sm:p-3.5 rounded-xl border shadow-xs hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 cursor-pointer ${
+                isCard3Dark
+                  ? 'bg-[#0E1F21] text-white border-[#0E1F21] shadow-lg ring-1 ring-[#A5F3FC]/30'
+                  : 'bg-[#E4ECE7] text-[#0E1F21] border-[#CAD8D1] hover:border-[#1E3A32] hover:bg-[#EDF5F1]'
+              }`}
             >
               <div className="w-full flex items-center justify-between mb-1.5">
-                <OrigamiAirplaneIcon className="w-6 h-6 group-hover:scale-110 group-hover:rotate-6 transition-transform" />
-                <ArrowRight className="w-3.5 h-3.5 text-[#A5F3FC] group-hover:translate-x-1 transition-transform" />
+                <OrigamiAirplaneIcon className="w-6 h-6 group-hover:scale-110 group-hover:rotate-6 transition-transform" isDark={isCard3Dark} />
+                <ArrowRight
+                  onClick={(e) => { e.stopPropagation(); handleBuildPrototype(); }}
+                  className={`w-3.5 h-3.5 group-hover:translate-x-1 transition-transform cursor-pointer ${
+                    isCard3Dark ? 'text-[#A5F3FC]' : 'text-[#1E3A32]'
+                  }`}
+                />
               </div>
-              <h3 className="font-inter font-bold text-xs sm:text-[12px] text-[#FFFFFF] tracking-wide uppercase mb-0.5 leading-snug flex items-center space-x-1">
+              <h3 className={`font-inter font-bold text-xs sm:text-[12px] tracking-wide uppercase mb-0.5 leading-snug flex items-center space-x-1 ${
+                isCard3Dark ? 'text-white' : 'text-[#0E1F21]'
+              }`}>
                 <span>BUILD YOUR PROTOTYPE</span>
-                <span className="text-[#A5F3FC]">→</span>
+                <span className={isCard3Dark ? 'text-[#A5F3FC]' : 'text-[#1E3A32]'}>→</span>
               </h3>
-              <p className="font-inter text-[10px] sm:text-[10.5px] text-[#D1E7DD] leading-relaxed">
+              <p className={`font-inter text-[10px] sm:text-[10.5px] leading-relaxed ${
+                isCard3Dark ? 'text-[#D1E7DD]' : 'text-[#556965]'
+              }`}>
                 Have an idea? Let&rsquo;s turn it into a working MVP
               </p>
-              <div className="flex flex-wrap gap-1 mt-2 pt-1 border-t border-white/20">
-                <span className="text-[8px] font-mono bg-white/20 text-[#A5F3FC] px-1.5 py-0.5 rounded font-bold">PCB Routing</span>
-                <span className="text-[8px] font-mono bg-white/20 text-[#A5F3FC] px-1.5 py-0.5 rounded font-bold">Firmware</span>
-                <span className="text-[8px] font-mono bg-white/20 text-[#A5F3FC] px-1.5 py-0.5 rounded font-bold">MVP Test</span>
+              <div className={`flex flex-wrap gap-1 mt-2 pt-1 border-t ${
+                isCard3Dark ? 'border-white/20' : 'border-[#CAD8D1]/60'
+              }`}>
+                <span className={`text-[8px] font-mono px-1.5 py-0.5 rounded font-bold ${
+                  isCard3Dark ? 'bg-white/15 text-[#A5F3FC]' : 'bg-[#CAD8D1]/70 text-[#1E3A32]'
+                }`}>PCB Routing</span>
+                <span className={`text-[8px] font-mono px-1.5 py-0.5 rounded font-bold ${
+                  isCard3Dark ? 'bg-white/15 text-[#A5F3FC]' : 'bg-[#CAD8D1]/70 text-[#1E3A32]'
+                }`}>Firmware</span>
+                <span className={`text-[8px] font-mono px-1.5 py-0.5 rounded font-bold ${
+                  isCard3Dark ? 'bg-white/15 text-[#A5F3FC]' : 'bg-[#CAD8D1]/70 text-[#1E3A32]'
+                }`}>MVP Test</span>
               </div>
             </button>
 

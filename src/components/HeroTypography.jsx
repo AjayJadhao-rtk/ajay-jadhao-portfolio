@@ -1,6 +1,42 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { ArrowRight, Sparkles, CheckCircle2 } from 'lucide-react';
 import { audioEngine } from '../utils/audioSystem';
+
+const textRevealContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.12,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const lineRevealVariant = {
+  hidden: { y: '115%', opacity: 0 },
+  visible: {
+    y: '0%',
+    opacity: 1,
+    transition: {
+      duration: 0.75,
+      ease: [0.16, 1, 0.3, 1],
+    },
+  },
+};
+
+const fadeUpVariant = {
+  hidden: { y: 22, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: {
+      duration: 0.65,
+      ease: [0.16, 1, 0.3, 1],
+    },
+  },
+};
 
 /**
  * HeroTypography Component
@@ -97,60 +133,77 @@ export default function HeroTypography({ onExploreClick, onAboutClick }) {
       {/* 2. MAIN RIGHT-SIDE HERO TYPOGRAPHY COLUMN                     */}
       {/* ============================================================== */}
       <div className="w-full flex justify-end px-2 sm:px-6 lg:pr-12 xl:pr-16 pt-1 sm:pt-5 lg:pt-6 z-30">
-        <div className="w-full lg:w-[46%] xl:w-[40%] max-w-[540px] pointer-events-auto flex flex-col items-start text-left bg-[#FAF6EE]/95 lg:bg-transparent border border-[#2C3835]/20 lg:border-none p-4 sm:p-5 lg:p-0 rounded-2xl lg:rounded-none shadow-lg lg:shadow-none">
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={textRevealContainer}
+          className="w-full lg:w-[46%] xl:w-[40%] max-w-[540px] pointer-events-auto flex flex-col items-start text-left bg-[#FAF6EE]/95 lg:bg-transparent border border-[#2C3835]/20 lg:border-none p-4 sm:p-5 lg:p-0 rounded-2xl lg:rounded-none shadow-lg lg:shadow-none"
+        >
           
           {/* Overline / Tagline: CREATIVE. CURIOUS. BUILDER. — */}
-          <div className="flex items-center space-x-2 sm:space-x-3 mb-1.5 sm:mb-3">
+          <motion.div variants={fadeUpVariant} className="flex items-center space-x-2 sm:space-x-3 mb-1.5 sm:mb-3">
             <span className="font-inter font-semibold text-[10px] sm:text-xs md:text-[13px] tracking-[0.25em] text-[#1E3A32] uppercase">
               CREATIVE.&nbsp;&nbsp;CURIOUS.&nbsp;&nbsp;BUILDER.
             </span>
             <span className="w-6 sm:w-12 h-[1px] bg-[#6A8E8B]/60 inline-block align-middle" />
-          </div>
+          </motion.div>
 
-          {/* Main Display Headline: TURNING IDEAS INTO IMPACT */}
+          {/* Main Display Headline: TURNING IDEAS INTO IMPACT with Text Reveal */}
           <h1
             className="font-playfair font-bold text-[#0E1F21] text-[28px] sm:text-4xl md:text-5xl lg:text-[64px] xl:text-[74px] leading-[0.98] tracking-tight uppercase mb-2 sm:mb-4 group cursor-default"
             style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
             onMouseEnter={() => audioEngine.playHover()}
           >
-            <span className="block transition-transform duration-300 group-hover:translate-x-1">TURNING</span>
-            <span className="block mt-0.5 sm:mt-1 transition-transform duration-300 group-hover:translate-x-1">IDEAS INTO</span>
+            <div className="overflow-hidden py-0.5">
+              <motion.span variants={lineRevealVariant} className="block transition-transform duration-300 group-hover:translate-x-1">
+                TURNING
+              </motion.span>
+            </div>
+            <div className="overflow-hidden py-0.5">
+              <motion.span variants={lineRevealVariant} className="block mt-0.5 sm:mt-1 transition-transform duration-300 group-hover:translate-x-1">
+                IDEAS INTO
+              </motion.span>
+            </div>
             
             {/* "IMPACT" with brand gradient + calligraphic swoosh */}
-            <span className="relative inline-block mt-0.5 sm:mt-1">
-              <span
-                className="bg-gradient-to-r from-[#1E3A32] via-[#6A8E8B] to-[#7DA5A1] bg-clip-text text-transparent inline-block transition-transform duration-300 group-hover:scale-105"
-                style={{
-                  backgroundImage: 'linear-gradient(135deg, #1E3A32 0%, #6A8E8B 50%, #7DA5A1 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                }}
-              >
-                IMPACT
-              </span>
-              
-              {/* Calligraphic Underline Swoosh from Figma reference */}
-              <svg
-                className="absolute -bottom-1 sm:-bottom-2.5 left-0 w-full max-w-[200px] sm:max-w-[300px] h-2 sm:h-3.5 overflow-visible pointer-events-none"
-                viewBox="0 0 300 12"
-                fill="none"
-              >
-                <path
-                  d="M 2 4 C 60 10, 170 11, 295 3 C 250 7, 120 9, 2 4 Z"
-                  fill="#6A8E8B"
-                  opacity="0.85"
-                />
-              </svg>
-            </span>
+            <div className="overflow-hidden py-0.5">
+              <motion.span variants={lineRevealVariant} className="relative inline-block mt-0.5 sm:mt-1">
+                <span
+                  className="bg-gradient-to-r from-[#1E3A32] via-[#6A8E8B] to-[#7DA5A1] bg-clip-text text-transparent inline-block transition-transform duration-300 group-hover:scale-105"
+                  style={{
+                    backgroundImage: 'linear-gradient(135deg, #1E3A32 0%, #6A8E8B 50%, #7DA5A1 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                  }}
+                >
+                  IMPACT
+                </span>
+                
+                {/* Calligraphic Underline Swoosh with draw effect */}
+                <svg
+                  className="absolute -bottom-1 sm:-bottom-2.5 left-0 w-full max-w-[200px] sm:max-w-[300px] h-2 sm:h-3.5 overflow-visible pointer-events-none"
+                  viewBox="0 0 300 12"
+                  fill="none"
+                >
+                  <motion.path
+                    initial={{ pathLength: 0, opacity: 0 }}
+                    animate={{ pathLength: 1, opacity: 0.85 }}
+                    transition={{ duration: 0.9, delay: 0.55, ease: 'easeOut' }}
+                    d="M 2 4 C 60 10, 170 11, 295 3 C 250 7, 120 9, 2 4 Z"
+                    fill="#6A8E8B"
+                  />
+                </svg>
+              </motion.span>
+            </div>
           </h1>
 
           {/* Subtitle / Bio Paragraph */}
-          <p className="font-inter font-normal text-[#1A2A2D]/90 text-xs sm:text-sm md:text-base leading-relaxed max-w-[450px] mb-3 sm:mb-5">
+          <motion.p variants={fadeUpVariant} className="font-inter font-normal text-[#1A2A2D]/90 text-xs sm:text-sm md:text-base leading-relaxed max-w-[450px] mb-3 sm:mb-5">
             I&rsquo;m a designer &amp; developer who loves building meaningful digital experiences.
-          </p>
+          </motion.p>
 
           {/* Action Buttons: View My Work & About Me */}
-          <div className="flex flex-wrap items-center gap-2.5 sm:gap-6 mb-3 sm:mb-5">
+          <motion.div variants={fadeUpVariant} className="flex flex-wrap items-center gap-2.5 sm:gap-6 mb-3 sm:mb-5">
             {/* Primary Action Button (#0E1F21 pill button) */}
             <button
               onClick={handlePrimaryClick}
@@ -169,10 +222,10 @@ export default function HeroTypography({ onExploreClick, onAboutClick }) {
             >
               <span>About Me</span>
             </button>
-          </div>
+          </motion.div>
 
           {/* Three-Column Interactive Philosophy Row */}
-          <div className="w-full max-w-[460px] flex items-center justify-between pt-2.5 sm:pt-3.5 border-t border-[#D9E3E1]">
+          <motion.div variants={fadeUpVariant} className="w-full max-w-[460px] flex items-center justify-between pt-2.5 sm:pt-3.5 border-t border-[#D9E3E1]">
             {pillars.map((p, idx) => (
               <React.Fragment key={p.id}>
                 {idx > 0 && <div className="w-[1px] h-6 sm:h-8 bg-[#D9E3E1]" />}
@@ -197,9 +250,9 @@ export default function HeroTypography({ onExploreClick, onAboutClick }) {
                 </div>
               </React.Fragment>
             ))}
-          </div>
+          </motion.div>
 
-        </div>
+        </motion.div>
       </div>
 
       {/* ============================================================== */}

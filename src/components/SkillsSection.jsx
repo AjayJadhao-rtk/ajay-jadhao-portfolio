@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ExternalLink, ChevronRight } from 'lucide-react';
 import { audioEngine } from '../utils/audioSystem';
 
@@ -419,7 +420,7 @@ export default function SkillsSection({ onOpen3DWorld }) {
       {/* ========================================================================= */}
       {/* SKILLS SECTION HEADER AREA                                                */}
       {/* ========================================================================= */}
-      <div className="w-full flex items-start justify-between relative pl-0 lg:pl-16 xl:pl-28 pr-2 sm:pr-6 mb-1 sm:mb-2 flex-shrink-0">
+      <div className="skills-reveal-header w-full flex items-start justify-between relative pl-0 lg:pl-16 xl:pl-28 pr-2 sm:pr-6 mb-1.5 sm:mb-2.5 flex-shrink-0">
         
         {/* Left Heading & Metadata */}
         <div className="flex flex-col items-start space-y-0.5 sm:space-y-1">
@@ -439,7 +440,7 @@ export default function SkillsSection({ onOpen3DWorld }) {
             Bridging hardware, software and creative engineering to build intelligent experiences.
           </p>
 
-          {/* Interactive Filter Pills */}
+          {/* Interactive Filter Pills with Smooth Sliding Layout Indicator */}
           <div className="flex flex-wrap items-center gap-1.5 pt-1">
             {[
               { id: 'all', label: 'ALL (6)' },
@@ -449,22 +450,32 @@ export default function SkillsSection({ onOpen3DWorld }) {
               { id: '04', label: 'SOFTWARE' },
               { id: '05', label: 'UI/UX' },
               { id: '06', label: '3D & CAD' },
-            ].map((f) => (
-              <button
-                key={f.id}
-                onClick={() => {
-                  audioEngine.playClick();
-                  setActiveCategory(f.id);
-                }}
-                className={`px-2 py-0.5 rounded text-[8.5px] sm:text-[9px] font-mono tracking-wider uppercase transition-all cursor-pointer ${
-                  activeCategory === f.id
-                    ? 'bg-[#0E1F21] text-[#F4ECE1] font-bold shadow-xs scale-102'
-                    : 'bg-[#1E3A32]/10 text-[#1E3A32] hover:bg-[#1E3A32]/20'
-                }`}
-              >
-                {f.label}
-              </button>
-            ))}
+            ].map((f) => {
+              const isSelected = activeCategory === f.id;
+              return (
+                <button
+                  key={f.id}
+                  onClick={() => {
+                    audioEngine.playClick();
+                    setActiveCategory(f.id);
+                  }}
+                  className={`relative px-2.5 py-1 rounded text-[8.5px] sm:text-[9.5px] font-mono tracking-wider uppercase transition-colors cursor-pointer select-none active:scale-95 ${
+                    isSelected
+                      ? 'text-[#F4ECE1] font-bold'
+                      : 'text-[#1E3A32] hover:text-[#0E1F21] bg-[#1E3A32]/10 hover:bg-[#1E3A32]/20'
+                  }`}
+                >
+                  {isSelected && (
+                    <motion.div
+                      layoutId="activeSkillFilterPill"
+                      className="absolute inset-0 bg-[#0E1F21] rounded shadow-xs z-0"
+                      transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                    />
+                  )}
+                  <span className="relative z-10">{f.label}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -485,167 +496,184 @@ export default function SkillsSection({ onOpen3DWorld }) {
       </div>
 
       {/* ========================================================================= */}
-      {/* 6 MODULAR CATEGORY CARDS (Fully Open & Responsive with Real Images)      */}
+      {/* 6 MODULAR CATEGORY CARDS (With Smooth Category Transition & High Visibility)*/}
       {/* ========================================================================= */}
-      <div className="w-full flex-1 grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-3.5 pl-0 lg:pl-16 xl:pl-28 pr-1 sm:pr-4 overflow-y-auto max-h-[calc(100vh-140px)] lg:max-h-none scrollbar-thin touch-pan-y">
-        {displayedCategories.map((cat) => (
-          <div
-            key={cat.id}
-            className="group relative flex flex-col md:flex-row items-stretch justify-between bg-[#F8F3EA] hover:bg-[#FAF6EF] border border-[#2C3835]/30 rounded-xl md:rounded-[4px] shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex-shrink-0"
+      <div className="skills-reveal-cards w-full flex-1 pl-0 lg:pl-16 xl:pl-28 pr-1 sm:pr-4 overflow-y-auto max-h-[calc(100vh-135px)] lg:max-h-none scrollbar-thin touch-pan-y pb-14 sm:pb-8">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeCategory}
+            initial={{ opacity: 0, y: 16, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -12, scale: 0.98 }}
+            transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+            className={`w-full ${
+              activeCategory === 'all'
+                ? 'grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-3.5'
+                : 'max-w-2xl mx-auto flex flex-col space-y-3'
+            }`}
           >
-            {/* MOBILE ONLY: Top Image Feature Banner (Matches User Request: "add image instead of just black text") */}
-            <div className="md:hidden relative w-full h-24 overflow-hidden bg-[#1E3A32]">
-              <img
-                src={cat.artSrc}
-                alt={cat.title}
-                className="w-full h-full object-cover object-center filter contrast-[110%]"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#F8F3EA] via-transparent to-black/30" />
-              <div className="absolute top-2 left-2 bg-[#1E3A32]/90 backdrop-blur-sm text-[#F4ECE1] px-2 py-0.5 rounded font-serif text-[10px] font-bold tracking-wider shadow">
-                {cat.number}
-              </div>
-            </div>
-
-            {/* Content Area: Title + Full Skills List */}
-            <div className="flex-1 flex flex-col justify-between p-3 sm:p-3.5 z-10">
-              
-              {/* Category Header Row (Tag Badge + Title) */}
-              <div className="flex items-center space-x-2 border-b border-[#2C3835]/15 pb-1.5 mb-2">
-                {/* Desktop Ribbon Tag */}
-                <div className="hidden md:block bg-[#1E3A32] text-[#F4ECE1] px-2 py-0.5 rounded-[2px] font-serif text-[11px] sm:text-xs font-bold tracking-wider select-none shadow-sm">
-                  {cat.number}
+            {displayedCategories.map((cat) => (
+              <div
+                key={cat.id}
+                className={`group relative flex flex-col md:flex-row items-stretch justify-between bg-[#FAF6EE] hover:bg-[#FDFBF7] border border-[#2C3835]/30 rounded-xl md:rounded-[6px] shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex-shrink-0 ${
+                  activeCategory !== 'all' ? 'w-full ring-1 ring-[#1E3A32]/10' : ''
+                }`}
+              >
+                {/* Top Image Feature Banner */}
+                <div className={`${activeCategory === 'all' ? 'md:hidden' : 'h-24 sm:h-28 md:hidden'} relative w-full h-24 overflow-hidden bg-[#1E3A32]`}>
+                  <img
+                    src={cat.artSrc}
+                    alt={cat.title}
+                    className="w-full h-full object-cover object-center filter contrast-[110%]"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#FAF6EE] via-transparent to-black/30" />
+                  <div className="absolute top-2 left-2 bg-[#1E3A32]/90 backdrop-blur-sm text-[#F4ECE1] px-2 py-0.5 rounded font-serif text-[10px] font-bold tracking-wider shadow">
+                    {cat.number}
+                  </div>
                 </div>
-                {/* Category Title */}
-                <div className="flex items-center space-x-1.5">
-                  <h3 className="font-serif font-bold text-xs sm:text-[13px] md:text-[13.5px] tracking-wide text-[#0E1F21] uppercase">
-                    {cat.title}
-                  </h3>
-                  <ChevronRight className="w-3.5 h-3.5 text-[#1E3A32]/60 group-hover:translate-x-0.5 transition-transform" />
-                </div>
-              </div>
 
-              {/* Skills List: Fully Opened on Both Mobile and Desktop */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 sm:gap-x-4 gap-y-1 sm:gap-y-1.5 text-[#1A2A2D]">
-                
-                {/* Column 1 */}
-                <div className="space-y-1">
-                  {cat.column1.map((item, idx) => {
-                    const IconComponent = item.icon;
-                    const isFigmaItem = item.isFigma;
+                {/* Content Area: Title + Full Skills List */}
+                <div className="flex-1 flex flex-col justify-between p-3.5 sm:p-4 z-10">
+                  
+                  {/* Category Header Row (Tag Badge + Title) */}
+                  <div className="flex items-center space-x-2 border-b border-[#2C3835]/15 pb-1.5 mb-2.5">
+                    {/* Desktop Ribbon Tag */}
+                    <div className="hidden md:block bg-[#1E3A32] text-[#F4ECE1] px-2.5 py-0.5 rounded-[3px] font-serif text-[11px] sm:text-xs font-bold tracking-wider select-none shadow-xs">
+                      {cat.number}
+                    </div>
+                    {/* Category Title */}
+                    <div className="flex items-center space-x-1.5">
+                      <h3 className="font-serif font-bold text-xs sm:text-[13.5px] md:text-[14px] tracking-wide text-[#0E1F21] uppercase">
+                        {cat.title}
+                      </h3>
+                      <ChevronRight className="w-3.5 h-3.5 text-[#1E3A32]/60 group-hover:translate-x-0.5 transition-transform" />
+                    </div>
+                  </div>
 
-                    if (isFigmaItem) {
-                      return (
-                        <a
-                          key={idx}
-                          href={item.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onMouseEnter={() => handleSkillHover(item.name)}
-                          className="relative flex items-center justify-between px-2 py-1 rounded bg-[#1E3A32]/10 hover:bg-[#1E3A32] text-[#0E1F21] hover:text-[#F4ECE1] border border-[#1E3A32]/30 hover:border-[#1E3A32] transition-all duration-200 cursor-pointer shadow-sm group/figma"
-                          title="Open live Figma design system file of this portfolio"
-                        >
-                          <div className="flex items-center space-x-1.5 min-w-0">
-                            <span className="text-[#8B5CF6] group-hover/figma:text-[#A78BFA] transition-colors flex-shrink-0">
+                  {/* Skills List: Fully Opened on Both Mobile and Desktop with High Visibility */}
+                  <div className={`grid ${activeCategory !== 'all' ? 'grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5' : 'grid-cols-1 sm:grid-cols-2 gap-x-3 sm:gap-x-4 gap-y-1 sm:gap-y-1.5'} text-[#1A2A2D]`}>
+                    
+                    {/* Column 1 */}
+                    <div className="space-y-1">
+                      {cat.column1.map((item, idx) => {
+                        const IconComponent = item.icon;
+                        const isFigmaItem = item.isFigma;
+
+                        if (isFigmaItem) {
+                          return (
+                            <a
+                              key={idx}
+                              href={item.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onMouseEnter={() => handleSkillHover(item.name)}
+                              className="relative flex items-center justify-between px-2.5 py-1.5 rounded bg-[#1E3A32]/10 hover:bg-[#1E3A32] text-[#0E1F21] hover:text-[#F4ECE1] border border-[#1E3A32]/30 hover:border-[#1E3A32] transition-all duration-200 cursor-pointer shadow-xs group/figma"
+                              title="Open live Figma design system file of this portfolio"
+                            >
+                              <div className="flex items-center space-x-1.5 min-w-0">
+                                <span className="text-[#8B5CF6] group-hover/figma:text-[#A78BFA] transition-colors flex-shrink-0">
+                                  <IconComponent />
+                                </span>
+                                <span className="font-sans font-bold text-[11.5px] sm:text-xs tracking-tight truncate">
+                                  {item.name}
+                                </span>
+                              </div>
+                              <div className="flex items-center space-x-1 bg-[#1E3A32] group-hover/figma:bg-[#27433B] text-[#F4ECE1] px-1.5 py-0.5 rounded text-[8px] sm:text-[9px] font-mono tracking-wider uppercase font-bold animate-pulse flex-shrink-0 ml-1">
+                                <span>LIVE</span>
+                                <ExternalLink className="w-2.5 h-2.5" />
+                              </div>
+                            </a>
+                          );
+                        }
+
+                        return (
+                          <div
+                            key={idx}
+                            onClick={() => handleSkillClick(item.name)}
+                            onMouseEnter={() => handleSkillHover(item.name)}
+                            className={`flex items-center space-x-2 px-2 py-1 rounded transition-all duration-150 cursor-pointer group/item ${
+                              activeInsight?.name === item.name
+                                ? 'bg-[#1E3A32] text-[#F4ECE1]'
+                                : 'hover:bg-[#0E1F21]/[0.08]'
+                            }`}
+                            title="Click to view hardware details"
+                          >
+                            <span className={`flex-shrink-0 transition-all duration-150 ${
+                              activeInsight?.name === item.name
+                                ? 'text-teal-300'
+                                : 'text-[#1E3A32] group-hover/item:text-[#6A8E8B] group-hover/item:scale-110'
+                            }`}>
                               <IconComponent />
                             </span>
-                            <span className="font-sans font-bold text-[11px] sm:text-xs tracking-tight truncate">
+                            <span className={`font-sans text-[11.5px] sm:text-[12px] transition-all duration-150 font-medium leading-tight ${
+                              activeInsight?.name === item.name
+                                ? 'text-[#F4ECE1] font-bold'
+                                : 'text-[#1A2A2D] group-hover/item:text-[#0E1F21] group-hover/item:translate-x-0.5'
+                            }`}>
                               {item.name}
                             </span>
                           </div>
-                          <div className="flex items-center space-x-1 bg-[#1E3A32] group-hover/figma:bg-[#27433B] text-[#F4ECE1] px-1.5 py-0.5 rounded text-[8px] sm:text-[9px] font-mono tracking-wider uppercase font-bold animate-pulse flex-shrink-0 ml-1">
-                            <span>LIVE</span>
-                            <ExternalLink className="w-2.5 h-2.5" />
-                          </div>
-                        </a>
-                      );
-                    }
+                        );
+                      })}
+                    </div>
 
-                    return (
-                      <div
-                        key={idx}
-                        onClick={() => handleSkillClick(item.name)}
-                        onMouseEnter={() => handleSkillHover(item.name)}
-                        className={`flex items-center space-x-1.5 px-1.5 py-0.5 rounded transition-all duration-150 cursor-pointer group/item ${
-                          activeInsight?.name === item.name
-                            ? 'bg-[#1E3A32] text-[#F4ECE1]'
-                            : 'hover:bg-[#0E1F21]/[0.08]'
-                        }`}
-                        title="Click to view hardware details"
-                      >
-                        <span className={`flex-shrink-0 transition-all duration-150 ${
-                          activeInsight?.name === item.name
-                            ? 'text-teal-300'
-                            : 'text-[#1E3A32] group-hover/item:text-[#6A8E8B] group-hover/item:scale-110'
-                        }`}>
-                          <IconComponent />
-                        </span>
-                        <span className={`font-sans text-[11px] sm:text-xs transition-all duration-150 font-medium leading-tight ${
-                          activeInsight?.name === item.name
-                            ? 'text-[#F4ECE1] font-bold'
-                            : 'text-[#292B27] group-hover/item:text-[#0E1F21] group-hover/item:translate-x-0.5'
-                        }`}>
-                          {item.name}
-                        </span>
-                      </div>
-                    );
-                  })}
+                    {/* Column 2 */}
+                    <div className="space-y-1">
+                      {cat.column2.map((item, idx) => {
+                        const IconComponent = item.icon;
+                        return (
+                          <div
+                            key={idx}
+                            onClick={() => handleSkillClick(item.name)}
+                            onMouseEnter={() => handleSkillHover(item.name)}
+                            className={`flex items-center space-x-2 px-2 py-1 rounded transition-all duration-150 cursor-pointer group/item ${
+                              activeInsight?.name === item.name
+                                ? 'bg-[#1E3A32] text-[#F4ECE1]'
+                                : 'hover:bg-[#0E1F21]/[0.08]'
+                            }`}
+                            title="Click to view hardware details"
+                          >
+                            <span className={`flex-shrink-0 transition-all duration-150 ${
+                              activeInsight?.name === item.name
+                                ? 'text-teal-300'
+                                : 'text-[#1E3A32] group-hover/item:text-[#6A8E8B] group-hover/item:scale-110'
+                            }`}>
+                              <IconComponent />
+                            </span>
+                            <span className={`font-sans text-[11.5px] sm:text-[12px] transition-all duration-150 font-medium leading-tight ${
+                              activeInsight?.name === item.name
+                                ? 'text-[#F4ECE1] font-bold'
+                                : 'text-[#1A2A2D] group-hover/item:text-[#0E1F21] group-hover/item:translate-x-0.5'
+                            }`}>
+                              {item.name}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                  </div>
                 </div>
 
-                {/* Column 2 */}
-                <div className="space-y-1">
-                  {cat.column2.map((item, idx) => {
-                    const IconComponent = item.icon;
-                    return (
-                      <div
-                        key={idx}
-                        onClick={() => handleSkillClick(item.name)}
-                        onMouseEnter={() => handleSkillHover(item.name)}
-                        className={`flex items-center space-x-1.5 px-1.5 py-0.5 rounded transition-all duration-150 cursor-pointer group/item ${
-                          activeInsight?.name === item.name
-                            ? 'bg-[#1E3A32] text-[#F4ECE1]'
-                            : 'hover:bg-[#0E1F21]/[0.08]'
-                        }`}
-                        title="Click to view hardware details"
-                      >
-                        <span className={`flex-shrink-0 transition-all duration-150 ${
-                          activeInsight?.name === item.name
-                            ? 'text-teal-300'
-                            : 'text-[#1E3A32] group-hover/item:text-[#6A8E8B] group-hover/item:scale-110'
-                        }`}>
-                          <IconComponent />
-                        </span>
-                        <span className={`font-sans text-[11px] sm:text-xs transition-all duration-150 font-medium leading-tight ${
-                          activeInsight?.name === item.name
-                            ? 'text-[#F4ECE1] font-bold'
-                            : 'text-[#292B27] group-hover/item:text-[#0E1F21] group-hover/item:translate-x-0.5'
-                        }`}>
-                          {item.name}
-                        </span>
-                      </div>
-                    );
-                  })}
+                {/* DESKTOP ONLY: Right Chevron Cut Artwork Panel */}
+                <div
+                  className={`hidden md:block relative flex-shrink-0 ${activeCategory !== 'all' ? 'w-36 lg:w-44' : 'w-28 md:w-32 lg:w-36'} h-auto self-stretch overflow-hidden bg-[#24332D]`}
+                  style={{
+                    clipPath: 'polygon(18px 0%, 100% 0%, 100% 100%, 18px 100%, 0% 50%)'
+                  }}
+                >
+                  <img
+                    src={cat.artSrc}
+                    alt={cat.title}
+                    className="w-full h-full object-cover object-center filter grayscale-[15%] contrast-[110%] group-hover:scale-105 group-hover:filter-none transition-all duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-[#1E3A32]/40 pointer-events-none" />
                 </div>
 
               </div>
-            </div>
-
-            {/* DESKTOP ONLY: Right Chevron Cut Artwork Panel (From Reference Image) */}
-            <div
-              className="hidden md:block relative flex-shrink-0 w-28 md:w-32 lg:w-36 h-auto self-stretch overflow-hidden bg-[#24332D]"
-              style={{
-                clipPath: 'polygon(18px 0%, 100% 0%, 100% 100%, 18px 100%, 0% 50%)'
-              }}
-            >
-              <img
-                src={cat.artSrc}
-                alt={cat.title}
-                className="w-full h-full object-cover object-center filter grayscale-[20%] contrast-[110%] group-hover:scale-105 group-hover:filter-none transition-all duration-500"
-              />
-              <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-[#1E3A32]/40 pointer-events-none" />
-            </div>
-
-          </div>
-        ))}
+            ))}
+          </motion.div>
+        </AnimatePresence>
       </div>
 
       {/* ========================================================================= */}

@@ -79,9 +79,9 @@ export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onTog
 
     let targetRatio = 0;
     if (id === 'home') targetRatio = 0;
-    else if (id === 'about') targetRatio = 0.35;
-    else if (id === 'skills') targetRatio = 0.65;
-    else if (id === 'contact') targetRatio = 0.95;
+    else if (id === 'about') targetRatio = 0.22;
+    else if (id === 'skills') targetRatio = 0.58;
+    else if (id === 'contact') targetRatio = 0.92;
 
     const targetY = trackRef.current.offsetTop + Math.round(totalScroll * targetRatio);
     window.scrollTo({ top: targetY, behavior: 'smooth' });
@@ -129,21 +129,21 @@ export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onTog
       : Math.round(Math.min(700, Math.max(480, W * 0.38)));
 
     const ctx = gsap.context(() => {
-      // Fluid, responsive scrub (0.25s) for instant tracking with zero sluggish lag
+      // Fluid, responsive scrub (0.22s) for instant tracking with zero sluggish lag
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: trackRef.current,
           start: 'top top',
           end: 'bottom bottom',
-          scrub: prefersReducedMotion ? false : 0.25,
+          scrub: prefersReducedMotion ? false : 0.22,
           onUpdate: (self) => {
             const p = self.progress;
             let next = 'Home';
-            if (p >= 0.80) {
+            if (p >= 0.70) {
               next = 'Contact';
-            } else if (p >= 0.52) {
+            } else if (p >= 0.38) {
               next = 'Skills';
-            } else if (p >= 0.22) {
+            } else if (p >= 0.05) {
               next = 'About';
             }
             if (activeSectionRef.current !== next) {
@@ -157,39 +157,38 @@ export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onTog
       if (!prefersReducedMotion) {
         // =====================================================================
         // 1. ENVIRONMENTAL ARTWORK MOVEMENT (Horizontal Translation)
+        // Immediate movement on the very first scroll
         // =====================================================================
 
-        // Phase A: Shift to About framing (0.12 -> 0.34)
+        // Phase A: Shift to About framing (starts immediately at 0.01 -> 0.22)
         tl.to(environmentRef.current, {
           x: -maxShiftAbout,
           opacity: isNarrow ? 0.15 : 1,
           ease: 'power1.inOut',
-          duration: 0.22
-        }, 0.12);
+          duration: 0.21
+        }, 0.01);
 
-        // Phase B: Shift to Skills framing (0.44 -> 0.64)
+        // Phase B: Shift to Skills framing (0.38 -> 0.54)
         tl.to(environmentRef.current, {
           x: -maxShiftSkills,
           opacity: isNarrow ? 0.12 : 1,
           ease: 'power1.inOut',
-          duration: 0.20
-        }, 0.44);
+          duration: 0.16
+        }, 0.38);
 
-        // Phase B Tilt: Rectangle strips tilt in Skills section (0.48 -> 0.64)
+        // Phase B Tilt: Rectangle strips tilt in Skills section (0.40 -> 0.54)
         if (stripsRef.current) {
           tl.to(stripsRef.current, {
             rotation: -3.8,
             transformOrigin: '15% 50%',
             ease: 'power1.out',
-            duration: 0.16
-          }, 0.48);
+            duration: 0.14
+          }, 0.40);
         }
 
         // =====================================================================
-        // Phase C: SKILLS -> CONTACT TRANSITION (0.74 -> 0.92)
-        // User Requirement:
-        // "only rectangle strips and building should remains others such character,
-        //  bushes and wheel will to go to left side as they goes to out of frame"
+        // Phase C: SKILLS -> CONTACT TRANSITION (0.68 -> 0.86)
+        // Rectangle strips & building remain; character, bushes, wheel exit left
         // =====================================================================
 
         // 1. Environment positions strips & building cleanly on left edge
@@ -197,8 +196,8 @@ export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onTog
           x: -maxShiftContactLeft,
           opacity: isNarrow ? 0.12 : 1,
           ease: 'power1.inOut',
-          duration: 0.18
-        }, 0.74);
+          duration: 0.16
+        }, 0.68);
 
         // 2. Rectangle strips return to neutral vertical alignment
         if (stripsRef.current) {
@@ -206,8 +205,8 @@ export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onTog
             rotation: 0,
             transformOrigin: '15% 50%',
             ease: 'power1.out',
-            duration: 0.16
-          }, 0.74);
+            duration: 0.14
+          }, 0.68);
         }
 
         // 3. CHARACTER, BUSHES (TREES/GRASS), and WHEEL slide completely OUT OF FRAME to the left!
@@ -222,8 +221,8 @@ export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onTog
             x: -Math.max(W * 1.2, 1400),
             opacity: 0,
             ease: 'power1.inOut',
-            duration: 0.20
-          }, 0.74);
+            duration: 0.18
+          }, 0.68);
         }
 
         // Reveal bottom-left "HARDWARE + SOFTWARE —" in About mode
@@ -235,32 +234,32 @@ export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onTog
             opacity: 1,
             y: 0,
             ease: 'power1.out',
-            duration: 0.14
-          }, 0.26);
+            duration: 0.12
+          }, 0.10);
 
           tl.to(aboutLeftAccentRef.current, {
             opacity: 0,
             y: -10,
             ease: 'power1.in',
-            duration: 0.10
-          }, 0.46);
+            duration: 0.08
+          }, 0.38);
         }
 
         // =====================================================================
-        // 2. HERO CONTENT TIMELINE (0.00 -> 0.30)
+        // 2. HERO CONTENT TIMELINE (Starts fading immediately at 0.01 -> 0.12)
         // =====================================================================
         tl.to(heroContentRef.current, {
           opacity: 0,
           x: -35,
           y: -8,
           ease: 'power1.out',
-          duration: 0.14
-        }, 0.16);
+          duration: 0.11
+        }, 0.01);
 
-        tl.set(heroContentRef.current, { pointerEvents: 'none' }, 0.24);
+        tl.set(heroContentRef.current, { pointerEvents: 'none' }, 0.12);
 
         // =====================================================================
-        // 3. ABOUT CONTENT TIMELINE (0.20 -> 0.58)
+        // 3. ABOUT CONTENT TIMELINE (0.05 -> 0.48)
         // =====================================================================
         tl.fromTo(aboutContentRef.current, {
           opacity: 0,
@@ -271,16 +270,16 @@ export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onTog
           x: 0,
           y: 0,
           ease: 'power1.out',
-          duration: 0.16
-        }, 0.20);
+          duration: 0.14
+        }, 0.05);
 
-        tl.set(aboutContentRef.current, { pointerEvents: 'auto' }, 0.24);
+        tl.set(aboutContentRef.current, { pointerEvents: 'auto' }, 0.10);
 
         // Staggered internal entrance for About items
-        tl.fromTo('.about-eyebrow, .about-heading', { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.12 }, 0.22);
-        tl.fromTo('.about-bio', { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.12 }, 0.26);
-        tl.fromTo('.about-meta', { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.12 }, 0.30);
-        tl.fromTo('.about-card-1, .about-card-2, .about-card-3', { opacity: 0, y: 15 }, { opacity: 1, y: 0, stagger: 0.03, duration: 0.14 }, 0.32);
+        tl.fromTo('.about-eyebrow, .about-heading', { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.10 }, 0.07);
+        tl.fromTo('.about-bio', { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.10 }, 0.10);
+        tl.fromTo('.about-meta', { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.10 }, 0.13);
+        tl.fromTo('.about-card-1, .about-card-2, .about-card-3', { opacity: 0, y: 15 }, { opacity: 1, y: 0, stagger: 0.025, duration: 0.12 }, 0.15);
 
         // About exit
         tl.to(aboutContentRef.current, {
@@ -288,13 +287,13 @@ export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onTog
           x: -35,
           y: -8,
           ease: 'power1.out',
-          duration: 0.12
-        }, 0.46);
+          duration: 0.10
+        }, 0.38);
 
-        tl.set(aboutContentRef.current, { pointerEvents: 'none' }, 0.52);
+        tl.set(aboutContentRef.current, { pointerEvents: 'none' }, 0.44);
 
         // =====================================================================
-        // 4. SKILLS CONTENT TIMELINE (0.50 -> 0.86)
+        // 4. SKILLS CONTENT TIMELINE (0.42 -> 0.74)
         // =====================================================================
         tl.fromTo(skillsContentRef.current, {
           opacity: 0,
@@ -305,10 +304,13 @@ export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onTog
           x: 0,
           y: 0,
           ease: 'power1.out',
-          duration: 0.16
-        }, 0.50);
+          duration: 0.14
+        }, 0.42);
 
-        tl.set(skillsContentRef.current, { pointerEvents: 'auto' }, 0.54);
+        tl.set(skillsContentRef.current, { pointerEvents: 'auto' }, 0.46);
+
+        tl.fromTo('.skills-reveal-header', { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.10, ease: 'power2.out' }, 0.44);
+        tl.fromTo('.skills-reveal-cards', { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.12, ease: 'power2.out' }, 0.47);
 
         // Skills exit
         tl.to(skillsContentRef.current, {
@@ -316,13 +318,13 @@ export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onTog
           x: -35,
           y: -8,
           ease: 'power1.out',
-          duration: 0.12
-        }, 0.74);
+          duration: 0.10
+        }, 0.68);
 
-        tl.set(skillsContentRef.current, { pointerEvents: 'none' }, 0.80);
+        tl.set(skillsContentRef.current, { pointerEvents: 'none' }, 0.74);
 
         // =====================================================================
-        // 5. CONTACT CONTENT TIMELINE (0.78 -> 1.00)
+        // 5. CONTACT CONTENT TIMELINE (0.72 -> 1.00)
         // =====================================================================
         tl.fromTo(contactContentRef.current, {
           opacity: 0,
@@ -333,19 +335,23 @@ export default function HeroSection({ onOpen3DWorld, currentView = 'hero', onTog
           x: 0,
           y: 0,
           ease: 'power1.out',
-          duration: 0.16
-        }, 0.78);
+          duration: 0.15
+        }, 0.72);
 
-        tl.set(contactContentRef.current, { pointerEvents: 'auto' }, 0.82);
+        tl.set(contactContentRef.current, { pointerEvents: 'auto' }, 0.76);
+
+        tl.fromTo('.contact-reveal-header', { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.10, ease: 'power2.out' }, 0.74);
+        tl.fromTo('.contact-card-item', { opacity: 0, y: 18 }, { opacity: 1, y: 0, stagger: 0.02, duration: 0.12, ease: 'power2.out' }, 0.76);
+        tl.fromTo('.contact-form-box', { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.12, ease: 'power2.out' }, 0.78);
 
       } else {
         // Reduced motion fallback: sequential crossfade without large translations
-        tl.to(heroContentRef.current, { opacity: 0, duration: 0.15, pointerEvents: 'none' }, 0.15);
-        tl.fromTo(aboutContentRef.current, { opacity: 0, pointerEvents: 'none' }, { opacity: 1, duration: 0.15, pointerEvents: 'auto' }, 0.20);
-        tl.to(aboutContentRef.current, { opacity: 0, duration: 0.15, pointerEvents: 'none' }, 0.45);
-        tl.fromTo(skillsContentRef.current, { opacity: 0, pointerEvents: 'none' }, { opacity: 1, duration: 0.15, pointerEvents: 'auto' }, 0.50);
-        tl.to(skillsContentRef.current, { opacity: 0, duration: 0.15, pointerEvents: 'none' }, 0.75);
-        tl.fromTo(contactContentRef.current, { opacity: 0, pointerEvents: 'none' }, { opacity: 1, duration: 0.15, pointerEvents: 'auto' }, 0.80);
+        tl.to(heroContentRef.current, { opacity: 0, duration: 0.10, pointerEvents: 'none' }, 0.01);
+        tl.fromTo(aboutContentRef.current, { opacity: 0, pointerEvents: 'none' }, { opacity: 1, duration: 0.12, pointerEvents: 'auto' }, 0.06);
+        tl.to(aboutContentRef.current, { opacity: 0, duration: 0.10, pointerEvents: 'none' }, 0.38);
+        tl.fromTo(skillsContentRef.current, { opacity: 0, pointerEvents: 'none' }, { opacity: 1, duration: 0.12, pointerEvents: 'auto' }, 0.42);
+        tl.to(skillsContentRef.current, { opacity: 0, duration: 0.10, pointerEvents: 'none' }, 0.68);
+        tl.fromTo(contactContentRef.current, { opacity: 0, pointerEvents: 'none' }, { opacity: 1, duration: 0.12, pointerEvents: 'auto' }, 0.72);
       }
     }, trackRef);
 

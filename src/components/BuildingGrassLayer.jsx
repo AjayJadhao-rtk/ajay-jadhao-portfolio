@@ -62,6 +62,96 @@ export default function BuildingGrassLayer({ buildingRef, bushesRef }) {
           animation: treeSmoothCanopyFlutter 3.6s ease-in-out infinite alternate;
           will-change: transform;
         }
+
+        /* Animated Flying Birds Flight Paths & Wing Flaps (Slow, tranquil soaring) */
+        @keyframes birdGlidePath1 {
+          0% {
+            transform: translate(0px, 0px) rotate(0deg);
+          }
+          20% {
+            transform: translate(-10px, -5px) rotate(-2deg);
+          }
+          45% {
+            transform: translate(-22px, -2px) rotate(1deg);
+          }
+          70% {
+            transform: translate(-30px, 4px) rotate(1.5deg);
+          }
+          85% {
+            transform: translate(-14px, 4px) rotate(-1deg);
+          }
+          100% {
+            transform: translate(0px, 0px) rotate(0deg);
+          }
+        }
+
+        @keyframes birdWingFlap1 {
+          0%, 60%, 100% {
+            transform: scaleY(1);
+          }
+          70% {
+            transform: scaleY(0.25);
+          }
+          80% {
+            transform: scaleY(-0.7);
+          }
+          90% {
+            transform: scaleY(0.25);
+          }
+        }
+
+        @keyframes birdGlidePath2 {
+          0% {
+            transform: translate(0px, 0px) rotate(0deg);
+          }
+          25% {
+            transform: translate(-12px, -6px) rotate(-2deg);
+          }
+          50% {
+            transform: translate(-26px, -3px) rotate(1deg);
+          }
+          75% {
+            transform: translate(-16px, 4px) rotate(1.5deg);
+          }
+          100% {
+            transform: translate(0px, 0px) rotate(0deg);
+          }
+        }
+
+        @keyframes birdWingFlap2 {
+          0%, 60%, 100% {
+            transform: scaleY(1);
+          }
+          70% {
+            transform: scaleY(0.2);
+          }
+          80% {
+            transform: scaleY(-0.65);
+          }
+          90% {
+            transform: scaleY(0.2);
+          }
+        }
+
+        .bird-path-1 {
+          animation: birdGlidePath1 24s ease-in-out infinite;
+          transform-origin: 845px 426px;
+        }
+
+        .bird-wings-1 {
+          animation: birdWingFlap1 2.4s ease-in-out infinite;
+          transform-origin: center;
+        }
+
+        .bird-path-2 {
+          animation: birdGlidePath2 29s ease-in-out infinite;
+          transform-origin: 821px 446px;
+        }
+
+        .bird-wings-2 {
+          animation: birdWingFlap2 2.8s ease-in-out infinite;
+          transform-origin: center;
+        }
       `}</style>
 
       {/* SVG Viewport matching 1451x821 master coordinate system (Responsive for mobile grounding) */}
@@ -98,6 +188,38 @@ export default function BuildingGrassLayer({ buildingRef, bushesRef }) {
           <g transform="translate(138, 598)" className="pointer-events-none">
             <circle cx="0" cy="0" r="3" fill="#38BDF8" className="animate-ping opacity-60" />
             <circle cx="0" cy="0" r="1.5" fill="#38BDF8" />
+          </g>
+
+          {/* ========================================================== */}
+          {/* ANIMATED FLYING BIRDS IN SKY (With Flapping & Soaring Flight)*/}
+          {/* ========================================================== */}
+          <g id="animated-flying-birds" className="pointer-events-none select-none">
+            {/* Bird 1: Upper-Right Flying Silhouette */}
+            <g className="bird-path-1">
+              <g transform="translate(845, 426) scale(1.15)">
+                {/* Flapping Wing Silhouette */}
+                <g className="bird-wings-1">
+                  <path
+                    d="M 0,-1 C 4,-7 10,-8 15,-4 C 9,-2 4,1 0,0 C -4,1 -9,-2 -15,-4 C -10,-8 -4,-7 0,-1 Z"
+                    fill="#1E2A25"
+                  />
+                </g>
+                <ellipse cx="0" cy="0" rx="2.5" ry="1.2" fill="#15201C" />
+              </g>
+            </g>
+
+            {/* Bird 2: Lower-Left Flying Silhouette */}
+            <g className="bird-path-2">
+              <g transform="translate(821, 446) scale(0.95)">
+                <g className="bird-wings-2">
+                  <path
+                    d="M 0,-1 C 4,-7 10,-8 15,-4 C 9,-2 4,1 0,0 C -4,1 -9,-2 -15,-4 C -10,-8 -4,-7 0,-1 Z"
+                    fill="#1E2A25"
+                  />
+                </g>
+                <ellipse cx="0" cy="0" rx="2.2" ry="1.1" fill="#15201C" />
+              </g>
+            </g>
           </g>
         </g>
 

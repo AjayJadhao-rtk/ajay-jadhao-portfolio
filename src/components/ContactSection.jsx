@@ -131,8 +131,8 @@ export default function ContactSection({ onScrollToTop, onNavigate }) {
       {/* ========================================================================= */}
       <div className="w-full flex-1 flex flex-col justify-between pl-0 lg:pl-36 xl:pl-48 pr-2 sm:pr-8 max-w-[1720px] mx-auto overflow-y-auto max-h-[calc(100vh-110px)] lg:max-h-none scrollbar-thin touch-pan-y">
         
-        {/* Section Header */}
-        <div className="flex flex-col items-start space-y-1 mb-2 sm:mb-3">
+        {/* Section Header with Scroll Reveal Class */}
+        <div className="contact-reveal-header flex flex-col items-start space-y-1 mb-2 sm:mb-3">
           {/* Eyebrow */}
           <div className="flex items-center space-x-2 text-[10px] sm:text-xs font-mono tracking-[0.25em] text-[#1E3A32] uppercase font-bold">
             <span>04 // CONTACT</span>
@@ -159,7 +159,7 @@ export default function ContactSection({ onScrollToTop, onNavigate }) {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4 xl:gap-6 items-start my-auto">
           
           {/* --------------------------------------------------------------------- */}
-          {/* LEFT: 5 Contact Cards (2 Columns Grid matching Reference Image)       */}
+          {/* LEFT: 5 Interactive Contact Cards (with Micro-Interactions)            */}
           {/* --------------------------------------------------------------------- */}
           <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
             
@@ -167,10 +167,10 @@ export default function ContactSection({ onScrollToTop, onNavigate }) {
             <div
               onClick={() => handleCardClick('email', EMAIL_ADDRESS)}
               onMouseEnter={() => audioEngine.playHover()}
-              className="group relative flex items-center justify-between p-3 sm:p-3.5 bg-[#FAF6EE]/95 hover:bg-[#FFFFFF] border border-[#2C3835]/20 hover:border-[#1E4E49] rounded-lg shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
+              className="contact-card-item group relative flex items-center justify-between p-3.5 sm:p-4 bg-[#FAF6EE]/95 hover:bg-[#FFFFFF] border border-[#2C3835]/20 hover:border-[#1E4E49] rounded-xl shadow-xs hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer"
             >
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-full bg-[#1E4E49] text-white flex items-center justify-center flex-shrink-0 shadow-sm group-hover:scale-105 transition-transform">
+                <div className="w-10 h-10 rounded-full bg-[#1E4E49] text-white flex items-center justify-center flex-shrink-0 shadow-sm group-hover:scale-110 group-hover:bg-[#15342E] transition-all duration-300">
                   <Mail className="w-4 h-4" />
                 </div>
                 <div className="flex flex-col">
@@ -178,23 +178,20 @@ export default function ContactSection({ onScrollToTop, onNavigate }) {
                     EMAIL
                   </span>
                   <span className="font-sans font-semibold text-xs sm:text-[13px] text-[#0E1F21] group-hover:text-[#1E4E49] transition-colors truncate max-w-[170px]">
-                    {copiedCard === 'email' ? 'Copied to clipboard!' : EMAIL_ADDRESS}
-                  </span>
-                  <span className="text-[10px] text-[#5A6966] leading-tight">
-                    Drop me a message anytime.
+                    {copiedCard === 'email' ? 'Copied to clipboard! ✓' : EMAIL_ADDRESS}
                   </span>
                 </div>
               </div>
-              <ChevronRight className="w-4 h-4 text-[#1E4E49]/60 group-hover:translate-x-0.5 transition-transform" />
+              <ChevronRight className="w-4 h-4 text-[#1E4E49]/60 group-hover:text-[#1E4E49] group-hover:translate-x-1 transition-all" />
             </div>
 
             {/* Card 2: LOCATION */}
             <div
               onMouseEnter={() => audioEngine.playHover()}
-              className="group relative flex items-center justify-between p-3 sm:p-3.5 bg-[#FAF6EE]/95 hover:bg-[#FFFFFF] border border-[#2C3835]/20 hover:border-[#1E4E49] rounded-lg shadow-sm hover:shadow-md transition-all duration-200"
+              className="contact-card-item group relative flex items-center justify-between p-3.5 sm:p-4 bg-[#FAF6EE]/95 hover:bg-[#FFFFFF] border border-[#2C3835]/20 hover:border-[#1E4E49] rounded-xl shadow-xs hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
             >
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-full bg-[#D4C3A3] text-[#0E1F21] flex items-center justify-center flex-shrink-0 shadow-sm group-hover:scale-105 transition-transform">
+                <div className="w-10 h-10 rounded-full bg-[#D4C3A3] text-[#0E1F21] flex items-center justify-center flex-shrink-0 shadow-sm group-hover:scale-110 group-hover:bg-[#C2AF8C] transition-all duration-300">
                   <MapPin className="w-4 h-4" />
                 </div>
                 <div className="flex flex-col">
@@ -204,22 +201,19 @@ export default function ContactSection({ onScrollToTop, onNavigate }) {
                   <span className="font-sans font-semibold text-xs sm:text-[13px] text-[#0E1F21]">
                     Maharashtra, India
                   </span>
-                  <span className="text-[10px] text-[#5A6966] leading-tight">
-                    Open to remote opportunities worldwide.
-                  </span>
                 </div>
               </div>
-              <ChevronRight className="w-4 h-4 text-[#1E4E49]/60 group-hover:translate-x-0.5 transition-transform" />
+              <ChevronRight className="w-4 h-4 text-[#1E4E49]/40 group-hover:text-[#1E4E49] group-hover:translate-x-1 transition-all" />
             </div>
 
             {/* Card 3: LINKEDIN */}
             <div
               onClick={() => handleCardClick('link', 'LinkedIn', LINKEDIN_URL)}
               onMouseEnter={() => audioEngine.playHover()}
-              className="group relative flex items-center justify-between p-3 sm:p-3.5 bg-[#FAF6EE]/95 hover:bg-[#FFFFFF] border border-[#2C3835]/20 hover:border-[#0A66C2] rounded-lg shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
+              className="contact-card-item group relative flex items-center justify-between p-3.5 sm:p-4 bg-[#FAF6EE]/95 hover:bg-[#FFFFFF] border border-[#2C3835]/20 hover:border-[#0A66C2] rounded-xl shadow-xs hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer"
             >
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-full bg-[#0A66C2] text-white flex items-center justify-center flex-shrink-0 shadow-sm group-hover:scale-105 transition-transform">
+                <div className="w-10 h-10 rounded-full bg-[#0A66C2] text-white flex items-center justify-center flex-shrink-0 shadow-sm group-hover:scale-110 group-hover:bg-[#004182] transition-all duration-300">
                   <Linkedin className="w-4 h-4" />
                 </div>
                 <div className="flex flex-col">
@@ -229,22 +223,19 @@ export default function ContactSection({ onScrollToTop, onNavigate }) {
                   <span className="font-sans font-semibold text-xs sm:text-[13px] text-[#0E1F21] group-hover:text-[#0A66C2] transition-colors">
                     linkedin.com/in/ajay-jadhao
                   </span>
-                  <span className="text-[10px] text-[#5A6966] leading-tight">
-                    Let&rsquo;s connect professionally.
-                  </span>
                 </div>
               </div>
-              <ChevronRight className="w-4 h-4 text-[#0A66C2]/60 group-hover:translate-x-0.5 transition-transform" />
+              <ChevronRight className="w-4 h-4 text-[#0A66C2]/60 group-hover:text-[#0A66C2] group-hover:translate-x-1 transition-all" />
             </div>
 
             {/* Card 4: GITHUB */}
             <div
               onClick={() => handleCardClick('link', 'GitHub', GITHUB_URL)}
               onMouseEnter={() => audioEngine.playHover()}
-              className="group relative flex items-center justify-between p-3 sm:p-3.5 bg-[#FAF6EE]/95 hover:bg-[#FFFFFF] border border-[#2C3835]/20 hover:border-[#0E1F21] rounded-lg shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
+              className="contact-card-item group relative flex items-center justify-between p-3.5 sm:p-4 bg-[#FAF6EE]/95 hover:bg-[#FFFFFF] border border-[#2C3835]/20 hover:border-[#0E1F21] rounded-xl shadow-xs hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer"
             >
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-full bg-[#E5DCD0] text-[#0E1F21] flex items-center justify-center flex-shrink-0 shadow-sm group-hover:scale-105 transition-transform">
+                <div className="w-10 h-10 rounded-full bg-[#E5DCD0] text-[#0E1F21] flex items-center justify-center flex-shrink-0 shadow-sm group-hover:scale-110 group-hover:bg-[#0E1F21] group-hover:text-white transition-all duration-300">
                   <Github className="w-4 h-4" />
                 </div>
                 <div className="flex flex-col">
@@ -254,22 +245,19 @@ export default function ContactSection({ onScrollToTop, onNavigate }) {
                   <span className="font-sans font-semibold text-xs sm:text-[13px] text-[#0E1F21] group-hover:text-[#1E4E49] transition-colors">
                     github.com/ajayjadhao
                   </span>
-                  <span className="text-[10px] text-[#5A6966] leading-tight">
-                    Check out my projects.
-                  </span>
                 </div>
               </div>
-              <ChevronRight className="w-4 h-4 text-[#0E1F21]/60 group-hover:translate-x-0.5 transition-transform" />
+              <ChevronRight className="w-4 h-4 text-[#0E1F21]/60 group-hover:text-[#0E1F21] group-hover:translate-x-1 transition-all" />
             </div>
 
             {/* Card 5: INSTAGRAM */}
             <div
               onClick={() => handleCardClick('link', 'Instagram', INSTAGRAM_URL)}
               onMouseEnter={() => audioEngine.playHover()}
-              className="group relative flex items-center justify-between p-3 sm:p-3.5 bg-[#FAF6EE]/95 hover:bg-[#FFFFFF] border border-[#2C3835]/20 hover:border-[#E1306C] rounded-lg shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer sm:col-span-2"
+              className="contact-card-item group relative flex items-center justify-between p-3.5 sm:p-4 bg-[#FAF6EE]/95 hover:bg-[#FFFFFF] border border-[#2C3835]/20 hover:border-[#E1306C] rounded-xl shadow-xs hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer sm:col-span-2"
             >
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#FD1D1D] via-[#E1306C] to-[#833AB4] text-white flex items-center justify-center flex-shrink-0 shadow-sm group-hover:scale-105 transition-transform">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#FD1D1D] via-[#E1306C] to-[#833AB4] text-white flex items-center justify-center flex-shrink-0 shadow-sm group-hover:scale-110 transition-all duration-300">
                   <Instagram className="w-4 h-4" />
                 </div>
                 <div className="flex flex-col">
@@ -279,68 +267,35 @@ export default function ContactSection({ onScrollToTop, onNavigate }) {
                   <span className="font-sans font-semibold text-xs sm:text-[13px] text-[#0E1F21] group-hover:text-[#E1306C] transition-colors">
                     instagram.com/rutiklabs
                   </span>
-                  <span className="text-[10px] text-[#5A6966] leading-tight">
-                    Behind the scenes &amp; more.
-                  </span>
                 </div>
               </div>
-              <ChevronRight className="w-4 h-4 text-[#E1306C]/60 group-hover:translate-x-0.5 transition-transform" />
+              <ChevronRight className="w-4 h-4 text-[#E1306C]/60 group-hover:text-[#E1306C] group-hover:translate-x-1 transition-all" />
             </div>
 
           </div>
 
           {/* --------------------------------------------------------------------- */}
-          {/* RIGHT: "SEND A MESSAGE" Form (Matches Right Column in Reference)      */}
+          {/* RIGHT: "SEND A MESSAGE" Form (Clean, without emoji pills)            */}
           {/* --------------------------------------------------------------------- */}
-          <div className="lg:col-span-5 bg-[#FAF6EE]/95 border border-[#2C3835]/20 rounded-xl p-3.5 sm:p-4 shadow-sm flex flex-col justify-between">
+          <div className="contact-form-box lg:col-span-5 bg-[#FAF6EE]/95 hover:bg-[#FAF6EE] border border-[#2C3835]/25 rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col justify-between">
             <div>
               {/* Form Header */}
-              <div className="flex items-center space-x-2 text-[10px] font-mono tracking-widest uppercase font-bold text-[#1E3A32] border-b border-[#2C3835]/15 pb-2 mb-2">
+              <div className="flex items-center space-x-2 text-[10px] font-mono tracking-widest uppercase font-bold text-[#1E3A32] border-b border-[#2C3835]/15 pb-2.5 mb-3.5">
                 <span>SEND A MESSAGE</span>
                 <span className="flex-1 h-[1px] bg-[#2C3835]/15" />
               </div>
 
-              {/* Quick Interactive Subject Chips */}
-              <div className="flex flex-wrap items-center gap-1.5 mb-2.5">
-                {[
-                  { label: '👋 Say Hello', subject: 'Saying Hello', msg: 'Hi Ajay, I came across your portfolio and wanted to reach out!' },
-                  { label: '🤖 Robotics & IoT', subject: 'Robotics & Hardware Collaboration', msg: "Hi Ajay, I'd like to collaborate on an embedded systems / robotics project with you." },
-                  { label: '🌐 3D / Web', subject: 'Interactive 3D Web Inquiry', msg: "Hi Ajay, I love your 3D interactive work and want to discuss building a project." },
-                  { label: '💼 Opportunity', subject: 'Engineering Opportunity', msg: "Hello Ajay, I have an exciting engineering opportunity that matches your skillset." },
-                ].map((chip, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => {
-                      audioEngine.playClick();
-                      setFormData(prev => ({
-                        ...prev,
-                        subject: chip.subject,
-                        message: prev.message || chip.msg,
-                      }));
-                    }}
-                    className={`px-2 py-0.5 rounded text-[8.5px] sm:text-[9px] font-mono tracking-wider transition-all cursor-pointer ${
-                      formData.subject === chip.subject
-                        ? 'bg-[#1E4E49] text-white font-bold'
-                        : 'bg-[#1E3A32]/10 text-[#1E3A32] hover:bg-[#1E3A32]/20'
-                    }`}
-                  >
-                    {chip.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* Form Fields */}
-              <form onSubmit={handleSubmit} className="space-y-2">
+              {/* Form Fields - Clean, Accessible, Responsive */}
+              <form onSubmit={handleSubmit} className="space-y-2.5">
                 {/* Row 1: Name and Email */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   {/* Name Input */}
-                  <div className="flex items-center space-x-2 px-2.5 py-1.5 bg-white border border-[#2C3835]/20 rounded-md focus-within:border-[#1E4E49] focus-within:ring-1 focus-within:ring-[#1E4E49] transition-all">
+                  <div className="flex items-center space-x-2 px-3 py-2 bg-white border border-[#2C3835]/20 hover:border-[#1E4E49]/60 rounded-lg focus-within:border-[#1E4E49] focus-within:ring-2 focus-within:ring-[#1E4E49]/20 transition-all shadow-2xs">
                     <User className="w-3.5 h-3.5 text-[#5A6966]" />
                     <input
                       type="text"
                       name="name"
-                      placeholder="John Doe"
+                      placeholder="Your Name"
                       value={formData.name}
                       onChange={handleInputChange}
                       required
@@ -349,12 +304,12 @@ export default function ContactSection({ onScrollToTop, onNavigate }) {
                   </div>
 
                   {/* Email Input */}
-                  <div className="flex items-center space-x-2 px-2.5 py-1.5 bg-white border border-[#2C3835]/20 rounded-md focus-within:border-[#1E4E49] focus-within:ring-1 focus-within:ring-[#1E4E49] transition-all">
+                  <div className="flex items-center space-x-2 px-3 py-2 bg-white border border-[#2C3835]/20 hover:border-[#1E4E49]/60 rounded-lg focus-within:border-[#1E4E49] focus-within:ring-2 focus-within:ring-[#1E4E49]/20 transition-all shadow-2xs">
                     <Mail className="w-3.5 h-3.5 text-[#5A6966]" />
                     <input
                       type="email"
                       name="email"
-                      placeholder="john@example.com"
+                      placeholder="your.email@example.com"
                       value={formData.email}
                       onChange={handleInputChange}
                       required
@@ -364,12 +319,12 @@ export default function ContactSection({ onScrollToTop, onNavigate }) {
                 </div>
 
                 {/* Row 2: Subject */}
-                <div className="flex items-center space-x-2 px-2.5 py-1.5 bg-white border border-[#2C3835]/20 rounded-md focus-within:border-[#1E4E49] focus-within:ring-1 focus-within:ring-[#1E4E49] transition-all">
+                <div className="flex items-center space-x-2 px-3 py-2 bg-white border border-[#2C3835]/20 hover:border-[#1E4E49]/60 rounded-lg focus-within:border-[#1E4E49] focus-within:ring-2 focus-within:ring-[#1E4E49]/20 transition-all shadow-2xs">
                   <Tag className="w-3.5 h-3.5 text-[#5A6966]" />
                   <input
                     type="text"
                     name="subject"
-                    placeholder="Project Collaboration"
+                    placeholder="Subject / Project Inquiry"
                     value={formData.subject}
                     onChange={handleInputChange}
                     className="w-full text-xs font-sans text-[#0E1F21] bg-transparent outline-none placeholder:text-[#5A6966]/60"
@@ -377,7 +332,7 @@ export default function ContactSection({ onScrollToTop, onNavigate }) {
                 </div>
 
                 {/* Row 3: Message Textarea */}
-                <div className="flex items-start space-x-2 px-2.5 py-2 bg-white border border-[#2C3835]/20 rounded-md focus-within:border-[#1E4E49] focus-within:ring-1 focus-within:ring-[#1E4E49] transition-all">
+                <div className="flex items-start space-x-2 px-3 py-2.5 bg-white border border-[#2C3835]/20 hover:border-[#1E4E49]/60 rounded-lg focus-within:border-[#1E4E49] focus-within:ring-2 focus-within:ring-[#1E4E49]/20 transition-all shadow-2xs">
                   <MessageSquare className="w-3.5 h-3.5 text-[#5A6966] mt-0.5" />
                   <textarea
                     name="message"
@@ -400,20 +355,20 @@ export default function ContactSection({ onScrollToTop, onNavigate }) {
                   )}
                 </div>
 
-                {/* Submit Pill Button (Matches Reference) */}
+                {/* Submit Button with Interactive Feedback */}
                 <button
                   type="submit"
                   disabled={isSubmitting}
                   onMouseEnter={() => audioEngine.playHover()}
-                  className="w-full flex items-center justify-center space-x-2 py-2 sm:py-2.5 px-4 bg-[#0E1F21] hover:bg-[#1E4E49] active:scale-[0.99] text-[#FAF6EE] rounded-full font-sans font-semibold text-xs sm:text-[13px] tracking-wide transition-all shadow-md cursor-pointer group"
+                  className="w-full flex items-center justify-center space-x-2 py-2.5 sm:py-3 px-4 bg-[#0E1F21] hover:bg-[#1E4E49] active:scale-[0.98] text-[#FAF6EE] rounded-full font-sans font-semibold text-xs sm:text-[13px] tracking-wide transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 cursor-pointer group"
                 >
                   {isSubmitting ? (
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   ) : (
                     <>
                       <span>Send Message</span>
-                      <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                      <Send className="w-3.5 h-3.5 ml-1 opacity-80" />
+                      <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1.5 transition-transform" />
+                      <Send className="w-3.5 h-3.5 ml-1 opacity-80 group-hover:rotate-12 transition-transform" />
                     </>
                   )}
                 </button>
@@ -421,7 +376,7 @@ export default function ContactSection({ onScrollToTop, onNavigate }) {
             </div>
 
             {/* Response Time Subtext */}
-            <p className="text-[10px] font-sans text-[#5A6966] text-center mt-2">
+            <p className="text-[10px] font-sans text-[#5A6966] text-center mt-3">
               I usually respond within 24&ndash;48 hours.
             </p>
           </div>

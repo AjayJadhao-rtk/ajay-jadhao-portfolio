@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as THREE from 'three';
 import gsap from 'gsap';
-import { Camera, Sun, Moon, Play, Pause, Home, MapPin, Compass } from 'lucide-react';
+import { Camera, Sun, Moon, Play, Pause, Home, MapPin, Compass, HelpCircle, MoveHorizontal, X } from 'lucide-react';
 import { createCircuitCurve, buildCircuitTrackMesh } from './CircuitTrack';
 import { RoverVehicle } from './RoverVehicle';
 import { spawnWaypointStations } from './WaypointStation';
@@ -80,6 +80,34 @@ export default function CircuitWorldCanvas({
       return 'chase';
     });
   };
+
+  // Mobile & Interactive Navigation Instruction Overlay State
+  const [showNavInstruction, setShowNavInstruction] = useState(false);
+  const showNavInstructionRef = useRef(false);
+
+  const dismissInstruction = useCallback(() => {
+    setShowNavInstruction(false);
+    showNavInstructionRef.current = false;
+    audioEngine.playClick();
+  }, []);
+
+  // Show intuitive guide for mobile users shortly after entering 3D world, then auto-fade
+  useEffect(() => {
+    const showTimer = setTimeout(() => {
+      setShowNavInstruction(true);
+      showNavInstructionRef.current = true;
+    }, 700);
+
+    const autoDismissTimer = setTimeout(() => {
+      setShowNavInstruction(false);
+      showNavInstructionRef.current = false;
+    }, 5500);
+
+    return () => {
+      clearTimeout(showTimer);
+      clearTimeout(autoDismissTimer);
+    };
+  }, []);
 
   const onWaypointChangeRef = useRef(onWaypointChange);
   const onRegisterExitHandlerRef = useRef(onRegisterExitHandler);
@@ -370,6 +398,10 @@ export default function CircuitWorldCanvas({
     };
 
     const handlePointerDown = (e) => {
+      if (showNavInstructionRef.current) {
+        setShowNavInstruction(false);
+        showNavInstructionRef.current = false;
+      }
       if (isTransitioningRef.current) return;
       isDraggingRef.current = true;
       lastPointerXRef.current = e.clientX;
@@ -680,6 +712,25 @@ export default function CircuitWorldCanvas({
             )}
             <span className="text-[9.5px]">{isCruising ? 'PAUSE' : 'AUTO'}</span>
           </button>
+
+          <span className="text-white/20 text-[10px]">|</span>
+
+          {/* Help & Instruction Trigger */}
+          <button
+            onClick={() => {
+              audioEngine.playClick();
+              setShowNavInstruction((prev) => !prev);
+            }}
+            className={`w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full transition-all cursor-pointer active:scale-90 ${
+              showNavInstruction
+                ? 'bg-amber-400 text-slate-950 font-bold'
+                : 'text-white/80 bg-white/10 hover:text-white hover:bg-white/20'
+            }`}
+            title="Show Mobile Navigation Guide"
+            aria-label="Navigation Guide"
+          >
+            <HelpCircle className="w-3.5 h-3.5" />
+          </button>
         </div>
       </header>
 
@@ -723,14 +774,80 @@ export default function CircuitWorldCanvas({
         })}
       </div>
 
-      {/* Navigation Hint */}
-      <div className={`absolute bottom-5 right-5 z-20 hidden md:flex items-center space-x-2 backdrop-blur-xs px-3 py-1 rounded-md text-[9px] font-mono border pointer-events-none transition-colors duration-500 ${
+      {/* Navigation Hint - Responsive on Mobile & Desktop */}
+      <div className={`absolute bottom-16 sm:bottom-5 right-1/2 translate-x-1/2 sm:translate-x-0 sm:right-5 z-20 flex items-center space-x-1.5 backdrop-blur-xs px-2.5 py-1 rounded-md text-[9px] font-mono border pointer-events-none transition-colors duration-500 whitespace-nowrap shadow-sm ${
         isNightMode
-          ? 'bg-[#0E1626]/80 text-cyan-300 border-cyan-500/30'
-          : 'bg-[#292B27]/75 text-[#E9DDC7] border-[#292B27]/40'
+          ? 'bg-[#0E1626]/85 text-cyan-300 border-cyan-500/30'
+          : 'bg-[#292B27]/80 text-[#E9DDC7] border-[#292B27]/40'
       }`}>
-        <span>SWIPE / DRAG / SCROLL TO NAVIGATE ROVER</span>
+        <MoveHorizontal className="w-3 h-3 text-[#B17B53]" />
+        <span className="hidden sm:inline">SWIPE / DRAG / SCROLL TO NAVIGATE ROVER</span>
+        <span className="sm:hidden">SWIPE TO STEER ROVER</span>
       </div>
+
+      {/* MOBILE & INTERACTIVE NAVIGATION INSTRUCTION OVERLAY (Auto-fades in 4.8s or dismisses on swipe/tap) */}
+      {showNavInstruction && (
+        <div 
+          onClick={dismissInstruction}
+          className="absolute inset-0 z-40 flex items-center justify-center p-4 pointer-events-auto bg-black/35 backdrop-blur-[2px] animate-fadeIn transition-opacity select-none"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="relative max-w-[290px] sm:max-w-[340px] w-full bg-[#F4EBDD] border-2 border-[#292B27] rounded-xl p-4 sm:p-5 shadow-2xl text-[#292B27] text-center"
+            style={{
+              boxShadow: '0 20px 45px rgba(41, 43, 39, 0.45), inset 0 0 30px rgba(233, 221, 199, 0.5)',
+            }}
+          >
+            <button
+              onClick={dismissInstruction}
+              className="absolute top-2.5 right-2.5 w-6 h-6 flex items-center justify-center rounded-md hover:bg-[#292B27] hover:text-[#F4EBDD] transition-colors text-[#292B27] cursor-pointer"
+              aria-label="Close guide"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+
+            {/* Pulsing Animated Gesture Icon */}
+            <div className="mx-auto w-11 h-11 rounded-full bg-[#E9DDC7] border border-[#292B27]/25 flex items-center justify-center mb-2.5 shadow-inner">
+              <MoveHorizontal className="w-5 h-5 text-[#B17B53] animate-pulse" />
+            </div>
+
+            <span className="font-mono text-[9px] uppercase tracking-widest text-[#89634C] font-bold">
+              ROVER CONTROL // MANUAL
+            </span>
+            <h4 className="font-serif text-lg font-bold text-[#292B27] mt-0.5 mb-2.5">
+              3D Circuit World
+            </h4>
+
+            <div className="space-y-2 text-[10.5px] font-mono text-left bg-[#E9DDC7]/80 p-2.5 rounded-lg border border-[#292B27]/20">
+              <div className="flex items-start space-x-2">
+                <span className="w-4.5 h-4.5 rounded bg-[#292B27] text-[#F4EBDD] flex items-center justify-center font-bold text-[9px] shrink-0 mt-0.5">1</span>
+                <p className="leading-tight">
+                  <strong className="text-[#292B27]">Swipe / Drag</strong> anywhere on screen to steer the rover along the circuit track.
+                </p>
+              </div>
+              <div className="flex items-start space-x-2">
+                <span className="w-4.5 h-4.5 rounded bg-[#292B27] text-[#F4EBDD] flex items-center justify-center font-bold text-[9px] shrink-0 mt-0.5">2</span>
+                <p className="leading-tight">
+                  <strong className="text-[#292B27]">Tap Waypoint (01–05)</strong> at bottom to instantly jump to each engineering lab station.
+                </p>
+              </div>
+              <div className="flex items-start space-x-2">
+                <span className="w-4.5 h-4.5 rounded bg-[#292B27] text-[#F4EBDD] flex items-center justify-center font-bold text-[9px] shrink-0 mt-0.5">3</span>
+                <p className="leading-tight">
+                  <strong className="text-[#292B27]">Download Blueprint</strong> on any project card to export full technical specs.
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={dismissInstruction}
+              className="mt-3.5 w-full py-2 px-3 rounded bg-[#292B27] text-[#F4EBDD] hover:bg-[#1E201D] font-mono text-[11px] font-bold uppercase tracking-wider transition-transform active:scale-95 cursor-pointer shadow-sm"
+            >
+              Start Exploring →
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

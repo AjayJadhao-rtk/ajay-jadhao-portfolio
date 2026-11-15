@@ -1,6 +1,7 @@
-import React from 'react';
-import { ArrowRight, X } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowRight, X, Download } from 'lucide-react';
 import { audioEngine } from '../../utils/audioSystem';
+import { generateAndDownloadBlueprint } from '../../utils/blueprintGenerator';
 
 /**
  * WorldHUDOverlay renders the authentic luxury vintage-engineering HUD card
@@ -8,10 +9,27 @@ import { audioEngine } from '../../utils/audioSystem';
  * 
  * - 100% Solid Opaque Parchment (#F4EBDD) with solid 2px charcoal border - ZERO transparency
  * - Compact small footprint (max-w-[275px] on mobile, max-h-[60vh]) floating on the right
+ * - Direct "Download Blueprint" option with verified technical specifications
  * - Keeps the 3D circuit world, rover, and landscape fully visible
  */
 export default function WorldHUDOverlay({ waypoint, onClose, onOpenBlueprint }) {
+  const [isDownloading, setIsDownloading] = useState(false);
+
   if (!waypoint) return null;
+
+  const handleDownload = async (e) => {
+    e.stopPropagation();
+    if (isDownloading || !waypoint) return;
+    setIsDownloading(true);
+    audioEngine.playRadarPing();
+    try {
+      await generateAndDownloadBlueprint(waypoint);
+    } catch (err) {
+      console.error('Download error:', err);
+    } finally {
+      setTimeout(() => setIsDownloading(false), 800);
+    }
+  };
 
   return (
     <aside 
@@ -97,17 +115,30 @@ export default function WorldHUDOverlay({ waypoint, onClose, onOpenBlueprint }) 
           ))}
         </div>
 
-        {/* Action Trigger: Launch Blueprint Modal (Solid Charcoal Button) */}
-        <button
-          onClick={() => {
-            audioEngine.playModalOpen();
-            onOpenBlueprint(waypoint);
-          }}
-          className="group w-full flex items-center justify-center space-x-1.5 py-2 sm:py-2.5 px-3 rounded bg-[#292B27] text-[#F4EBDD] hover:bg-[#1E201D] transition-all shadow-md active:translate-y-0.5 font-mono text-[10px] sm:text-xs font-semibold uppercase tracking-wider cursor-pointer"
-        >
-          <span>Examine Lab Schematic</span>
-          <ArrowRight className="w-3 h-3 text-[#B17B53] transition-transform group-hover:translate-x-1" />
-        </button>
+        {/* Action Triggers: Examine Lab Schematic OR Direct Download Blueprint */}
+        <div className="flex items-center gap-1.5 pt-0.5">
+          <button
+            onClick={() => {
+              audioEngine.playModalOpen();
+              onOpenBlueprint(waypoint);
+            }}
+            className="group flex-1 flex items-center justify-center space-x-1 py-2 px-2 rounded bg-[#292B27] text-[#F4EBDD] hover:bg-[#1E201D] transition-all shadow-sm active:translate-y-0.5 font-mono text-[9.5px] sm:text-[10px] font-semibold uppercase tracking-wider cursor-pointer"
+            title="Open detailed blueprint schematic"
+          >
+            <span>Schematic</span>
+            <ArrowRight className="w-3 h-3 text-[#B17B53] group-hover:translate-x-0.5 transition-transform" />
+          </button>
+
+          <button
+            onClick={handleDownload}
+            disabled={isDownloading}
+            className="flex items-center justify-center space-x-1 py-2 px-2.5 rounded bg-[#1E3A32] text-white hover:bg-[#27433B] border border-[#38BDF8]/30 transition-all shadow-sm active:translate-y-0.5 font-mono text-[9.5px] sm:text-[10px] font-bold uppercase tracking-wider cursor-pointer"
+            title="Download official high-resolution technical blueprint (PNG)"
+          >
+            <Download className="w-3 h-3 text-cyan-300" />
+            <span>{isDownloading ? '...' : 'Download'}</span>
+          </button>
+        </div>
       </div>
     </aside>
   );

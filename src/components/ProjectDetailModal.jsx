@@ -1,12 +1,16 @@
-import React, { useEffect } from 'react';
-import { X, Cpu, Layers, Activity, Radio, CheckCircle, ExternalLink } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { X, Cpu, Layers, Activity, Radio, CheckCircle, ExternalLink, Download } from 'lucide-react';
 import { audioEngine } from '../utils/audioSystem';
+import { generateAndDownloadBlueprint } from '../utils/blueprintGenerator';
 
 /**
  * ProjectDetailModal presents a luxury vintage engineering schematic sheet
- * with acoustic blueprint unfolding chime and compact, responsive layout.
+ * with acoustic blueprint unfolding chime, downloadable schematic blueprint,
+ * and compact, responsive layout.
  */
 export default function ProjectDetailModal({ project, onClose }) {
+  const [isDownloading, setIsDownloading] = useState(false);
+
   useEffect(() => {
     if (project) {
       audioEngine.playModalOpen();
@@ -18,6 +22,20 @@ export default function ProjectDetailModal({ project, onClose }) {
   const handleClose = () => {
     audioEngine.playModalClose();
     onClose();
+  };
+
+  const handleDownload = async (e) => {
+    e.stopPropagation();
+    if (isDownloading || !project) return;
+    setIsDownloading(true);
+    audioEngine.playRadarPing();
+    try {
+      await generateAndDownloadBlueprint(project);
+    } catch (err) {
+      console.error('Download error:', err);
+    } finally {
+      setTimeout(() => setIsDownloading(false), 800);
+    }
   };
 
   return (
@@ -44,11 +62,23 @@ export default function ProjectDetailModal({ project, onClose }) {
             </span>
           </div>
 
-          <div className="flex items-center space-x-2.5">
+          <div className="flex items-center space-x-2">
             <div className="hidden sm:flex items-center space-x-1.5 text-[9px] font-mono text-[#26352D]">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-ping" />
               <span>{project.status}</span>
             </div>
+
+            <button
+              onClick={handleDownload}
+              disabled={isDownloading}
+              onMouseEnter={() => audioEngine.playHover()}
+              className="flex items-center space-x-1 px-2.5 py-1 rounded bg-[#1E3A32] text-white hover:bg-[#27433B] border border-[#38BDF8]/40 transition-all font-mono text-[9px] sm:text-[10px] font-bold uppercase tracking-wider cursor-pointer active:scale-95"
+              title="Download official high-resolution technical blueprint schematic (PNG)"
+            >
+              <Download className="w-3 h-3 text-cyan-300" />
+              <span>{isDownloading ? 'Exporting...' : 'Download Blueprint'}</span>
+            </button>
+
             <button
               onClick={handleClose}
               onMouseEnter={() => audioEngine.playHover()}
@@ -135,15 +165,28 @@ export default function ProjectDetailModal({ project, onClose }) {
 
         {/* Modal Footer */}
         <div className="px-4 py-2.5 bg-[#E9DDC7] border-t border-[#292B27]/20 flex items-center justify-between text-[10px] font-mono select-none">
-          <span className="text-[#626B50]">
+          <span className="text-[#626B50] hidden sm:inline">
             DEPT OF E&TC // HARDWARE LAB ARCHIVE
           </span>
-          <button
-            onClick={handleClose}
-            className="px-2.5 py-1 rounded bg-[#292B27] text-[#F4EBDD] hover:bg-[#1E201D] text-[9.5px] font-mono uppercase tracking-wider cursor-pointer"
-          >
-            Close Blueprint
-          </button>
+
+          <div className="flex items-center space-x-2 ml-auto sm:ml-0">
+            <button
+              onClick={handleDownload}
+              disabled={isDownloading}
+              onMouseEnter={() => audioEngine.playHover()}
+              className="flex items-center space-x-1.5 px-3 py-1.5 rounded bg-[#1E3A32] text-white hover:bg-[#27433B] border border-[#38BDF8]/40 transition-all text-[9.5px] font-mono font-bold uppercase tracking-wider cursor-pointer active:scale-95"
+            >
+              <Download className="w-3 h-3 text-cyan-300" />
+              <span>{isDownloading ? 'Generating...' : 'Download Blueprint (.PNG)'}</span>
+            </button>
+
+            <button
+              onClick={handleClose}
+              className="px-2.5 py-1.5 rounded bg-[#292B27] text-[#F4EBDD] hover:bg-[#1E201D] text-[9.5px] font-mono uppercase tracking-wider cursor-pointer active:scale-95"
+            >
+              Close
+            </button>
+          </div>
         </div>
       </div>
     </div>
