@@ -15,6 +15,7 @@ export function buildLowPolyLandscape() {
   envGroup.name = 'IsometricIsland';
 
   const animatedTurbineRotors = [];
+  const animatedKoiFish = [];
   let starfieldPoints = null;
   let moonMesh = null;
   let waterMesh = null;
@@ -260,6 +261,104 @@ export function buildLowPolyLandscape() {
   });
 
   envGroup.add(pondDecorGroup);
+
+  // =========================================================================
+  // 2b. ANIMATED KOI FISH SWIMMING IN THE POND
+  // Low-poly Japanese Kohaku & Yamabuki Koi with articulated wagging tails
+  // =========================================================================
+  const fishSchoolGroup = new THREE.Group();
+  fishSchoolGroup.name = 'KoiFishSchool';
+  envGroup.add(fishSchoolGroup);
+
+  const koiConfigs = [
+    { baseColor: 0xEA580C, emissive: 0x9A3412, radius: 4.2, speed: 0.36, phase: 0.0, scale: 1.0 },
+    { baseColor: 0xF59E0B, emissive: 0xB45309, radius: 6.5, speed: -0.28, phase: 1.8, scale: 0.9 },
+    { baseColor: 0xDC2626, emissive: 0x991B1B, radius: 3.2, speed: 0.42, phase: 3.2, scale: 0.8 },
+    { baseColor: 0xFB923C, emissive: 0xC2410C, radius: 8.2, speed: -0.22, phase: 4.5, scale: 1.15 },
+    { baseColor: 0xFBBF24, emissive: 0xD97706, radius: 5.4, speed: 0.31, phase: 2.3, scale: 0.85 },
+    { baseColor: 0xE11D48, emissive: 0xBE123C, radius: 7.0, speed: -0.25, phase: 5.7, scale: 0.95 },
+  ];
+
+  // Geometries for low-poly fish body and articulated fins
+  const fishBodyGeom = new THREE.ConeGeometry(0.24, 0.95, 6);
+  fishBodyGeom.rotateX(Math.PI / 2); // align forward along Z
+
+  const fishTailGeom = new THREE.BufferGeometry();
+  const tailVerts = new Float32Array([
+    0, 0, 0,
+    0, 0.22, 0.42,
+    0, -0.22, 0.42,
+    0, 0, 0,
+    0, -0.22, 0.42,
+    0, 0.22, 0.42,
+  ]);
+  fishTailGeom.setAttribute('position', new THREE.BufferAttribute(tailVerts, 3));
+  fishTailGeom.computeVertexNormals();
+
+  const pectoralFinGeom = new THREE.BufferGeometry();
+  const finVerts = new Float32Array([
+    0, 0, 0,
+    0.28, -0.05, 0.2,
+    0.1, -0.05, 0.32,
+    0, 0, 0,
+    -0.28, -0.05, 0.2,
+    -0.1, -0.05, 0.32,
+  ]);
+  pectoralFinGeom.setAttribute('position', new THREE.BufferAttribute(finVerts, 3));
+  pectoralFinGeom.computeVertexNormals();
+
+  koiConfigs.forEach((cfg, idx) => {
+    const kGroup = new THREE.Group();
+
+    const fishMat = new THREE.MeshStandardMaterial({
+      color: cfg.baseColor,
+      emissive: cfg.emissive,
+      emissiveIntensity: 0.45,
+      roughness: 0.25,
+      metalness: 0.15,
+      flatShading: true,
+    });
+
+    const body = new THREE.Mesh(fishBodyGeom, fishMat);
+    body.position.z = 0.15;
+    kGroup.add(body);
+
+    // Articulated wagging tail group
+    const tailGroup = new THREE.Group();
+    tailGroup.position.set(0, 0, -0.32);
+
+    const tailFinMat = new THREE.MeshStandardMaterial({
+      color: cfg.baseColor,
+      emissive: cfg.emissive,
+      emissiveIntensity: 0.5,
+      roughness: 0.3,
+      side: THREE.DoubleSide,
+      flatShading: true,
+    });
+    const tailFin = new THREE.Mesh(fishTailGeom, tailFinMat);
+    tailGroup.add(tailFin);
+    kGroup.add(tailGroup);
+
+    // Pectoral side fins
+    const finMesh = new THREE.Mesh(pectoralFinGeom, tailFinMat);
+    finMesh.position.set(0, -0.02, 0.1);
+    kGroup.add(finMesh);
+
+    // Scale
+    kGroup.scale.setScalar(cfg.scale);
+
+    fishSchoolGroup.add(kGroup);
+
+    animatedKoiFish.push({
+      group: kGroup,
+      tailGroup: tailGroup,
+      baseRadius: cfg.radius,
+      speed: cfg.speed,
+      phase: cfg.phase,
+      scale: cfg.scale,
+      index: idx,
+    });
+  });
 
   // 3. Day Skydome (Warm Golden Anime Morning Sunrise)
   const domeGeom = new THREE.SphereGeometry(155, 32, 20, 0, Math.PI * 2, 0, Math.PI * 0.5);
@@ -650,6 +749,41 @@ export function buildLowPolyLandscape() {
           pos.setY(i, y);
         }
         pos.needsUpdate = true;
+      }
+
+      // Animate Swimming Koi Fish in the Pond
+      if (animatedKoiFish.length > 0) {
+        const time = performance.now() * 0.001;
+
+        animatedKoiFish.forEach((fish) => {
+          // Current orbital angle
+          const angle = fish.phase + time * fish.speed;
+
+          // Gentle wandering radius oscillation
+          const rOffset = Math.sin(time * 0.45 + fish.phase * 2) * 1.5;
+          const currentR = Math.max(2.2, Math.min(pondRadius - 2.0, fish.baseRadius + rOffset));
+
+          const curX = lakeX + Math.cos(angle) * currentR;
+          const curZ = lakeZ + Math.sin(angle) * currentR;
+
+          // Bobbing slightly under water surface (water is at y: 0.08)
+          const curY = -0.04 + Math.sin(time * 1.6 + fish.index) * 0.035;
+
+          fish.group.position.set(curX, curY, curZ);
+
+          // Calculate point ahead along movement tangent to face forward
+          const aheadAngle = angle + (fish.speed >= 0 ? 0.06 : -0.06);
+          const aheadX = lakeX + Math.cos(aheadAngle) * currentR;
+          const aheadZ = lakeZ + Math.sin(aheadAngle) * currentR;
+
+          fish.group.lookAt(aheadX, curY, aheadZ);
+
+          // Articulated fish tail wagging with sinusoidal speed
+          fish.tailGroup.rotation.y = Math.sin(time * 7.5 + fish.index * 1.8) * 0.42;
+
+          // Subtle body roll undulation while turning
+          fish.group.rotation.z = Math.sin(time * 3.8 + fish.phase) * 0.12;
+        });
       }
     },
 

@@ -69,17 +69,6 @@ export default function ProjectDetailModal({ project, onClose }) {
             </div>
 
             <button
-              onClick={handleDownload}
-              disabled={isDownloading}
-              onMouseEnter={() => audioEngine.playHover()}
-              className="flex items-center space-x-1 px-2.5 py-1 rounded bg-[#1E3A32] text-white hover:bg-[#27433B] border border-[#38BDF8]/40 transition-all font-mono text-[9px] sm:text-[10px] font-bold uppercase tracking-wider cursor-pointer active:scale-95"
-              title="Download official high-resolution technical blueprint schematic (PNG)"
-            >
-              <Download className="w-3 h-3 text-cyan-300" />
-              <span>{isDownloading ? 'Exporting...' : 'Download Blueprint'}</span>
-            </button>
-
-            <button
               onClick={handleClose}
               onMouseEnter={() => audioEngine.playHover()}
               className="p-1 rounded-md hover:bg-[#292B27] hover:text-[#F4EBDD] transition-colors cursor-pointer text-[#292B27]"

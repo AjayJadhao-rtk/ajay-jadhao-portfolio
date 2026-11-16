@@ -80,6 +80,7 @@ export default function WorldExplorationView({ onReturnToHero }) {
   const handleReturn = () => {
     if (isExiting) return;
     setIsExiting(true);
+    audioEngine.stopRoverEngine();
     audioEngine.playClick();
 
     // Trigger smooth GSAP camera ascent before unmounting

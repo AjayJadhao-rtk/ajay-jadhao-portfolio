@@ -30,6 +30,7 @@ class PortfolioAudioEngine {
     this.stepDuration = (60 / this.bpm) / 4; // 16th note = ~202.7ms
 
     this.noiseBuffer = null;
+    this.roverNodes = null;
 
     if (typeof window !== 'undefined') {
       const unlock = () => {
@@ -593,6 +594,166 @@ class PortfolioAudioEngine {
       osc.start(t);
       osc.stop(t + 0.17);
     } catch (e) {}
+  }
+
+  // =========================================================================
+  // 3D WORLD AUTONOMOUS ROVER DRIVING ENGINE SOUND
+  // Realistic dual-oscillator electric motor whir + road texture friction rumble
+  // Dynamically modulated by vehicle speed
+  // =========================================================================
+
+  startRoverEngine() {
+    if (this.roverNodes) return;
+    this.ensureContext();
+    if (!this.ctx) return;
+
+    try {
+      const t = this.ctx.currentTime;
+
+      // 1. Master Rover Gain Node (connected to sfxGain)
+      const masterRoverGain = this.ctx.createGain();
+      masterRoverGain.gain.setValueAtTime(0.0001, t);
+      masterRoverGain.connect(this.sfxGain);
+
+      // 2. High-Frequency Electric Motor Whine (Speed-modulated harmonic)
+      const motorOsc = this.ctx.createOscillator();
+      motorOsc.type = 'triangle';
+      motorOsc.frequency.setValueAtTime(80, t);
+
+      const motorFilter = this.ctx.createBiquadFilter();
+      motorFilter.type = 'lowpass';
+      motorFilter.frequency.setValueAtTime(420, t);
+      motorFilter.Q.setValueAtTime(3.0, t); // Electric motor resonant peak
+
+      const motorGain = this.ctx.createGain();
+      motorGain.gain.setValueAtTime(0.28, t);
+
+      motorOsc.connect(motorFilter);
+      motorFilter.connect(motorGain);
+      motorGain.connect(masterRoverGain);
+      motorOsc.start(t);
+
+      // 3. Low-Frequency Electric Torque Rumble (Sub-harmonic)
+      const subOsc = this.ctx.createOscillator();
+      subOsc.type = 'sine';
+      subOsc.frequency.setValueAtTime(40, t);
+
+      const subGain = this.ctx.createGain();
+      subGain.gain.setValueAtTime(0.38, t);
+
+      subOsc.connect(subGain);
+      subGain.connect(masterRoverGain);
+      subOsc.start(t);
+
+      // 4. Textured Wheel & Track Rolling Friction (Pink/Brown noise)
+      let noiseNode = null;
+      let noiseGain = null;
+      if (this.noiseBuffer) {
+        const noiseSource = this.ctx.createBufferSource();
+        noiseSource.buffer = this.noiseBuffer;
+        noiseSource.loop = true;
+
+        const noiseFilter = this.ctx.createBiquadFilter();
+        noiseFilter.type = 'bandpass';
+        noiseFilter.frequency.setValueAtTime(240, t);
+        noiseFilter.Q.setValueAtTime(1.5, t);
+
+        noiseGain = this.ctx.createGain();
+        noiseGain.gain.setValueAtTime(0.18, t);
+
+        noiseSource.connect(noiseFilter);
+        noiseFilter.connect(noiseGain);
+        noiseGain.connect(masterRoverGain);
+        noiseSource.start(t);
+
+        noiseNode = noiseSource;
+      }
+
+      this.roverNodes = {
+        masterRoverGain,
+        motorOsc,
+        motorFilter,
+        subOsc,
+        noiseNode,
+        noiseGain,
+      };
+    } catch (e) {}
+  }
+
+  updateRoverEngine(speed = 0) {
+    if (this.isMuted) {
+      if (this.roverNodes?.masterRoverGain && this.ctx) {
+        this.roverNodes.masterRoverGain.gain.setTargetAtTime(0.0001, this.ctx.currentTime, 0.05);
+      }
+      return;
+    }
+
+    if (!this.roverNodes) {
+      if (speed > 0.0002) {
+        this.startRoverEngine();
+      }
+      return;
+    }
+
+    if (!this.ctx || this.ctx.state !== 'running') return;
+
+    try {
+      const t = this.ctx.currentTime;
+      const { masterRoverGain, motorOsc, motorFilter, subOsc, noiseGain } = this.roverNodes;
+
+      // Speed threshold: if moving faster than 0.0002, driving sound revs up
+      const isMoving = speed > 0.0002;
+      const normalizedSpeed = Math.min(Math.max((speed - 0.0002) / 0.012, 0), 1.0);
+
+      // Target volume ramps up smoothly with vehicle speed
+      // When stationary, smoothly fades down to near silence
+      const targetGain = isMoving ? (0.05 + normalizedSpeed * 0.22) : 0.0001;
+      masterRoverGain.gain.setTargetAtTime(targetGain, t, isMoving ? 0.06 : 0.2);
+
+      if (isMoving) {
+        // Motor pitch scales naturally with velocity
+        // Base idle: 80 Hz -> Max cruising: 240 Hz
+        const motorFreq = 80 + normalizedSpeed * 160;
+        motorOsc.frequency.setTargetAtTime(motorFreq, t, 0.06);
+
+        // Sub torque rumble: 40 Hz -> 80 Hz
+        const subFreq = 40 + normalizedSpeed * 40;
+        subOsc.frequency.setTargetAtTime(subFreq, t, 0.06);
+
+        // Lowpass resonance opens up as speed increases
+        motorFilter.frequency.setTargetAtTime(420 + normalizedSpeed * 580, t, 0.06);
+
+        // Noise friction increases with speed
+        if (noiseGain) {
+          noiseGain.gain.setTargetAtTime(0.12 + normalizedSpeed * 0.18, t, 0.06);
+        }
+      }
+    } catch (e) {}
+  }
+
+  stopRoverEngine() {
+    if (!this.roverNodes || !this.ctx) return;
+    try {
+      const t = this.ctx.currentTime;
+      this.roverNodes.masterRoverGain.gain.linearRampToValueAtTime(0.0001, t + 0.1);
+      const nodesToStop = this.roverNodes;
+      this.roverNodes = null;
+      setTimeout(() => {
+        try {
+          nodesToStop.motorOsc.stop();
+          nodesToStop.motorOsc.disconnect();
+          nodesToStop.subOsc.stop();
+          nodesToStop.subOsc.disconnect();
+          if (nodesToStop.noiseNode) {
+            nodesToStop.noiseNode.stop();
+            nodesToStop.noiseNode.disconnect();
+          }
+          nodesToStop.masterRoverGain.disconnect();
+        } catch (_) {}
+      }, 150);
+    } catch (e) {
+      this.roverNodes = null;
+    }
   }
 
   toggleMute() {

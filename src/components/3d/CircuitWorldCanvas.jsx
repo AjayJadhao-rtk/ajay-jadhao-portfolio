@@ -374,6 +374,7 @@ export default function CircuitWorldCanvas({
     if (onRegisterExitHandlerRef.current) {
       onRegisterExitHandlerRef.current((onFinish) => {
         isTransitioningRef.current = true;
+        audioEngine.stopRoverEngine();
         audioEngine.playClick();
         gsap.to(camera.position, {
           y: camera.position.y + 8,
@@ -490,6 +491,9 @@ export default function CircuitWorldCanvas({
       // 2. Update Rover on Track (Motion logic preserved)
       rover.update(curve, progressRef.current, delta, currentSpeed);
 
+      // 2b. Rover Driving Sound: Modulate electric engine sound based on driving motion
+      audioEngine.updateRoverEngine(currentSpeed);
+
       // 3. Dynamic Camera POV Controller (Chase / Cockpit / Aerial)
       const roverPos = rover.mesh.position;
       const tangent = curve.getTangentAt(progressRef.current).normalize();
@@ -591,6 +595,7 @@ export default function CircuitWorldCanvas({
     // 10. Clean Cleanup
     return () => {
       cancelAnimationFrame(animationFrameId);
+      audioEngine.stopRoverEngine();
       dom.removeEventListener('wheel', handleWheel);
       dom.removeEventListener('pointerdown', handlePointerDown);
       window.removeEventListener('pointermove', handlePointerMove);
