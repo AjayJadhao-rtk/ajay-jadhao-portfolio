@@ -1,8 +1,7 @@
 import React, { useState, useRef, useCallback, Component } from 'react';
 import CircuitWorldCanvas from './3d/CircuitWorldCanvas';
-import WorldHUDOverlay from './3d/WorldHUDOverlay';
 import ProjectDetailModal from './ProjectDetailModal';
-import { ArrowLeft, Compass, AlertTriangle, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Compass, AlertTriangle, RefreshCw, FileText, Layers, X } from 'lucide-react';
 import { audioEngine } from '../utils/audioSystem';
 
 /**
@@ -108,13 +107,45 @@ export default function WorldExplorationView({ onReturnToHero }) {
         />
       </WorldErrorBoundary>
 
-      {/* Waypoint Arrival HUD Card */}
+      {/* Sleek Non-Intrusive Billboard Arrival Pill (100% responsive, never overflows) */}
       {activeWaypoint && !isExiting && (
-        <WorldHUDOverlay
-          waypoint={activeWaypoint}
-          onClose={() => setActiveWaypoint(null)}
-          onOpenBlueprint={(p) => setDetailedProject(p)}
-        />
+        <div className="absolute bottom-14 sm:bottom-16 left-1/2 -translate-x-1/2 z-25 flex items-center space-x-2 px-3 py-1.5 rounded-full bg-[#292B27]/95 border-2 border-[#B17B53] shadow-2xl backdrop-blur-md text-[#F4EBDD] font-mono select-none pointer-events-auto max-w-[94vw] animate-fadeIn">
+          <span
+            className="w-2 h-2 rounded-full animate-ping shrink-0"
+            style={{ backgroundColor: activeWaypoint.color || '#B17B53' }}
+          />
+          <div className="flex items-center space-x-1.5 min-w-0 pr-1">
+            <span className="text-[9px] uppercase tracking-wider text-[#B17B53] font-bold shrink-0">
+              {activeWaypoint.number || '01'}
+            </span>
+            <span className="text-[11px] sm:text-xs font-bold text-white truncate max-w-[110px] sm:max-w-[200px]">
+              {activeWaypoint.title}
+            </span>
+          </div>
+
+          <button
+            onClick={() => {
+              audioEngine.playModalOpen();
+              setDetailedProject(activeWaypoint);
+            }}
+            className="flex items-center space-x-1.5 px-3 py-1 rounded-full bg-[#1A2520] hover:bg-[#24352C] border border-[#B17B53]/50 text-[#F4EBDD] hover:text-white font-mono text-[10px] sm:text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer shadow-sm active:scale-95 shrink-0"
+            title="Inspect Full Blueprint Schematic"
+          >
+            <FileText className="w-3.5 h-3.5 text-[#B17B53]" />
+            <span>Blueprint</span>
+          </button>
+
+          <button
+            onClick={() => {
+              audioEngine.playClick();
+              setActiveWaypoint(null);
+            }}
+            className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-white/10 text-white/50 hover:text-white transition-colors cursor-pointer shrink-0"
+            aria-label="Dismiss Pill"
+          >
+            <X className="w-3 h-3" />
+          </button>
+        </div>
       )}
 
       {/* Full Detailed Schematic Modal */}

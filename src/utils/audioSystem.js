@@ -573,6 +573,37 @@ class PortfolioAudioEngine {
     } catch (e) {}
   }
 
+  playWaterSplash() {
+    if (this.isMuted) return;
+    this.ensureContext();
+    if (!this.ctx || this.ctx.state !== 'running') return;
+
+    try {
+      const t = this.ctx.currentTime;
+      // Gentle, resonant water drop & ripple chime
+      const freqs = [587.33, 880.0, 1174.66]; // D5, A5, D6 harmonic chime
+      freqs.forEach((freq, idx) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        const delay = idx * 0.05;
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq * 0.85, t + delay);
+        osc.frequency.exponentialRampToValueAtTime(freq * 1.15, t + delay + 0.04);
+        osc.frequency.exponentialRampToValueAtTime(freq, t + delay + 0.25);
+
+        gain.gain.setValueAtTime(0.0001, t + delay);
+        gain.gain.linearRampToValueAtTime(0.06, t + delay + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + delay + 0.38);
+
+        osc.connect(gain);
+        gain.connect(this.sfxGain || this.ctx.destination);
+        osc.start(t + delay);
+        osc.stop(t + delay + 0.4);
+      });
+    } catch (e) {}
+  }
+
   playRadarPing() {
     if (this.isMuted) return;
     this.ensureContext();

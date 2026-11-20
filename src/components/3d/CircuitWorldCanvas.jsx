@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as THREE from 'three';
 import gsap from 'gsap';
-import { Camera, Sun, Moon, Play, Pause, Home, MapPin, Compass, HelpCircle, MoveHorizontal, X } from 'lucide-react';
+import { Camera, Sun, Moon, Play, Pause, Home, MapPin, Compass, HelpCircle, MoveHorizontal, X, ArrowLeft, Eye } from 'lucide-react';
 import { createCircuitCurve, buildCircuitTrackMesh } from './CircuitTrack';
 import { RoverVehicle } from './RoverVehicle';
 import { spawnWaypointStations } from './WaypointStation';
@@ -109,8 +109,22 @@ export default function CircuitWorldCanvas({
     };
   }, []);
 
+  // Pond Observation View Mode State & Ref
+  const [isPondView, setIsPondView] = useState(false);
+  const isPondViewRef = useRef(false);
+
+  // Close-up Billboard Inspection Mode State & Ref
+  const [focusedBillboard, setFocusedBillboard] = useState(null);
+  const focusedBillboardRef = useRef(null);
+
+  const hoveredObjectRef = useRef(null);
+  const clickableTargetsRef = useRef([]);
+
   const onWaypointChangeRef = useRef(onWaypointChange);
+  const onSchematicOpenRef = useRef(onSchematicOpen);
   const onRegisterExitHandlerRef = useRef(onRegisterExitHandler);
+  const clickableBillboardsRef = useRef([]);
+  const pointerDownPosRef = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
     isCruisingRef.current = isCruising;
@@ -123,6 +137,10 @@ export default function CircuitWorldCanvas({
   useEffect(() => {
     onWaypointChangeRef.current = onWaypointChange;
   }, [onWaypointChange]);
+
+  useEffect(() => {
+    onSchematicOpenRef.current = onSchematicOpen;
+  }, [onSchematicOpen]);
 
   useEffect(() => {
     onRegisterExitHandlerRef.current = onRegisterExitHandler;
@@ -314,6 +332,22 @@ export default function CircuitWorldCanvas({
     scene.add(stationsGroup);
     stationsGroupRef.current = stationsGroup;
     waypointsRef.current = waypoints;
+    clickableBillboardsRef.current = waypoints.map((w) => w.posterMesh).filter(Boolean);
+
+    // Collect all raycast targets: billboard posters, interactive 3D buttons, and pond
+    const allRaycastTargets = [];
+    if (stationsGroup.userData?.interactiveObjects) {
+      allRaycastTargets.push(...stationsGroup.userData.interactiveObjects);
+    } else {
+      waypoints.forEach((w) => {
+        if (w.posterMesh) allRaycastTargets.push(w.posterMesh);
+        if (w.interactiveButtons) allRaycastTargets.push(...w.interactiveButtons);
+      });
+    }
+    landscape.traverse((obj) => {
+      if (obj.userData?.isPond) allRaycastTargets.push(obj);
+    });
+    clickableTargetsRef.current = allRaycastTargets;
 
     // D. Autonomous Explorer Rover with Real Dynamic Spotlights
     const rover = new RoverVehicle();
@@ -325,8 +359,9 @@ export default function CircuitWorldCanvas({
     const startRoverPos = rover.mesh.position;
 
     // 6. GSAP Camera Entrance Transition (Silky-Smooth Cinematic Chase-Cam Alignment)
-    const FOLLOW_DISTANCE = isMobileInitial ? 18.0 : 14.0;
-    const CAMERA_HEIGHT = isMobileInitial ? 13.0 : 10.0;
+    // Calibrated closer follow distance for mobile view so billboards are large and clear
+    const FOLLOW_DISTANCE = isMobileInitial ? 11.5 : 13.5;
+    const CAMERA_HEIGHT = isMobileInitial ? 7.5 : 9.5;
 
     const startTangent = curve.getTangentAt(0).normalize();
     const startTangentXZ = new THREE.Vector3(startTangent.x, 0, startTangent.z);
@@ -407,6 +442,7 @@ export default function CircuitWorldCanvas({
       isDraggingRef.current = true;
       lastPointerXRef.current = e.clientX;
       lastPointerYRef.current = e.clientY;
+      pointerDownPosRef.current = { x: e.clientX, y: e.clientY };
       if (e.target && e.target.setPointerCapture) {
         try {
           e.target.setPointerCapture(e.pointerId);
@@ -415,15 +451,66 @@ export default function CircuitWorldCanvas({
     };
 
     const handlePointerMove = (e) => {
-      if (!isDraggingRef.current || isTransitioningRef.current) return;
-      const dx = e.clientX - lastPointerXRef.current;
-      const dy = e.clientY - lastPointerYRef.current;
-      lastPointerXRef.current = e.clientX;
-      lastPointerYRef.current = e.clientY;
+      if (isDraggingRef.current && !isTransitioningRef.current) {
+        if (focusedBillboardRef.current) {
+          setFocusedBillboard(null);
+          focusedBillboardRef.current = null;
+        }
+        if (isPondViewRef.current) {
+          setIsPondView(false);
+          isPondViewRef.current = false;
+        }
+        const dx = e.clientX - lastPointerXRef.current;
+        const dy = e.clientY - lastPointerYRef.current;
+        lastPointerXRef.current = e.clientX;
+        lastPointerYRef.current = e.clientY;
 
-      // Mobile touch-friendly: horizontal drag OR vertical thumb flick
-      const dominantDelta = Math.abs(dx) >= Math.abs(dy) ? -dx : dy;
-      targetProgressRef.current = (targetProgressRef.current + dominantDelta * 0.0012 + 10.0) % 1.0;
+        // Mobile touch-friendly: horizontal drag OR vertical thumb flick
+        const dominantDelta = Math.abs(dx) >= Math.abs(dy) ? -dx : dy;
+        targetProgressRef.current = (targetProgressRef.current + dominantDelta * 0.0012 + 10.0) % 1.0;
+        return;
+      }
+
+      // Mouse Hover Detection when not dragging (for interactive billboard buttons, poster and pond)
+      if (!isDraggingRef.current && !isTransitioningRef.current && renderer && camera) {
+        const rect = renderer.domElement.getBoundingClientRect();
+        const mouse = new THREE.Vector2(
+          ((e.clientX - rect.left) / rect.width) * 2 - 1,
+          -((e.clientY - rect.top) / rect.height) * 2 + 1
+        );
+        const raycaster = new THREE.Raycaster();
+        raycaster.setFromCamera(mouse, camera);
+
+        const targets = clickableTargetsRef.current || [];
+        const intersects = raycaster.intersectObjects(targets, true);
+
+        let hitInteractive = null;
+        if (intersects.length > 0) {
+          let hit = intersects[0].object;
+          while (hit && !hit.userData?.isInteractiveButton && !hit.userData?.isBillboard && !hit.userData?.isPond) {
+            hit = hit.parent;
+          }
+          if (hit && (hit.userData?.isInteractiveButton || hit.userData?.isBillboard || hit.userData?.isPond)) {
+            hitInteractive = hit;
+          }
+        }
+
+        if (hitInteractive !== hoveredObjectRef.current) {
+          if (hoveredObjectRef.current && hoveredObjectRef.current.userData?.setHovered) {
+            hoveredObjectRef.current.userData.setHovered(false);
+          }
+          hoveredObjectRef.current = hitInteractive;
+          if (hitInteractive) {
+            dom.style.cursor = 'pointer';
+            if (hitInteractive.userData?.setHovered) {
+              hitInteractive.userData.setHovered(true);
+              audioEngine.playHover();
+            }
+          } else {
+            dom.style.cursor = 'grab';
+          }
+        }
+      }
     };
 
     const handlePointerUp = (e) => {
@@ -433,10 +520,88 @@ export default function CircuitWorldCanvas({
           e.target.releasePointerCapture(e.pointerId);
         } catch (_) {}
       }
+
+      // Tap / Click detection: handles interactive billboard buttons, poster taps, and pond touch
+      const moveDist = Math.hypot(
+        e.clientX - pointerDownPosRef.current.x,
+        e.clientY - pointerDownPosRef.current.y
+      );
+      if (moveDist < 12 && !isTransitioningRef.current && renderer && camera) {
+        const rect = renderer.domElement.getBoundingClientRect();
+        const mouse = new THREE.Vector2(
+          ((e.clientX - rect.left) / rect.width) * 2 - 1,
+          -((e.clientY - rect.top) / rect.height) * 2 + 1
+        );
+        const raycaster = new THREE.Raycaster();
+        raycaster.setFromCamera(mouse, camera);
+        const targets = clickableTargetsRef.current || [];
+        const intersects = raycaster.intersectObjects(targets, true);
+
+        if (intersects.length > 0) {
+          let hit = intersects[0].object;
+          while (hit && !hit.userData?.isInteractiveButton && !hit.userData?.isBillboard && !hit.userData?.isPond) {
+            hit = hit.parent;
+          }
+
+          if (hit) {
+            if (hit.userData?.isPond) {
+              // User tapped the pond! Seamlessly glide camera to the Koi Pond sanctuary
+              audioEngine.playWaterSplash();
+              setIsPondView(true);
+              isPondViewRef.current = true;
+              setFocusedBillboard(null);
+              focusedBillboardRef.current = null;
+              if (onWaypointChangeRef.current) {
+                onWaypointChangeRef.current(null);
+              }
+            } else if (hit.userData?.isInteractiveButton) {
+              const action = hit.userData.action;
+              const proj = hit.userData.project;
+              if (action === 'blueprint' || action === 'specs') {
+                audioEngine.playModalOpen();
+                if (onSchematicOpenRef.current) {
+                  onSchematicOpenRef.current(proj);
+                }
+              } else if (action === 'focus') {
+                audioEngine.playClick();
+                const wp = waypointsRef.current.find((w) => w.id === proj.id);
+                if (wp) {
+                  const isAlreadyFocused = focusedBillboardRef.current?.id === wp.id;
+                  const nextFocus = isAlreadyFocused ? null : wp;
+                  setFocusedBillboard(nextFocus);
+                  focusedBillboardRef.current = nextFocus;
+                  setIsPondView(false);
+                  isPondViewRef.current = false;
+                }
+              }
+            } else if (hit.userData?.waypointProject || hit.userData?.isBillboard) {
+              let proj = hit.userData.waypointProject;
+              if (!proj) {
+                const wp = waypointsRef.current.find((w) => w.id === hit.userData.waypointId);
+                proj = wp?.project;
+              }
+              if (proj) {
+                audioEngine.playModalOpen();
+                if (onSchematicOpenRef.current) {
+                  onSchematicOpenRef.current(proj);
+                }
+              }
+            }
+          }
+        }
+      }
     };
 
     const handleKeyDown = (e) => {
       if (isTransitioningRef.current) return;
+      if (focusedBillboardRef.current) {
+        setFocusedBillboard(null);
+        focusedBillboardRef.current = null;
+      }
+      if (isPondViewRef.current) {
+        setIsPondView(false);
+        isPondViewRef.current = false;
+      }
       if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
         targetProgressRef.current = (targetProgressRef.current + 0.015 + 10.0) % 1.0;
       } else if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
@@ -494,82 +659,20 @@ export default function CircuitWorldCanvas({
       // 2b. Rover Driving Sound: Modulate electric engine sound based on driving motion
       audioEngine.updateRoverEngine(currentSpeed);
 
-      // 3. Dynamic Camera POV Controller (Chase / Cockpit / Aerial)
-      const roverPos = rover.mesh.position;
-      const tangent = curve.getTangentAt(progressRef.current).normalize();
-      const tangentXZ = new THREE.Vector3(tangent.x, 0, tangent.z);
-      if (tangentXZ.lengthSq() > 0.0001) tangentXZ.normalize();
-      else tangentXZ.set(0, 0, -1);
-
-      const camTargetPos = new THREE.Vector3();
-      const targetLookAt = new THREE.Vector3();
-
-      if (povModeRef.current === 'cockpit') {
-        // Cockpit / Bumper POV: Mounted right on rover's front deck looking ahead
-        camTargetPos.set(
-          roverPos.x + tangentXZ.x * 0.95,
-          roverPos.y + 1.35,
-          roverPos.z + tangentXZ.z * 0.95
-        );
-        targetLookAt.set(
-          roverPos.x + tangentXZ.x * 16.0,
-          roverPos.y + 1.1,
-          roverPos.z + tangentXZ.z * 16.0
-        );
-      } else if (povModeRef.current === 'aerial') {
-        // Aerial / Drone Orbit POV: Elevated diorama angle
-        camTargetPos.set(
-          roverPos.x - 22.0,
-          roverPos.y + 25.0,
-          roverPos.z + 24.0
-        );
-        targetLookAt.set(roverPos.x, roverPos.y + 0.8, roverPos.z);
-      } else {
-        // Uniform Chase-Cam POV (Default)
-        camTargetPos.set(
-          roverPos.x - tangentXZ.x * FOLLOW_DISTANCE,
-          roverPos.y + CAMERA_HEIGHT,
-          roverPos.z - tangentXZ.z * FOLLOW_DISTANCE
-        );
-        targetLookAt.set(roverPos.x, roverPos.y + 1.2, roverPos.z);
-      }
-
-      if (isTransitioningRef.current) {
-        camera.lookAt(roverPos.x, roverPos.y + 1.2, roverPos.z);
-      } else {
-        const lerpSpeed = povModeRef.current === 'cockpit' ? 0.35 : 0.08;
-        camera.position.lerp(camTargetPos, lerpSpeed);
-        camLookAtRef.current.lerp(targetLookAt, lerpSpeed);
-        camera.lookAt(camLookAtRef.current);
-      }
-
-      // 4. Update Realistic Landscape Animations (Wind Turbines & Fireflies)
-      if (landscapeRef.current?.userData?.update) {
-        landscapeRef.current.userData.update(delta);
-      }
-
-      // 5. Rotate holographic waypoints
-      waypoints.forEach((wp) => {
-        if (wp.hologram) {
-          wp.hologram.rotation.y += delta * 1.5;
-          wp.hologram.rotation.x += delta * 0.8;
-        }
-      });
-
-      // 6. Waypoint Proximity Detection with Hysteresis Dead-Band
+      // 2c. Waypoint Proximity Detection with Hysteresis Dead-Band
       let matchedStation = null;
       for (let wp of waypoints) {
         let distProgress = Math.abs(progressRef.current - wp.progress);
         if (distProgress > 0.5) distProgress = 1.0 - distProgress;
 
-        const threshold = (activeStationIdRef.current === wp.id) ? 0.080 : 0.045;
+        const threshold = activeStationIdRef.current === wp.id ? 0.080 : 0.045;
         if (distProgress < threshold) {
           matchedStation = wp;
           break;
         }
       }
 
-      if (matchedStation) {
+      if (matchedStation && !isPondViewRef.current) {
         if (activeStationIdRef.current !== matchedStation.id) {
           activeStationIdRef.current = matchedStation.id;
           audioEngine.playRadarPing();
@@ -585,6 +688,96 @@ export default function CircuitWorldCanvas({
           }
         }
       }
+
+      // 3. Dynamic Camera POV Controller (Pond Sanctuary / Billboard Focus / Chase / Cockpit / Aerial)
+      const roverPos = rover.mesh.position;
+      const tangent = curve.getTangentAt(progressRef.current).normalize();
+      const tangentXZ = new THREE.Vector3(tangent.x, 0, tangent.z);
+      if (tangentXZ.lengthSq() > 0.0001) tangentXZ.normalize();
+      else tangentXZ.set(0, 0, -1);
+
+      const camTargetPos = new THREE.Vector3();
+      const targetLookAt = new THREE.Vector3();
+
+      if (isPondViewRef.current) {
+        // Dedicated Koi Pond Observation Sanctuary View
+        const lakeX = -18;
+        const lakeZ = 15;
+        const isMob = window.innerWidth < 768;
+        camTargetPos.set(
+          lakeX + (isMob ? 8.2 : 11.2),
+          isMob ? 4.2 : 5.0,
+          lakeZ + (isMob ? 8.8 : 11.8)
+        );
+        targetLookAt.set(lakeX - 1.2, 0.25, lakeZ - 1.2);
+      } else if (focusedBillboardRef.current) {
+        // Dedicated Billboard Close-Up Focus Mode
+        const wp = focusedBillboardRef.current;
+        const isMob = window.innerWidth < 768;
+        const boardQuat = wp.billboardGroup.quaternion;
+        const boardFront = new THREE.Vector3(0, 0, 1).applyQuaternion(boardQuat).normalize();
+        camTargetPos
+          .copy(wp.position)
+          .add(boardFront.multiplyScalar(isMob ? 5.2 : 6.8))
+          .setY(wp.position.y + 3.4);
+        targetLookAt.copy(wp.position).setY(wp.position.y + 3.4);
+      } else if (povModeRef.current === 'cockpit') {
+        // Cockpit / Bumper POV: Mounted right on rover's front deck looking ahead
+        camTargetPos.set(
+          roverPos.x + tangentXZ.x * 0.95,
+          roverPos.y + 1.35,
+          roverPos.z + tangentXZ.z * 0.95
+        );
+        targetLookAt.set(
+          roverPos.x + tangentXZ.x * 16.0,
+          roverPos.y + 1.1,
+          roverPos.z + tangentXZ.z * 16.0
+        );
+      } else if (povModeRef.current === 'aerial') {
+        // Aerial / Drone Orbit POV: Elevated diorama angle
+        camTargetPos.set(roverPos.x - 22.0, roverPos.y + 25.0, roverPos.z + 24.0);
+        targetLookAt.set(roverPos.x, roverPos.y + 0.8, roverPos.z);
+      } else {
+        // Uniform Chase-Cam POV: 100% Rock-solid, consistent height & follow distance (Zero POV dipping!)
+        const isMob = window.innerWidth < 768;
+        const followDist = isMob ? 11.5 : 13.5;
+        const camHeight = isMob ? 7.5 : 9.5;
+
+        camTargetPos.set(
+          roverPos.x - tangentXZ.x * followDist,
+          roverPos.y + camHeight,
+          roverPos.z - tangentXZ.z * followDist
+        );
+        targetLookAt.set(roverPos.x, roverPos.y + 1.2, roverPos.z);
+      }
+
+      if (isTransitioningRef.current) {
+        camera.lookAt(roverPos.x, roverPos.y + 1.2, roverPos.z);
+      } else {
+        const lerpSpeed =
+          isPondViewRef.current || focusedBillboardRef.current
+            ? 0.05
+            : povModeRef.current === 'cockpit'
+            ? 0.35
+            : 0.10;
+        camera.position.lerp(camTargetPos, lerpSpeed);
+        camLookAtRef.current.lerp(targetLookAt, lerpSpeed);
+        camera.lookAt(camLookAtRef.current);
+      }
+
+      // 4. Update Realistic Landscape Animations (Wind Turbines, Fireflies, Wildlife & Pond)
+      if (landscapeRef.current?.userData?.update) {
+        landscapeRef.current.userData.update(delta);
+      }
+
+      // 6. Update 3D Advertisement Billboards: Borders glow when rover arrives!
+      const timeSec = now * 0.001;
+      waypoints.forEach((wp) => {
+        const isActive = (activeStationIdRef.current === wp.id);
+        if (wp.updateGlow) {
+          wp.updateGlow(isActive, delta, timeSec);
+        }
+      });
 
       renderer.render(scene, camera);
       animationFrameId = requestAnimationFrame(render);
@@ -621,14 +814,14 @@ export default function CircuitWorldCanvas({
       />
 
       {/* UNIFIED TOP TELEMETRY & CONTROLS HEADER (Zero collision on all viewports) */}
-      <header className="absolute top-3 inset-x-3 sm:top-4 sm:inset-x-6 z-35 pointer-events-auto flex items-center justify-between gap-2 max-w-[1920px] mx-auto select-none">
+      <header className="absolute top-2 sm:top-4 inset-x-2 sm:inset-x-6 z-35 pointer-events-auto flex items-center justify-between gap-1.5 sm:gap-2 max-w-[1920px] mx-auto select-none">
         
         {/* Left: Home Button (Replaces "Hero View" with clean "Home" + Home icon) */}
         {onReturnHome && (
           <button
             onClick={onReturnHome}
             disabled={isExiting}
-            className={`group flex items-center space-x-1.5 px-3 py-1.5 min-h-[38px] rounded-full backdrop-blur-md shadow-lg active:scale-95 transition-all font-mono text-xs font-bold cursor-pointer disabled:opacity-50 shrink-0 border ${
+            className={`group flex items-center space-x-1 sm:space-x-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 min-h-[34px] sm:min-h-[38px] rounded-full backdrop-blur-md shadow-lg active:scale-95 transition-all font-mono text-[11px] sm:text-xs font-bold cursor-pointer disabled:opacity-50 shrink-0 border ${
               isNightMode
                 ? 'bg-[#0E1626]/90 border-cyan-500/40 text-cyan-200 hover:bg-[#15233D]'
                 : 'bg-[#292B27]/95 border-[#B17B53]/50 text-[#F4EBDD] hover:bg-[#1E201D]'
@@ -636,8 +829,8 @@ export default function CircuitWorldCanvas({
             title="Return to Portfolio Home"
           >
             <Home className="w-3.5 h-3.5 text-[#B17B53] transition-transform group-hover:scale-110" />
-            <span className="tracking-wider uppercase">
-              {isExiting ? 'Ascending...' : 'Home'}
+            <span className="tracking-wider uppercase text-[10.5px] sm:text-xs">
+              {isExiting ? '...' : 'Home'}
             </span>
           </button>
         )}
@@ -654,8 +847,8 @@ export default function CircuitWorldCanvas({
           </span>
         </div>
 
-        {/* Right: Sleek, Reduced-Width Controls Cluster with High-Quality Vector Icons */}
-        <div className={`flex items-center space-x-1.5 sm:space-x-2 backdrop-blur-md px-2 sm:px-2.5 py-1 min-h-[38px] rounded-full border shadow-lg text-xs font-mono transition-colors shrink-0 ${
+        {/* Right: Sleek, Responsive Controls Cluster with High-Quality Vector Icons */}
+        <div className={`flex items-center space-x-1 sm:space-x-2 backdrop-blur-md px-1.5 sm:px-2.5 py-0.5 sm:py-1 min-h-[34px] sm:min-h-[38px] rounded-full border shadow-lg text-xs font-mono transition-colors shrink-0 max-w-full ${
           isNightMode
             ? 'bg-[#0E1626]/90 border-cyan-400/40 text-[#F1F5F9]'
             : 'bg-[#292B27]/90 border-[#B17B53]/50 text-[#F4EBDD]'
@@ -664,7 +857,7 @@ export default function CircuitWorldCanvas({
           {/* Day / Night Mode Switcher with High-Quality Sun / Moon Icons */}
           <button
             onClick={toggleNightMode}
-            className={`w-8 h-8 sm:w-8.5 sm:h-8.5 flex items-center justify-center rounded-full transition-all cursor-pointer active:scale-90 ${
+            className={`w-7 h-7 sm:w-8.5 sm:h-8.5 flex items-center justify-center rounded-full transition-all cursor-pointer active:scale-90 shrink-0 ${
               isNightMode
                 ? 'bg-blue-950/80 text-cyan-300 border border-cyan-400/60 shadow-[0_0_8px_rgba(56,189,248,0.4)]'
                 : 'bg-amber-500/20 text-amber-300 border border-amber-400/50 hover:bg-amber-500/30'
@@ -678,12 +871,12 @@ export default function CircuitWorldCanvas({
             )}
           </button>
 
-          <span className="text-white/20 text-[10px]">|</span>
+          <span className="text-white/20 text-[10px] select-none">|</span>
 
-          {/* POV Camera Mode Switcher (Reduced width, high quality Camera icon) */}
+          {/* POV Camera Mode Switcher (Fully responsive on mobile, high quality Camera icon) */}
           <button
             onClick={cyclePOV}
-            className={`flex items-center space-x-1 px-2 sm:px-2.5 py-1.5 min-h-[32px] rounded-full text-[10px] uppercase font-bold tracking-wider transition-all cursor-pointer active:scale-90 ${
+            className={`flex items-center space-x-1 px-1.5 sm:px-2.5 py-1 min-h-[28px] sm:min-h-[32px] rounded-full text-[9px] sm:text-[10px] uppercase font-bold tracking-wider transition-all cursor-pointer active:scale-90 shrink-0 ${
               povMode === 'cockpit'
                 ? 'bg-rose-900/70 text-rose-200 border border-rose-400/60'
                 : povMode === 'aerial'
@@ -692,41 +885,40 @@ export default function CircuitWorldCanvas({
             }`}
             title="Cycle Camera View: Chase -> Cockpit -> Aerial"
           >
-            <Camera className="w-3.5 h-3.5 text-[#B17B53]" />
-            <span className="text-[9.5px]">
+            <Camera className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#B17B53]" />
+            <span className="text-[9px] sm:text-[9.5px]">
               {povMode === 'chase' ? 'CHASE' : povMode === 'cockpit' ? 'HOOD' : 'ORBIT'}
             </span>
           </button>
 
-          <span className="text-white/20 text-[10px]">|</span>
+          <span className="text-white/20 text-[10px] select-none">|</span>
 
-          {/* Autopilot Cruise Button (Reduced width, high quality Play / Pause icon) */}
+          {/* Autopilot Cruise Button (Fully responsive on mobile, high quality Play / Pause icon) */}
           <button
             onClick={() => setIsCruising(!isCruising)}
-            className={`flex items-center space-x-1 px-2 sm:px-2.5 py-1.5 min-h-[32px] rounded-full text-[10px] uppercase font-bold tracking-wider transition-all cursor-pointer active:scale-90 ${
+            className={`flex items-center space-x-1 px-1.5 sm:px-2.5 py-1 min-h-[28px] sm:min-h-[32px] rounded-full text-[9px] sm:text-[10px] uppercase font-bold tracking-wider transition-all cursor-pointer active:scale-90 shrink-0 ${
               isCruising 
-                ? (isNightMode ? 'bg-cyan-400 text-slate-950 shadow-sm' : 'bg-[#B17B53] text-[#292B27] shadow-sm')
+                ? (isNightMode ? 'bg-cyan-400 text-slate-950 shadow-sm font-extrabold' : 'bg-[#B17B53] text-[#292B27] shadow-sm font-extrabold')
                 : 'text-white/80 bg-white/10 hover:text-white hover:bg-white/20'
             }`}
             title={isCruising ? 'Pause Autonomous Rover' : 'Start Autonomous Rover Cruise'}
           >
             {isCruising ? (
-              <Pause className="w-3 h-3 fill-current" />
+              <Pause className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-current" />
             ) : (
-              <Play className="w-3 h-3 fill-current ml-0.5" />
+              <Play className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-current ml-0.5" />
             )}
-            <span className="text-[9.5px]">{isCruising ? 'PAUSE' : 'AUTO'}</span>
+            <span className="text-[9px] sm:text-[9.5px]">{isCruising ? 'PAUSE' : 'AUTO'}</span>
           </button>
 
-          <span className="text-white/20 text-[10px]">|</span>
-
-          {/* Help & Instruction Trigger */}
+          {/* Help & Instruction Trigger (Hidden on ultra-narrow mobile to prioritize core driving controls) */}
+          <span className="hidden sm:inline text-white/20 text-[10px] select-none">|</span>
           <button
             onClick={() => {
               audioEngine.playClick();
               setShowNavInstruction((prev) => !prev);
             }}
-            className={`w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full transition-all cursor-pointer active:scale-90 ${
+            className={`hidden sm:flex w-7 h-7 sm:w-8 sm:h-8 items-center justify-center rounded-full transition-all cursor-pointer active:scale-90 shrink-0 ${
               showNavInstruction
                 ? 'bg-amber-400 text-slate-950 font-bold'
                 : 'text-white/80 bg-white/10 hover:text-white hover:bg-white/20'
@@ -738,6 +930,32 @@ export default function CircuitWorldCanvas({
           </button>
         </div>
       </header>
+
+      {/* PROFESSIONAL, SLEEK & MINIMAL "BACK TO ROVER" BUTTON */}
+      {(isPondView || focusedBillboard) && (
+        <button
+          onClick={() => {
+            audioEngine.playClick();
+            if (isPondView) {
+              setIsPondView(false);
+              isPondViewRef.current = false;
+            }
+            if (focusedBillboard) {
+              setFocusedBillboard(null);
+              focusedBillboardRef.current = null;
+            }
+          }}
+          className={`absolute top-14 sm:top-18 left-1/2 -translate-x-1/2 z-35 flex items-center space-x-1.5 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full backdrop-blur-md shadow-xl border transition-all duration-200 cursor-pointer font-mono text-[11px] sm:text-xs font-semibold tracking-wider uppercase active:scale-95 pointer-events-auto group ${
+            isNightMode
+              ? 'bg-[#0E1626]/95 border-cyan-500/50 text-cyan-200 hover:bg-[#15233D] hover:border-cyan-400'
+              : 'bg-[#292B27]/95 border-[#B17B53]/60 text-[#F4EBDD] hover:bg-[#1E201D] hover:border-[#B17B53]'
+          }`}
+          title="Return Camera to Rover"
+        >
+          <ArrowLeft className="w-3.5 h-3.5 text-[#B17B53] transition-transform group-hover:-translate-x-0.5" />
+          <span>Back to Rover</span>
+        </button>
+      )}
 
       {/* COMPACT WAYPOINT QUICK-JUMP CAPSULE (Significantly reduced width, zero scrollbar) */}
       <div className={`absolute bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center space-x-1 sm:space-x-1.5 backdrop-blur-md px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full border shadow-xl text-xs font-mono max-w-[92vw] sm:max-w-fit overflow-x-auto transition-colors duration-500 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ${
@@ -779,16 +997,18 @@ export default function CircuitWorldCanvas({
         })}
       </div>
 
-      {/* Navigation Hint - Responsive on Mobile & Desktop */}
-      <div className={`absolute bottom-16 sm:bottom-5 right-1/2 translate-x-1/2 sm:translate-x-0 sm:right-5 z-20 flex items-center space-x-1.5 backdrop-blur-xs px-2.5 py-1 rounded-md text-[9px] font-mono border pointer-events-none transition-colors duration-500 whitespace-nowrap shadow-sm ${
-        isNightMode
-          ? 'bg-[#0E1626]/85 text-cyan-300 border-cyan-500/30'
-          : 'bg-[#292B27]/80 text-[#E9DDC7] border-[#292B27]/40'
-      }`}>
-        <MoveHorizontal className="w-3 h-3 text-[#B17B53]" />
-        <span className="hidden sm:inline">SWIPE / DRAG / SCROLL TO NAVIGATE ROVER</span>
-        <span className="sm:hidden">SWIPE TO STEER ROVER</span>
-      </div>
+      {/* Navigation Hint - Hidden when at a waypoint to keep bottom clean and zero overlap */}
+      {!currentWaypointId && (
+        <div className={`absolute bottom-16 sm:bottom-5 right-1/2 translate-x-1/2 sm:translate-x-0 sm:right-5 z-20 flex items-center space-x-1.5 backdrop-blur-xs px-2.5 py-1 rounded-md text-[9px] font-mono border pointer-events-none transition-colors duration-500 whitespace-nowrap shadow-sm ${
+          isNightMode
+            ? 'bg-[#0E1626]/85 text-cyan-300 border-cyan-500/30'
+            : 'bg-[#292B27]/80 text-[#E9DDC7] border-[#292B27]/40'
+        }`}>
+          <MoveHorizontal className="w-3 h-3 text-[#B17B53]" />
+          <span className="hidden sm:inline">SWIPE / DRAG / SCROLL TO NAVIGATE ROVER</span>
+          <span className="sm:hidden">SWIPE TO STEER ROVER</span>
+        </div>
+      )}
 
       {/* MOBILE & INTERACTIVE NAVIGATION INSTRUCTION OVERLAY (Auto-fades in 4.8s or dismisses on swipe/tap) */}
       {showNavInstruction && (

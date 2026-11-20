@@ -152,6 +152,7 @@ export function buildLowPolyLandscape() {
   waterMesh = new THREE.Mesh(pondGeom, waterMat);
   waterMesh.position.set(lakeX, 0.08, lakeZ);
   waterMesh.receiveShadow = true;
+  waterMesh.userData = { isPond: true, pondCenter: new THREE.Vector3(lakeX, 0.08, lakeZ) };
   envGroup.add(waterMesh);
 
   // Sandy Shoreline Beach Ring
@@ -165,6 +166,7 @@ export function buildLowPolyLandscape() {
   const sandRing = new THREE.Mesh(sandRingGeom, sandRingMat);
   sandRing.position.set(lakeX, 0.05, lakeZ);
   sandRing.receiveShadow = true;
+  sandRing.userData = { isPond: true, pondCenter: new THREE.Vector3(lakeX, 0.08, lakeZ) };
   envGroup.add(sandRing);
 
   // Translucent Frothy Water Foam Edge
@@ -179,7 +181,17 @@ export function buildLowPolyLandscape() {
   });
   const foamMesh = new THREE.Mesh(foamGeom, foamMat);
   foamMesh.position.set(lakeX, 0.11, lakeZ);
+  foamMesh.userData = { isPond: true, pondCenter: new THREE.Vector3(lakeX, 0.08, lakeZ) };
   envGroup.add(foamMesh);
+
+  // Dedicated touch & raycast hit collider covering the entire pond and its shoreline
+  const pondHitGeom = new THREE.CircleGeometry(pondRadius + 2.5, 36);
+  pondHitGeom.rotateX(-Math.PI / 2);
+  const pondHitMat = new THREE.MeshBasicMaterial({ visible: false });
+  const pondHitMesh = new THREE.Mesh(pondHitGeom, pondHitMat);
+  pondHitMesh.position.set(lakeX, 0.22, lakeZ);
+  pondHitMesh.userData = { isPond: true, pondCenter: new THREE.Vector3(lakeX, 0.08, lakeZ) };
+  envGroup.add(pondHitMesh);
 
   // Floating Water Lilies & Lotus Blossoms on the Pond
   const pondDecorGroup = new THREE.Group();
@@ -359,6 +371,296 @@ export function buildLowPolyLandscape() {
       index: idx,
     });
   });
+
+  // =========================================================================
+  // 2c. ANIMATED LOW-POLY WILDLIFE (Deer Family, Hopping Bunnies & Pond Ducks)
+  // =========================================================================
+  const animatedAnimals = [];
+  const animalsGroup = new THREE.Group();
+  animalsGroup.name = 'LowPolyWildlife';
+  envGroup.add(animalsGroup);
+
+  // 1. DEER FAMILY (Buck with branching antlers, Doe, and playful Fawn)
+  function createDeer(type = 'buck', scale = 1.0, posX = 0, posZ = 0, rotY = 0) {
+    const deer = new THREE.Group();
+    deer.position.set(posX, 0.2, posZ);
+    deer.rotation.y = rotY;
+    deer.scale.setScalar(scale);
+
+    const bodyMat = new THREE.MeshStandardMaterial({
+      color: type === 'buck' ? 0x8C522B : type === 'doe' ? 0xA0683A : 0xB88052,
+      roughness: 0.85,
+      flatShading: true,
+    });
+    const bellyMat = new THREE.MeshStandardMaterial({
+      color: 0xE8D5C0,
+      roughness: 0.9,
+      flatShading: true,
+    });
+    const darkMat = new THREE.MeshStandardMaterial({
+      color: 0x3D2415,
+      roughness: 0.9,
+      flatShading: true,
+    });
+    const antlerMat = new THREE.MeshStandardMaterial({
+      color: 0xD6C4AD,
+      roughness: 0.8,
+      flatShading: true,
+    });
+
+    // Main Torso / Body (tapered box)
+    const torsoGeom = new THREE.BoxGeometry(0.72, 0.82, 1.45);
+    const torso = new THREE.Mesh(torsoGeom, bodyMat);
+    torso.position.y = 1.25;
+    torso.castShadow = true;
+    deer.add(torso);
+
+    // Chest & Rump contouring
+    const chestGeom = new THREE.BoxGeometry(0.68, 0.75, 0.5);
+    const chest = new THREE.Mesh(chestGeom, bellyMat);
+    chest.position.set(0, 1.15, 0.55);
+    chest.castShadow = true;
+    deer.add(chest);
+
+    // 4 Articulated Slender Legs with Hooves
+    const legGeom = new THREE.CylinderGeometry(0.065, 0.045, 1.1, 4);
+    const hoofGeom = new THREE.BoxGeometry(0.09, 0.12, 0.11);
+
+    const legOffsets = [
+      [-0.26, 0.52], [0.26, 0.52],
+      [-0.26, -0.52], [0.26, -0.52],
+    ];
+
+    legOffsets.forEach(([lx, lz]) => {
+      const leg = new THREE.Mesh(legGeom, bodyMat);
+      leg.position.set(lx, 0.55, lz);
+      leg.castShadow = true;
+      deer.add(leg);
+
+      const hoof = new THREE.Mesh(hoofGeom, darkMat);
+      hoof.position.set(lx, 0.06, lz + 0.02);
+      deer.add(hoof);
+    });
+
+    // Neck & Head Group (allows animated grazing / looking around)
+    const headGroup = new THREE.Group();
+    headGroup.position.set(0, 1.5, 0.65);
+
+    const neckGeom = new THREE.CylinderGeometry(0.18, 0.28, 0.9, 5);
+    neckGeom.rotateX(0.5);
+    const neck = new THREE.Mesh(neckGeom, bodyMat);
+    neck.position.set(0, 0.35, 0.18);
+    neck.castShadow = true;
+    headGroup.add(neck);
+
+    const headGeom = new THREE.BoxGeometry(0.3, 0.32, 0.56);
+    const head = new THREE.Mesh(headGeom, bodyMat);
+    head.position.set(0, 0.72, 0.42);
+    head.castShadow = true;
+    headGroup.add(head);
+
+    // Dark Snout & Muzzle
+    const snoutGeom = new THREE.BoxGeometry(0.2, 0.2, 0.24);
+    const snout = new THREE.Mesh(snoutGeom, darkMat);
+    snout.position.set(0, 0.66, 0.74);
+    headGroup.add(snout);
+
+    // Pointy Ears
+    const earGeom = new THREE.ConeGeometry(0.08, 0.28, 4);
+    const leftEar = new THREE.Mesh(earGeom, bodyMat);
+    leftEar.position.set(-0.16, 0.92, 0.28);
+    leftEar.rotation.set(-0.3, 0, -0.4);
+    headGroup.add(leftEar);
+
+    const rightEar = new THREE.Mesh(earGeom, bodyMat);
+    rightEar.position.set(0.16, 0.92, 0.28);
+    rightEar.rotation.set(-0.3, 0, 0.4);
+    headGroup.add(rightEar);
+
+    // Branching Antlers for Buck
+    if (type === 'buck') {
+      const beamGeom = new THREE.CylinderGeometry(0.04, 0.055, 0.75, 4);
+      const tineGeom = new THREE.CylinderGeometry(0.025, 0.035, 0.35, 4);
+
+      [-0.14, 0.14].forEach((ax) => {
+        const beam = new THREE.Mesh(beamGeom, antlerMat);
+        beam.position.set(ax, 1.15, 0.3);
+        beam.rotation.set(-0.4, 0, ax < 0 ? -0.45 : 0.45);
+        headGroup.add(beam);
+
+        const tine1 = new THREE.Mesh(tineGeom, antlerMat);
+        tine1.position.set(ax * 1.6, 1.25, 0.38);
+        tine1.rotation.set(-0.1, 0, ax < 0 ? -0.9 : 0.9);
+        headGroup.add(tine1);
+
+        const tine2 = new THREE.Mesh(tineGeom, antlerMat);
+        tine2.position.set(ax * 1.3, 1.45, 0.2);
+        tine2.rotation.set(-0.7, 0, ax < 0 ? -0.3 : 0.3);
+        headGroup.add(tine2);
+      });
+    }
+
+    deer.add(headGroup);
+
+    // Fluffy tail
+    const tailGeom = new THREE.BoxGeometry(0.14, 0.2, 0.12);
+    const tail = new THREE.Mesh(tailGeom, bellyMat);
+    tail.position.set(0, 1.5, -0.76);
+    tail.rotation.x = -0.4;
+    deer.add(tail);
+
+    animalsGroup.add(deer);
+
+    animatedAnimals.push({
+      kind: 'deer',
+      group: deer,
+      headGroup: headGroup,
+      type: type,
+      baseY: 0.2,
+      baseRotY: rotY,
+    });
+  }
+
+  // Spawn Deer Family in the sunny meadow grove
+  createDeer('buck', 1.05, 18, -26, -0.6);
+  createDeer('doe', 0.95, 21.5, -24, 0.8);
+  createDeer('fawn', 0.58, 20.2, -27.5, -0.2);
+
+  // 2. CUTE LOW-POLY SHORELINE RABBITS (Hopping & Ear-Wiggling)
+  function createRabbit(posX, posZ, rotY, scale = 0.55, furHex = 0xEDE0D4) {
+    const rabbit = new THREE.Group();
+    rabbit.position.set(posX, 0.15, posZ);
+    rabbit.rotation.y = rotY;
+    rabbit.scale.setScalar(scale);
+
+    const furMat = new THREE.MeshStandardMaterial({ color: furHex, roughness: 0.85, flatShading: true });
+    const whiteMat = new THREE.MeshStandardMaterial({ color: 0xFFFFFF, roughness: 0.9, flatShading: true });
+    const pinkMat = new THREE.MeshStandardMaterial({ color: 0xF9A8D4, roughness: 0.8 });
+
+    // Round Torso
+    const bodyGeom = new THREE.DodecahedronGeometry(0.38, 0);
+    const body = new THREE.Mesh(bodyGeom, furMat);
+    body.position.set(0, 0.34, 0);
+    body.scale.set(0.9, 0.85, 1.25);
+    body.castShadow = true;
+    rabbit.add(body);
+
+    // Head
+    const headGeom = new THREE.DodecahedronGeometry(0.24, 0);
+    const head = new THREE.Mesh(headGeom, furMat);
+    head.position.set(0, 0.48, 0.36);
+    head.castShadow = true;
+    rabbit.add(head);
+
+    // Nose
+    const nose = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.05, 0.06), pinkMat);
+    nose.position.set(0, 0.45, 0.56);
+    rabbit.add(nose);
+
+    // Tall Wiggling Ears
+    const earGeom = new THREE.ConeGeometry(0.07, 0.45, 4);
+    const earL = new THREE.Mesh(earGeom, furMat);
+    earL.position.set(-0.11, 0.78, 0.28);
+    earL.rotation.set(-0.2, 0, -0.15);
+    rabbit.add(earL);
+
+    const earR = new THREE.Mesh(earGeom, furMat);
+    earR.position.set(0.11, 0.78, 0.28);
+    earR.rotation.set(-0.2, 0, 0.15);
+    rabbit.add(earR);
+
+    // Fluffy Cotton Tail
+    const tail = new THREE.Mesh(new THREE.DodecahedronGeometry(0.12, 0), whiteMat);
+    tail.position.set(0, 0.38, -0.42);
+    rabbit.add(tail);
+
+    animalsGroup.add(rabbit);
+
+    animatedAnimals.push({
+      kind: 'rabbit',
+      group: rabbit,
+      earL: earL,
+      earR: earR,
+      originX: posX,
+      originZ: posZ,
+      hopRadius: 1.8 + Math.random() * 1.5,
+      hopSpeed: 0.35 + Math.random() * 0.2,
+      phase: Math.random() * Math.PI * 2,
+    });
+  }
+
+  // 4 Rabbits along shoreline and meadows
+  createRabbit(lakeX + 7, lakeZ + 11, 0.4, 0.58, 0xEDE0D4);
+  createRabbit(lakeX - 11, lakeZ + 8, -1.2, 0.52, 0xC49A6C);
+  createRabbit(lakeX - 8, lakeZ - 9, 2.1, 0.55, 0xF8F5EE);
+  createRabbit(14, -16, -0.5, 0.6, 0xD4B895);
+
+  // 3. LOW-POLY POND DUCKS (Swimming & Bobbing among Water Lilies)
+  function createDuck(startX, startZ, angle, isMallard = true) {
+    const duck = new THREE.Group();
+    duck.position.set(startX, 0.10, startZ);
+    duck.rotation.y = angle;
+    duck.scale.setScalar(0.72);
+
+    const bodyMat = new THREE.MeshStandardMaterial({
+      color: isMallard ? 0x6E4C2E : 0xF8FAFC,
+      roughness: 0.8,
+      flatShading: true,
+    });
+    const headMat = new THREE.MeshStandardMaterial({
+      color: isMallard ? 0x15803D : 0xF1F5F9,
+      roughness: 0.5,
+      flatShading: true,
+    });
+    const beakMat = new THREE.MeshStandardMaterial({
+      color: 0xF59E0B,
+      roughness: 0.4,
+      flatShading: true,
+    });
+
+    // Body
+    const bodyGeom = new THREE.DodecahedronGeometry(0.36, 0);
+    const body = new THREE.Mesh(bodyGeom, bodyMat);
+    body.scale.set(0.85, 0.65, 1.25);
+    duck.add(body);
+
+    // Neck & Head
+    const headGeom = new THREE.DodecahedronGeometry(0.19, 0);
+    const head = new THREE.Mesh(headGeom, headMat);
+    head.position.set(0, 0.32, 0.28);
+    duck.add(head);
+
+    // Beak
+    const beakGeom = new THREE.ConeGeometry(0.08, 0.22, 4);
+    beakGeom.rotateX(Math.PI / 2);
+    const beak = new THREE.Mesh(beakGeom, beakMat);
+    beak.position.set(0, 0.28, 0.48);
+    duck.add(beak);
+
+    // Tail feathers
+    const tailGeom = new THREE.ConeGeometry(0.12, 0.24, 4);
+    tailGeom.rotateX(-Math.PI / 3);
+    const tail = new THREE.Mesh(tailGeom, bodyMat);
+    tail.position.set(0, 0.18, -0.42);
+    duck.add(tail);
+
+    animalsGroup.add(duck);
+
+    animatedAnimals.push({
+      kind: 'duck',
+      group: duck,
+      lakeX: lakeX,
+      lakeZ: lakeZ,
+      orbitR: 4.8 + Math.random() * 3.5,
+      speed: isMallard ? 0.22 : -0.18,
+      phase: angle,
+    });
+  }
+
+  // 3 ducks in the pond
+  createDuck(lakeX + 3.5, lakeZ - 3.5, 0.5, true);
+  createDuck(lakeX - 4.2, lakeZ + 2.0, 2.4, false);
+  createDuck(lakeX + 1.2, lakeZ + 4.8, 4.1, true);
 
   // 3. Day Skydome (Warm Golden Anime Morning Sunrise)
   const domeGeom = new THREE.SphereGeometry(155, 32, 20, 0, Math.PI * 2, 0, Math.PI * 0.5);
@@ -785,7 +1087,76 @@ export function buildLowPolyLandscape() {
           fish.group.rotation.z = Math.sin(time * 3.8 + fish.phase) * 0.12;
         });
       }
+
+      // Animate Low-Poly Wildlife (Deer Family, Hopping Bunnies & Pond Ducks)
+      if (animatedAnimals.length > 0) {
+        const time = performance.now() * 0.001;
+
+        animatedAnimals.forEach((anim) => {
+          if (anim.kind === 'deer') {
+            if (anim.type === 'buck') {
+              // Proud stance with gentle scanning look left and right
+              anim.headGroup.rotation.y = Math.sin(time * 0.65) * 0.35;
+              anim.headGroup.rotation.x = Math.sin(time * 0.4) * 0.1;
+            } else if (anim.type === 'doe') {
+              // Peaceful grazing: dipping head down to chew grass
+              anim.headGroup.rotation.x = 0.52 + Math.sin(time * 0.55) * 0.32;
+              anim.headGroup.rotation.y = Math.sin(time * 0.8) * 0.12;
+            } else {
+              // Fawn bobbing playfully near mother
+              anim.headGroup.rotation.x = 0.25 + Math.sin(time * 1.2) * 0.2;
+              anim.group.position.y = anim.baseY + Math.abs(Math.sin(time * 1.8)) * 0.08;
+            }
+          } else if (anim.kind === 'rabbit') {
+            // Realistic hopping along a gentle circular territory
+            const hopAngle = anim.phase + time * anim.hopSpeed;
+            const hopCycle = (time * 4.2 + anim.phase * 3.0) % (Math.PI * 2);
+            const isJumping = Math.sin(hopCycle) > 0;
+            const jumpHeight = isJumping ? Math.sin(hopCycle) * 0.38 : 0;
+
+            const rx = anim.originX + Math.cos(hopAngle) * anim.hopRadius;
+            const rz = anim.originZ + Math.sin(hopAngle) * anim.hopRadius;
+
+            anim.group.position.set(rx, 0.15 + jumpHeight, rz);
+
+            // Orient rabbit in direction of hop movement
+            const nextAngle = hopAngle + (isJumping ? 0.08 : 0.0);
+            anim.group.lookAt(
+              anim.originX + Math.cos(nextAngle) * anim.hopRadius,
+              0.15 + jumpHeight,
+              anim.originZ + Math.sin(nextAngle) * anim.hopRadius
+            );
+
+            // Ear wiggling
+            anim.earL.rotation.z = -0.15 + Math.sin(time * 7.5 + anim.phase) * 0.15;
+            anim.earR.rotation.z = 0.15 + Math.sin(time * 7.5 + anim.phase + 1.2) * 0.15;
+          } else if (anim.kind === 'duck') {
+            // Smooth leisurely paddling around the pond
+            const curAngle = anim.phase + time * anim.speed;
+            const curR = anim.orbitR + Math.sin(time * 0.3 + anim.phase) * 0.8;
+            const dx = anim.lakeX + Math.cos(curAngle) * curR;
+            const dz = anim.lakeZ + Math.sin(curAngle) * curR;
+            const dy = 0.10 + Math.sin(time * 2.2 + anim.phase) * 0.035;
+
+            anim.group.position.set(dx, dy, dz);
+
+            // Look forward along circle tangent
+            const aheadAngle = curAngle + (anim.speed >= 0 ? 0.08 : -0.08);
+            anim.group.lookAt(
+              anim.lakeX + Math.cos(aheadAngle) * curR,
+              dy,
+              anim.lakeZ + Math.sin(aheadAngle) * curR
+            );
+
+            // Gentle body roll
+            anim.group.rotation.z = Math.sin(time * 1.8 + anim.phase) * 0.06;
+          }
+        });
+      }
     },
+
+    pondCenter: new THREE.Vector3(lakeX, 0.08, lakeZ),
+    pondRadius: pondRadius,
 
     setNightTransition: (nightT) => {
       // nightT ranges from 0 (Day) to 1 (Night)
